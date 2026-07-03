@@ -284,6 +284,12 @@ flowchart TD
   J --> K[Rendered diagram]
   K --> L[Diagram task views and metrics]
   I --> L
+
+  M[Diagram prompts] --> N[Pre-trained LLM prompt to diagram generation]
+  N --> O[Pre-trained Diffusion model prompt to diagram generation]
+  O --> P[Reward as alignment score]
+  P --> Q[fine-tuning]
+  Q --> R[Generated diagram]
 ```
 
 **Implementation Details:**
