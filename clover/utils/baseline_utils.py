@@ -638,15 +638,23 @@ def select_branch_extremes(
 
 
 def standard_eval_prompts(config: Any, limit: int = 4) -> list[str]:
-    """Build the shared evaluation prompt list for baseline notebooks.
-
+    """Get evaluation prompts from config.
+    
+    Prefers config.eval_prompts if defined, otherwise falls back to
+    deduplicating [config.prompt, *config.train_prompts].
+    
     Args:
-        config: Experiment configuration with ``prompt`` and ``train_prompts``.
-        limit: Maximum number of prompts to return.
-
+        config: Baseline config with prompt fields
+        limit: Maximum number of prompts to return
+        
     Returns:
-        A list beginning with the primary prompt followed by training prompts.
+        List of evaluation prompts, up to limit
     """
+    # Prefer explicit eval_prompts when available
+    if hasattr(config, "eval_prompts") and config.eval_prompts:
+        return list(config.eval_prompts)[:limit]
+    
+    # Fallback to legacy behavior for backward compatibility
     prompts = [config.prompt, *list(config.train_prompts)]
     deduped = list(dict.fromkeys(prompts))
     return deduped[:limit]
