@@ -22,7 +22,7 @@ workdir=/aiau010_scratch/azm0269/clover
 cd $workdir
 source .env
 HF_HOME="/aiau010_scratch/azm0269/hub"
-HF_TOKEN="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"
+HF_TOKEN=
 HF_HOME="/aiau010_scratch/azm0269/hub"
 TMPDIR="/aiau010_scratch/azm0269/tmp"
 # CUDA_VISIBLE_DEVICES=6,7
