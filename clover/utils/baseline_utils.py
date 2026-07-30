@@ -681,6 +681,7 @@ def save_image_grid_outputs(
     prompts: list[str],
     output_dir: Path | str,
     prefix: str,
+    epoch: int | None = None,
 ) -> list[dict[str, Any]]:
     """Save images plus a manifest compatible across baseline notebooks.
 
@@ -689,16 +690,34 @@ def save_image_grid_outputs(
         prompts: Prompt strings aligned with ``images``.
         output_dir: Directory that receives the image files and manifest.
         prefix: Filename prefix, such as ``eval`` or ``epoch_0001_sample``.
+        epoch: Optional epoch number. If provided, appends to a consolidated manifest.
 
     Returns:
         A manifest list containing prompt and image path metadata.
     """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    manifest = []
+    manifest_entries = []
     for idx, image in enumerate(images):
         image_path = output_dir / f"{prefix}_{idx:02d}.png"
         image.save(image_path)
-        manifest.append({"index": idx, "prompt": prompts[idx] if idx < len(prompts) else "", "image": str(image_path)})
-    save_json(output_dir / f"{prefix}_manifest.json", manifest)
-    return manifest
+        entry = {"index": idx, "prompt": prompts[idx] if idx < len(prompts) else "", "image": str(image_path)}
+        if epoch is not None:
+            entry["epoch"] = epoch
+        manifest_entries.append(entry)
+    
+    # If epoch is provided, append to consolidated manifest
+    if epoch is not None:
+        manifest_path = output_dir / "eval_manifest.json"
+        existing_manifest = []
+        if manifest_path.exists():
+            import json
+            with manifest_path.open("r", encoding="utf-8") as f:
+                existing_manifest = json.load(f)
+        existing_manifest.extend(manifest_entries)
+        save_json(manifest_path, existing_manifest)
+    else:
+        # Legacy behavior: create separate manifest file
+        save_json(output_dir / f"{prefix}_manifest.json", manifest_entries)
+    
+    return manifest_entries

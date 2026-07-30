@@ -93,3 +93,162 @@ Both functions match the standard reward signature:
 **Next Steps:**
 - Test baselines to ensure data is saved correctly
 - Consider adding visualization scripts for comparing baseline performance
+
+---
+
+### Task: Consolidated evaluation manifests into single file with epoch numbers
+
+**Completed:**
+- Modified `save_image_grid_outputs()` in `clover/utils/baseline_utils.py`:
+  - Added optional `epoch` parameter
+  - When epoch is provided, appends entries to consolidated `eval_manifest.json`
+  - Includes epoch number in each manifest entry
+  - Maintains backward compatibility for cases without epoch parameter
+  
+- Updated `save_evaluation_metrics()` in `clover/baselines/common.py`:
+  - Passes epoch parameter to `save_image_grid_outputs()`
+  - Ensures evaluation images are added to consolidated manifest
+  
+- Created consolidated manifest from existing epoch-specific files:
+  - Combined `epoch_0001_manifest.json` through `epoch_0004_manifest.json`
+  - Generated single `outputs/ddpo/evals/eval_manifest.json` with all epochs
+  - Each entry now includes `"epoch"` field for filtering and analysis
+
+**Data Structure:**
+Before:
+```
+outputs/ddpo/evals/
+  ├── epoch_0001_manifest.json
+  ├── epoch_0002_manifest.json
+  ├── epoch_0003_manifest.json
+  └── epoch_0004_manifest.json
+```
+
+After:
+```
+outputs/ddpo/evals/
+  └── eval_manifest.json  # Contains all epochs with epoch numbers
+```
+
+**Manifest Entry Format:**
+```json
+{
+  "epoch": 1,
+  "image": "outputs/ddpo/evals/epoch_0001_00.png",
+  "index": 0,
+  "prompt": "an impressionist painting of clovers under warm sunlight"
+}
+```
+
+**Benefits:**
+- Single source of truth for all evaluation data
+- Easy to filter by epoch for analysis
+- Simpler to track evaluation history over time
+- Reduces file clutter in eval directory
+- Better for downstream analysis and visualization tools
+
+---
+
+### Task: Consolidated trajectory data into single file with epoch numbers
+
+**Completed:**
+- Modified `save_trajectory_data()` in `clover/baselines/common.py`:
+  - Now appends trajectories to a single consolidated `trajectories.json` file
+  - Stores file at `clover/data/{baseline_name}/trajectories.json` instead of separate epoch files
+  - Each trajectory entry includes epoch number for filtering
+  - Maintains all trajectory data: prompts, timesteps, rewards, and reward statistics
+  
+- Created consolidated trajectory file from existing epoch-specific files:
+  - Combined `epoch_0001.json` through `epoch_0004.json` for DDPO baseline
+  - Generated single `clover/data/ddpo/trajectories.json` with all epochs
+  - Each trajectory includes `"epoch"` field for easy filtering
+
+**Data Structure:**
+Before:
+```
+clover/data/ddpo/trajectories/
+  ├── epoch_0001.json
+  ├── epoch_0002.json
+  ├── epoch_0003.json
+  └── epoch_0004.json
+```
+
+After:
+```
+clover/data/ddpo/
+  └── trajectories.json  # Contains all epochs with epoch numbers
+```
+
+**Trajectory Entry Format:**
+```json
+{
+  "epoch": 1,
+  "prompts": ["an impressionist painting of clovers under warm sunlight"],
+  "timesteps": [958, 925, 892, ...],
+  "rewards": [[0.0, 0.0, ...]],
+  "reward_stats": {
+    "mean": 0.0,
+    "std": 0.0,
+    "min": 0.0,
+    "max": 0.0
+  }
+}
+```
+
+**Benefits:**
+- Single source of truth for all trajectory data
+- Easy to filter trajectories by epoch for analysis
+- Simplified data management and reduced file clutter
+- More efficient for loading and analyzing training history
+- Consistent with evaluation manifest structure
+- Easier to track RL training progression across epochs
+
+---
+
+### Task: Fixed zero rewards bug in DDPO and DPOK baselines
+
+**Issue Identified:**
+- DDPO and DPOK were producing all zero rewards during training
+- Investigation of experiment logs showed:
+  - DDPO: reward_mean = 0.0, reward_std = 0.0, loss = 0.0
+  - DPOK: reward_mean = 0.0, reward_std = 0.0, loss = 0.0
+  - B2-DiffuRL: Non-zero rewards (reward_mean: 2.23-5.10) ✓ Working correctly
+
+**Root Cause:**
+The reward computation in `collect_rollouts()` had a logic error:
+```python
+if timestep == 0:  # BUG: This condition is never true!
+    images = decode_latents(pipe, latents)
+    rewards.append(reward_fn(images, prompts).detach().float().cpu())
+else:
+    rewards.append(zero_rewards.clone())
+```
+
+The diffusion scheduler timesteps actually end at `1`, not `0`:
+- Timesteps: `[958, 925, 892, ..., 34, 1]` (from trajectory data)
+- The condition `timestep == 0` was never satisfied
+- Reward function was never called, only zero_rewards were appended
+
+**Fix Applied:**
+Changed the condition to check for the last timestep in the scheduler:
+```python
+if timestep_tensor == pipe.scheduler.timesteps[-1]:  # FIX: Check for last timestep
+    images = decode_latents(pipe, latents)
+    rewards.append(reward_fn(images, prompts).detach().float().cpu())
+else:
+    rewards.append(zero_rewards.clone())
+```
+
+**Files Modified:**
+- `clover/baselines/ddpo.py`: Fixed reward computation in `collect_rollouts()`
+- `clover/baselines/dpok.py`: Fixed reward computation in `collect_rollouts()`
+
+**Expected Outcome:**
+- DDPO and DPOK should now compute non-zero rewards using the configured reward function
+- Training should show proper reward signals for policy optimization
+- Trajectories will contain actual reward values instead of all zeros
+
+**Next Steps:**
+- Re-run DDPO and DPOK baselines to verify fix
+- Compare reward distributions across all three baselines
+- Ensure training metrics show non-zero values

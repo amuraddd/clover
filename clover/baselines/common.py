@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any, TypeVar
@@ -133,7 +134,7 @@ def save_trajectory_data(
     rollout: dict[str, Any],
     data_dir: Path | str = "clover/data",
 ) -> None:
-    """Save RL trajectory data in structured JSON format.
+    """Save RL trajectory data in structured JSON format to a consolidated file.
 
     Args:
         baseline_name: Name of the baseline (e.g., 'ddpo', 'dpok', 'b2diffurl')
@@ -142,8 +143,8 @@ def save_trajectory_data(
         data_dir: Base data directory (default: 'clover/data')
     """
     data_dir = Path(data_dir)
-    trajectory_dir = data_dir / baseline_name / "trajectories"
-    trajectory_dir.mkdir(parents=True, exist_ok=True)
+    baseline_data_dir = data_dir / baseline_name
+    baseline_data_dir.mkdir(parents=True, exist_ok=True)
 
     # Extract serializable data from rollout
     trajectory_data = {
@@ -167,9 +168,16 @@ def save_trajectory_data(
                 "max": float(rewards.max()),
             }
 
-    # Save to JSON file
-    trajectory_file = trajectory_dir / f"epoch_{epoch:04d}.json"
-    save_json(trajectory_file, trajectory_data)
+    # Append to consolidated trajectories file
+    trajectories_file = baseline_data_dir / "trajectories.json"
+    existing_trajectories = []
+    if trajectories_file.exists():
+        import json
+        with trajectories_file.open("r", encoding="utf-8") as f:
+            existing_trajectories = json.load(f)
+    
+    existing_trajectories.append(trajectory_data)
+    save_json(trajectories_file, existing_trajectories)
 
 
 def save_evaluation_metrics(
@@ -180,7 +188,7 @@ def save_evaluation_metrics(
     prompts: list[str] | None = None,
     output_dir: Path | str = None,
 ) -> None:
-    """Save evaluation metrics in structured format.
+    """Append evaluation metrics to a single structured JSON file.
 
     Args:
         baseline_name: Name of the baseline (e.g., 'ddpo', 'dpok', 'b2diffurl')
@@ -195,7 +203,7 @@ def save_evaluation_metrics(
     else:
         output_dir = Path(output_dir)
 
-    eval_dir = output_dir / "evals"
+    eval_dir = output_dir / "evals/images/"
     eval_dir.mkdir(parents=True, exist_ok=True)
 
     # Prepare evaluation record
@@ -207,13 +215,19 @@ def save_evaluation_metrics(
     if prompts:
         eval_data["prompts"] = prompts
 
-    # Save metrics to JSON
-    eval_file = eval_dir / f"eval_epoch_{epoch:04d}.json"
-    save_json(eval_file, eval_data)
+    # Keep all epoch metrics in one file for straightforward comparison.
+    eval_file = eval_dir / "evaluation_metrics.json"
+    evaluations = []
+    if eval_file.exists():
+        with eval_file.open("r", encoding="utf-8") as file:
+            evaluations = json.load(file)
+
+    evaluations.append(eval_data)
+    save_json(eval_file, evaluations)
 
     # Save images if provided
     if images and prompts:
-        save_image_grid_outputs(images, prompts, eval_dir, f"epoch_{epoch:04d}")
+        save_image_grid_outputs(images, prompts, eval_dir, f"epoch_{epoch:04d}", epoch=epoch)
 
 
 def save_training_data(

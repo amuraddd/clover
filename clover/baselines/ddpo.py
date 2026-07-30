@@ -26,7 +26,7 @@ from clover.baselines.common import (
     save_trajectory_data,
     save_training_data,
 )
-from clover.utils.prompts import DEFAULT_EVAL_PROMPTS, DEFAULT_TRAIN_PROMPTS
+from clover.utils.prompts import DEFAULT_EVAL_PROMPTS, DEFAULT_TRAIN_PROMPTS, B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS
 from clover.utils.baseline_utils import (
     decode_latents,
     ddpm_step_with_log_prob,
@@ -53,9 +53,9 @@ class DDPOConfig:
     use_data_parallel: bool = False
     prompt: str = "a colorful clover field at sunrise, high detail"
     negative_prompt: str = "blurry, low quality, distorted"
-    train_prompts: tuple[str, ...] = DEFAULT_TRAIN_PROMPTS
-    eval_prompts: tuple[str, ...] = DEFAULT_EVAL_PROMPTS
-    reward_type: str = "aesthetic"  # Options: "aesthetic" (more to come)
+    train_prompts: tuple[str, ...] = B2_FULL_TRAIN_PROMPTS
+    eval_prompts: tuple[str, ...] = B2_FULL_EVAL_PROMPTS
+    reward_type: str = "clip"  # Options: "aesthetic" (more to come)
     height: int = 512
     width: int = 512
     num_inference_steps: int = 30
@@ -64,13 +64,13 @@ class DDPOConfig:
     rollouts_per_epoch: int = 1
     train_epochs: int = 4
     ppo_epochs: int = 4
-    minibatch_size: int = 1
+    minibatch_size: int = 8
     learning_rate: float = 1e-9
     adam_epsilon: float = 1e-4
-    lora_rank: int = 2
+    lora_rank: int = 16
     lora_alpha: int = 2
     lora_dropout: float = 0.0
-    lora_target_modules: tuple[str, ...] = ("to_v",)
+    lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q")
     clip_range: float = 1e-4
     ppo_log_ratio_clip: float = 2.0
     max_grad_norm: float = 0.1
@@ -117,7 +117,8 @@ def collect_rollouts(
         log_probs.append(log_prob.detach().float().cpu())
         timesteps.append(timestep)
         latents = next_latents
-        if timestep == 0:
+        # Compute reward on the last timestep
+        if timestep_tensor == pipe.scheduler.timesteps[-1]:
             images = decode_latents(pipe, latents)
             rewards.append(reward_fn(images, prompts).detach().float().cpu())
         else:
