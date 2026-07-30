@@ -16,7 +16,16 @@ from PIL import Image
 from torch import Tensor
 from tqdm.auto import trange
 
-from clover.baselines.common import evaluate, make_reward_fn, parse_config, prepare_output
+from clover.baselines.common import (
+    evaluate,
+    make_reward_fn,
+    normalize_rewards,
+    parse_config,
+    prepare_output,
+    save_evaluation_metrics,
+    save_trajectory_data,
+    save_training_data,
+)
 from clover.utils.prompts import DEFAULT_EVAL_PROMPTS, DEFAULT_TRAIN_PROMPTS
 from clover.utils.baseline_utils import (
     clear_optimizer_state,
@@ -48,7 +57,7 @@ class DPOKConfig:
     model_id: str = "runwayml/stable-diffusion-v1-5"
     output_dir: str = "outputs/dpok"
     seed: int = 17
-    gpu_ids: list[int] = field(default_factory=lambda: [0, 1, 2])
+    gpu_ids: list[int] = field(default_factory=lambda: [0])
     use_data_parallel: bool = False
     prompt: str = "a colorful clover field at sunrise, high detail"
     negative_prompt: str = "blurry, low quality, distorted"
@@ -125,13 +134,18 @@ def collect_rollouts(
     if not images:
         images = decode_latents(pipe, latents)
     pipe.unet.train()
+    
+    # Normalize rewards to have mean 0 and variance 1
+    rewards_tensor = torch.stack(rewards, dim=1)
+    normalized_rewards = normalize_rewards(rewards_tensor)
+    
     return {
         "prompts": prompts,
         "states": torch.stack(states, dim=1),
         "actions": torch.stack(actions, dim=1),
         "old_log_probs": torch.stack(log_probs, dim=1),
         "timesteps": torch.tensor(timesteps, dtype=torch.long),
-        "rewards": torch.stack(rewards, dim=1),
+        "rewards": normalized_rewards,
         "images": images,
     }
 
@@ -271,10 +285,18 @@ def train(config: DPOKConfig) -> list[dict[str, float]]:
         rollout = collect_rollouts(
             pipe, config.rollouts_per_epoch, config, device, dtype, generator, reward_fn, vae_scale_factor
         )
+        
+        # Save trajectory data
+        save_trajectory_data("dpok", epoch, rollout)
+        
         metrics = dpok_update(pipe, reference_pipe, rollout, optimizer, config, device, dtype)
         metrics["epoch"] = epoch
         history.append(metrics)
         save_json(output_dir / "history.json", history)
+        
+        # Save evaluation metrics
+        save_evaluation_metrics("dpok", epoch, metrics, rollout.get("images"), rollout.get("prompts"), output_dir)
+        
         if epoch % config.log_every == 0:
             print(metrics)
         if epoch % config.save_every == 0:
@@ -286,6 +308,10 @@ def train(config: DPOKConfig) -> list[dict[str, float]]:
         if device.type == "cuda":
             torch.cuda.empty_cache()
     evaluate(pipe, config, device)
+    
+    # Save final training data
+    save_training_data("dpok", history)
+    
     final_dir = output_dir / "lora_final"
     save_lora_weights(pipe, final_dir)
     save_json(output_dir / "config.json", asdict(config))

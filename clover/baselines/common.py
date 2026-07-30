@@ -9,6 +9,7 @@ from typing import Any, TypeVar
 
 import torch
 from PIL import Image
+from torch import Tensor
 
 from clover.utils.baseline_utils import (
     save_image_grid_outputs,
@@ -17,6 +18,30 @@ from clover.utils.baseline_utils import (
 )
 
 ConfigT = TypeVar("ConfigT")
+
+
+def normalize_rewards(rewards: Tensor, eps: float = 1e-8) -> Tensor:
+    """Normalize rewards to have mean 0 and variance 1.
+
+    Args:
+        rewards: Tensor of rewards with shape (batch_size, trajectory_length) or any shape
+        eps: Small epsilon to prevent division by zero
+
+    Returns:
+        Normalized rewards with mean 0 and variance 1
+    """
+    # Flatten to compute statistics across all rewards
+    flat_rewards = rewards.flatten()
+    
+    # Compute mean and std
+    mean = flat_rewards.mean()
+    std = flat_rewards.std(unbiased=False)
+    
+    # Normalize: if std is too small, just center (subtract mean)
+    if std < eps:
+        return rewards - mean
+    
+    return (rewards - mean) / std
 
 
 def parse_config(config_type: type[ConfigT], description: str) -> ConfigT:
@@ -100,3 +125,113 @@ def evaluate(pipe: Any, config: Any, device: torch.device) -> None:
     prompts = standard_eval_prompts(config)
     images = generate_eval_images(pipe, prompts, config, device)
     save_image_grid_outputs(images, prompts, Path(config.output_dir), "eval")
+
+
+def save_trajectory_data(
+    baseline_name: str,
+    epoch: int,
+    rollout: dict[str, Any],
+    data_dir: Path | str = "clover/data",
+) -> None:
+    """Save RL trajectory data in structured JSON format.
+
+    Args:
+        baseline_name: Name of the baseline (e.g., 'ddpo', 'dpok', 'b2diffurl')
+        epoch: Current training epoch number
+        rollout: Dictionary containing trajectory data
+        data_dir: Base data directory (default: 'clover/data')
+    """
+    data_dir = Path(data_dir)
+    trajectory_dir = data_dir / baseline_name / "trajectories"
+    trajectory_dir.mkdir(parents=True, exist_ok=True)
+
+    # Extract serializable data from rollout
+    trajectory_data = {
+        "epoch": epoch,
+        "prompts": rollout.get("prompts", []),
+        "timesteps": rollout.get("timesteps", []).tolist() if hasattr(rollout.get("timesteps", []), "tolist") else rollout.get("timesteps", []),
+    }
+
+    # Add rewards if available
+    if "rewards" in rollout and hasattr(rollout["rewards"], "tolist"):
+        trajectory_data["rewards"] = rollout["rewards"].tolist()
+
+    # Add statistics
+    if "rewards" in rollout:
+        rewards = rollout["rewards"]
+        if hasattr(rewards, "mean"):
+            trajectory_data["reward_stats"] = {
+                "mean": float(rewards.mean()),
+                "std": float(rewards.std()),
+                "min": float(rewards.min()),
+                "max": float(rewards.max()),
+            }
+
+    # Save to JSON file
+    trajectory_file = trajectory_dir / f"epoch_{epoch:04d}.json"
+    save_json(trajectory_file, trajectory_data)
+
+
+def save_evaluation_metrics(
+    baseline_name: str,
+    epoch: int,
+    metrics: dict[str, float],
+    images: list[Image.Image] | None = None,
+    prompts: list[str] | None = None,
+    output_dir: Path | str = None,
+) -> None:
+    """Save evaluation metrics in structured format.
+
+    Args:
+        baseline_name: Name of the baseline (e.g., 'ddpo', 'dpok', 'b2diffurl')
+        epoch: Current training epoch number
+        metrics: Dictionary of evaluation metrics
+        images: Optional list of generated evaluation images
+        prompts: Optional list of prompts used for evaluation
+        output_dir: Base output directory (default: 'outputs/{baseline_name}')
+    """
+    if output_dir is None:
+        output_dir = Path("outputs") / baseline_name
+    else:
+        output_dir = Path(output_dir)
+
+    eval_dir = output_dir / "evals"
+    eval_dir.mkdir(parents=True, exist_ok=True)
+
+    # Prepare evaluation record
+    eval_data = {
+        "epoch": epoch,
+        "metrics": metrics,
+    }
+
+    if prompts:
+        eval_data["prompts"] = prompts
+
+    # Save metrics to JSON
+    eval_file = eval_dir / f"eval_epoch_{epoch:04d}.json"
+    save_json(eval_file, eval_data)
+
+    # Save images if provided
+    if images and prompts:
+        save_image_grid_outputs(images, prompts, eval_dir, f"epoch_{epoch:04d}")
+
+
+def save_training_data(
+    baseline_name: str,
+    history: list[dict[str, float]],
+    data_dir: Path | str = "clover/data",
+) -> None:
+    """Save complete training history data.
+
+    Args:
+        baseline_name: Name of the baseline (e.g., 'ddpo', 'dpok', 'b2diffurl')
+        history: List of training metrics per epoch
+        data_dir: Base data directory (default: 'clover/data')
+    """
+    data_dir = Path(data_dir)
+    baseline_data_dir = data_dir / baseline_name
+    baseline_data_dir.mkdir(parents=True, exist_ok=True)
+
+    # Save complete training history
+    history_file = baseline_data_dir / "training_history.json"
+    save_json(history_file, history)

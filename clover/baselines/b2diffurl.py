@@ -16,7 +16,16 @@ from PIL import Image
 from torch import Tensor
 from tqdm.auto import trange
 
-from clover.baselines.common import generate_eval_images, make_reward_fn, parse_config, prepare_output
+from clover.baselines.common import (
+    generate_eval_images,
+    make_reward_fn,
+    normalize_rewards,
+    parse_config,
+    prepare_output,
+    save_evaluation_metrics,
+    save_trajectory_data,
+    save_training_data,
+)
 from clover.utils.prompts import DEFAULT_EVAL_PROMPTS, DEFAULT_TRAIN_PROMPTS
 from clover.utils.baseline_utils import (
     backward_progressive_interval_length,
@@ -45,7 +54,7 @@ class B2DiffuRLConfig:
     model_id: str = "runwayml/stable-diffusion-v1-5"
     output_dir: str = "outputs/b2diffurl"
     seed: int = 17
-    gpu_ids: list[int] = field(default_factory=lambda: [0, 1, 2])
+    gpu_ids: list[int] = field(default_factory=lambda: [0])
     use_data_parallel: bool = False
     prompt: str = "a colorful clover field at sunrise, high detail"
     negative_prompt: str = "blurry, low quality, distorted"
@@ -142,6 +151,11 @@ def collect_branch_rollouts(
     images = decode_latents(pipe, latents)
     terminal_rewards = reward_fn(images, branch_prompts).detach().float().cpu()
     rewards[-1] = terminal_rewards
+    
+    # Normalize rewards to have mean 0 and variance 1 before selection
+    rewards_tensor = torch.stack(rewards, dim=1)
+    normalized_rewards = normalize_rewards(rewards_tensor)
+    
     selected_idx, advantages, reward_pairs = select_branch_extremes(
         terminal_rewards,
         branch_size=config.branch_size,
@@ -155,7 +169,7 @@ def collect_branch_rollouts(
         "actions": torch.stack(actions, dim=1)[selected_idx],
         "old_log_probs": torch.stack(log_probs, dim=1)[selected_idx],
         "timesteps": torch.tensor(active_timesteps, dtype=torch.long),
-        "rewards": torch.stack(rewards, dim=1)[selected_idx],
+        "rewards": normalized_rewards[selected_idx],
         "advantages": advantages.cpu(),
         "branch_reward_pairs": reward_pairs.cpu(),
         "images": [images[i] for i in selected_idx.tolist()],
@@ -196,6 +210,10 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
             reward_fn,
             vae_scale_factor,
         )
+        
+        # Save trajectory data
+        save_trajectory_data("b2diffurl", epoch, rollout)
+        
         metrics = ppo_update(
             pipe,
             rollout,
@@ -217,6 +235,10 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
             branch_start_idx=rollout["branch_start_idx"],
         )
         history.append(metrics)
+        
+        # Save evaluation metrics
+        save_evaluation_metrics("b2diffurl", epoch, metrics, rollout.get("images"), rollout.get("prompts"), output_dir)
+        
         if epoch % config.log_every == 0:
             print(metrics)
         if epoch % config.save_every == 0:
@@ -233,6 +255,10 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
     images = generate_eval_images(pipe, prompts, config, device)
     rewards = reward_fn(images, prompts).detach().float().cpu().tolist()
     save_image_grid_outputs(images, prompts, output_dir, "eval")
+    
+    # Save final training data
+    save_training_data("b2diffurl", history)
+    
     save_json(
         output_dir / "eval_metrics.json",
         [{"prompt": prompt, "reward": reward} for prompt, reward in zip(prompts, rewards)],
