@@ -7,4 +7,6 @@ The project is set up using `uv` for dependency management. Your task is to set 
 4. Evaluate each baseline using the reward function defined inside the `clover/utils/reward.py` file. 
 5. Ensure that the evaluation metrics are logged and saved in a structured format for comparison across different baselines inside the `outputs/{baseline_name}/evals` directory.
 
+Do not run any `sudo` commands and do not attempt to create a sandbox environment.
+
 

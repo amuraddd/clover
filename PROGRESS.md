@@ -252,3 +252,11 @@ else:
 - Re-run DDPO and DPOK baselines to verify fix
 - Compare reward distributions across all three baselines
 - Ensure training metrics show non-zero values
+
+## 2026-08-02 — Offline trajectory storage
+
+- Updated `save_trajectory_data()` to save complete rollout tensors with `torch.save`.
+- Each run appends to one `clover/data/{baseline_name}/trajectories.pt` dictionary instead of creating per-trajectory files.
+- Top-level rollout numbers increase monotonically, while each entry records its epoch, so repeated epoch numbers from later runs never overwrite existing data.
+- Entries contain `epoch`, `state`, `action`, `prompts`, `rewards`, `timesteps`, `old_log_probs`, and `images`; model tensors are stored on CPU and images are RGB uint8 BCHW tensors.
+- Added validation for missing rollout fields and atomic file replacement; verified repeated-epoch retention and PIL image reconstruction from reloaded tensors.

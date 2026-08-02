@@ -1,3 +1,9 @@
+run_experiments.sh
+clover/run_experiments.sh
+.env
+clover/data/
+outputs/
+
 # Python bytecode
 __pycache__/
 *.py[cod]

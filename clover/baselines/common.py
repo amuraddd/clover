@@ -134,7 +134,12 @@ def save_trajectory_data(
     rollout: dict[str, Any],
     data_dir: Path | str = "clover/data",
 ) -> None:
-    """Save RL trajectory data in structured JSON format to a consolidated file.
+    """Append an offline-training trajectory to a consolidated PyTorch file.
+
+    The saved object is a dictionary keyed by a monotonically increasing
+    rollout number. Tensor values are detached, cloned, and moved to CPU so
+    loading the dataset does not require the collection device. Images are
+    stored as RGB uint8 tensors shaped [batch, channels, height, width].
 
     Args:
         baseline_name: Name of the baseline (e.g., 'ddpo', 'dpok', 'b2diffurl')
@@ -146,38 +151,57 @@ def save_trajectory_data(
     baseline_data_dir = data_dir / baseline_name
     baseline_data_dir.mkdir(parents=True, exist_ok=True)
 
-    # Extract serializable data from rollout
+    required_fields = ("states", "actions", "prompts", "rewards", "timesteps", "old_log_probs", "images")
+    missing_fields = [field for field in required_fields if field not in rollout]
+    if missing_fields:
+        raise KeyError(f"Cannot save incomplete trajectory; missing fields: {', '.join(missing_fields)}")
+
+    def cpu_copy(value: Any) -> Any:
+        if torch.is_tensor(value):
+            return value.detach().cpu().clone()
+        return value
+
+    def images_to_tensor(images: Any) -> Tensor:
+        if torch.is_tensor(images):
+            return images.detach().cpu().clone()
+
+        image_tensors = []
+        for image in images:
+            if not isinstance(image, Image.Image):
+                raise TypeError(f"Expected PIL images or an image tensor, got {type(image).__name__}")
+            rgb_image = image.convert("RGB")
+            width, height = rgb_image.size
+            image_tensor = torch.frombuffer(bytearray(rgb_image.tobytes()), dtype=torch.uint8)
+            image_tensors.append(image_tensor.reshape(height, width, 3).permute(2, 0, 1).clone())
+
+        if not image_tensors:
+            return torch.empty((0, 3, 0, 0), dtype=torch.uint8)
+        return torch.stack(image_tensors)
+
     trajectory_data = {
-        "epoch": epoch,
-        "prompts": rollout.get("prompts", []),
-        "timesteps": rollout.get("timesteps", []).tolist() if hasattr(rollout.get("timesteps", []), "tolist") else rollout.get("timesteps", []),
+        "epoch": int(epoch),
+        "state": cpu_copy(rollout["states"]),
+        "action": cpu_copy(rollout["actions"]),
+        "prompts": list(rollout["prompts"]),
+        "rewards": cpu_copy(rollout["rewards"]),
+        "timesteps": cpu_copy(rollout["timesteps"]),
+        "old_log_probs": cpu_copy(rollout["old_log_probs"]),
+        "images": images_to_tensor(rollout["images"]),
     }
 
-    # Add rewards if available
-    if "rewards" in rollout and hasattr(rollout["rewards"], "tolist"):
-        trajectory_data["rewards"] = rollout["rewards"].tolist()
-
-    # Add statistics
-    if "rewards" in rollout:
-        rewards = rollout["rewards"]
-        if hasattr(rewards, "mean"):
-            trajectory_data["reward_stats"] = {
-                "mean": float(rewards.mean()),
-                "std": float(rewards.std()),
-                "min": float(rewards.min()),
-                "max": float(rewards.max()),
-            }
-
-    # Append to consolidated trajectories file
-    trajectories_file = baseline_data_dir / "trajectories.json"
-    existing_trajectories = []
+    trajectories_file = baseline_data_dir / "trajectories.pt"
+    existing_trajectories: dict[int, dict[str, Any]] = {}
     if trajectories_file.exists():
-        import json
-        with trajectories_file.open("r", encoding="utf-8") as f:
-            existing_trajectories = json.load(f)
-    
-    existing_trajectories.append(trajectory_data)
-    save_json(trajectories_file, existing_trajectories)
+        loaded = torch.load(trajectories_file, map_location="cpu", weights_only=True)
+        if not isinstance(loaded, dict):
+            raise TypeError(f"Expected a trajectory dictionary in {trajectories_file}")
+        existing_trajectories.update(loaded)
+
+    rollout_number = max((int(key) for key in existing_trajectories), default=0) + 1
+    existing_trajectories[rollout_number] = trajectory_data
+    temporary_file = trajectories_file.with_suffix(".pt.tmp")
+    torch.save(existing_trajectories, temporary_file)
+    temporary_file.replace(trajectories_file)
 
 
 def save_evaluation_metrics(
