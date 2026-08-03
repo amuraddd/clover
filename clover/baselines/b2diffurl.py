@@ -17,7 +17,7 @@ from torch import Tensor
 from tqdm.auto import trange
 
 from clover.baselines.common import (
-    generate_eval_images,
+    evaluate,
     make_reward_fn,
     normalize_rewards,
     parse_config,
@@ -26,7 +26,7 @@ from clover.baselines.common import (
     save_trajectory_data,
     save_training_data,
 )
-from clover.utils.prompts import DEFAULT_EVAL_PROMPTS, DEFAULT_TRAIN_PROMPTS, B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS
+from clover.utils.prompts import B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS
 from clover.utils.baseline_utils import (
     backward_progressive_interval_length,
     decode_latents,
@@ -42,7 +42,6 @@ from clover.utils.baseline_utils import (
     save_lora_weights,
     select_branch_extremes,
     set_seed,
-    standard_eval_prompts,
     suffix_step_indices,
     trainable_parameters,
     unet_config,
@@ -69,8 +68,8 @@ class B2DiffuRLConfig:
     rollouts_per_epoch: int = 1
     branch_size: int = 3
     initial_interval_steps: int = 6
-    train_epochs: int = 4
-    ppo_epochs: int = 4
+    train_epochs: int = 10
+    ppo_epochs: int = 5
     minibatch_size: int = 8
     learning_rate: float = 1e-9
     adam_epsilon: float = 1e-4
@@ -86,6 +85,7 @@ class B2DiffuRLConfig:
     gradient_checkpointing: bool = True
     log_every: int = 1
     save_every: int = 5
+    evaluate_every: int = 2
 
 
 @torch.no_grad()
@@ -251,18 +251,12 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
         gc.collect()
         if device.type == "cuda":
             torch.cuda.empty_cache()
-    prompts = standard_eval_prompts(config)
-    images = generate_eval_images(pipe, prompts, config, device)
-    rewards = reward_fn(images, prompts).detach().float().cpu().tolist()
-    save_image_grid_outputs(images, prompts, output_dir, "eval")
+        if config.evaluate_every > 0 and epoch % config.evaluate_every == 0:
+            evaluate(pipe, config, device, epoch=epoch)
     
     # Save final training data
     save_training_data("b2diffurl", history)
     
-    save_json(
-        output_dir / "eval_metrics.json",
-        [{"prompt": prompt, "reward": reward} for prompt, reward in zip(prompts, rewards)],
-    )
     final_dir = output_dir / "lora_final"
     save_lora_weights(pipe, final_dir)
     save_json(output_dir / "config.json", asdict(config))

@@ -7,7 +7,7 @@
 #SBATCH -D /aiau010_scratch/azm0269/clover
 #SBATCH --output=output.txt
 #SBATCH --error=error.txt
-#SBATCH --time=0-00:15:00
+#SBATCH --time=0-08:00:00
 #SBATCH --nodelist=aiau011
 #SBATCH --gres=gpu:1
 #SBATCH --partition=general

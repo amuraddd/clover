@@ -41,32 +41,102 @@ def clip_reward(images: list[Image.Image], prompts: list[str], device: torch.dev
         raise ValueError(f"Expected one prompt per image, got {len(images)} images and {len(prompts)} prompts.")
 
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     # Load CLIP model
     model, _, preprocess = open_clip.create_model_and_transforms('ViT-H-14', pretrained='laion2b_s32b_b79k')
     model = model.to(device).eval()
     tokenizer = open_clip.get_tokenizer('ViT-H-14')
-    
+
     # Preprocess images
     processed_images = torch.stack([
         preprocess(image.convert("RGB")) for image in images
     ]).to(device)
-    
+
     # Tokenize text
     text = tokenizer(prompts).to(device)
-    
+
     # Compute features
     autocast_device = "cuda" if device == "cuda" or str(device).startswith("cuda") else "cpu"
     with torch.autocast(autocast_device, enabled=autocast_device == "cuda"):
         image_features = model.encode_image(processed_images)
         text_features = model.encode_text(text)
-    
+
     # Normalize and compute similarity
     image_features /= image_features.norm(dim=-1, keepdim=True)
     text_features /= text_features.norm(dim=-1, keepdim=True)
     scores = (image_features * text_features).sum(dim=-1)
-    
+
     return scores.cpu()
+
+
+@torch.no_grad()
+def clip_prompt_cosine_similarity(
+    prompt_a: str,
+    prompt_b: str,
+    device: torch.device | str | None = None,
+) -> Tensor:
+    """Measure semantic similarity between two prompts with CLIP text embeddings.
+
+    Returns CLIP cosine similarity, which is equivalent to ``1 - cosine_distance``.
+    """
+    import open_clip
+
+    device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+
+    model, _, _ = open_clip.create_model_and_transforms('ViT-H-14', pretrained='laion2b_s32b_b79k')
+    model = model.to(device).eval()
+    tokenizer = open_clip.get_tokenizer('ViT-H-14')
+
+    text = tokenizer([prompt_a, prompt_b]).to(device)
+    autocast_device = "cuda" if device == "cuda" or str(device).startswith("cuda") else "cpu"
+
+    with torch.autocast(autocast_device, enabled=autocast_device == "cuda"):
+        text_features = model.encode_text(text)
+
+    text_features /= text_features.norm(dim=-1, keepdim=True)
+    similarity = (text_features[0] * text_features[1]).sum()
+    return similarity.cpu()
+
+
+@torch.no_grad()
+def clip_image_cosine_similarity(
+    image_a: Image.Image,
+    image_b: Image.Image,
+    device: torch.device | str | None = None,
+) -> float:
+    """Measure semantic similarity between two images using CLIP embeddings.
+
+    The returned value is the cosine similarity between the two normalized CLIP
+    image embeddings. Higher values indicate greater semantic similarity.
+
+    Args:
+        image_a: First PIL image to compare.
+        image_b: Second PIL image to compare.
+        device: Device to run the model on (defaults to CUDA if available).
+
+    Returns:
+        CLIP cosine similarity as a Python float.
+    """
+    import open_clip
+
+    device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+
+    model, _, preprocess = open_clip.create_model_and_transforms(
+        "ViT-H-14", pretrained="laion2b_s32b_b79k"
+    )
+    model = model.to(device).eval()
+
+    processed_images = torch.stack(
+        [preprocess(image.convert("RGB")) for image in (image_a, image_b)]
+    ).to(device)
+    autocast_device = "cuda" if str(device).startswith("cuda") else "cpu"
+
+    with torch.autocast(autocast_device, enabled=autocast_device == "cuda"):
+        image_features = model.encode_image(processed_images)
+
+    image_features = torch.nn.functional.normalize(image_features.float(), dim=-1)
+    similarity = torch.sum(image_features[0] * image_features[1])
+    return float(similarity.cpu().item())
 
 
 @torch.no_grad()

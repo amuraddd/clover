@@ -62,8 +62,8 @@ class DDPOConfig:
     guidance_scale: float = 7.5
     eta: float = 1.0
     rollouts_per_epoch: int = 1
-    train_epochs: int = 4
-    ppo_epochs: int = 4
+    train_epochs: int = 10
+    ppo_epochs: int = 5
     minibatch_size: int = 8
     learning_rate: float = 1e-9
     adam_epsilon: float = 1e-4
@@ -78,6 +78,7 @@ class DDPOConfig:
     gradient_checkpointing: bool = True
     log_every: int = 1
     save_every: int = 5
+    evaluate_every: int = 2
 
 
 @torch.no_grad()
@@ -164,12 +165,13 @@ def train(config: DDPOConfig) -> list[dict[str, float]]:
         # Save trajectory data
         save_trajectory_data("ddpo", epoch, rollout)
         
+        # apply PPO update to the model using the collected rollouts and save the metrics to history
         metrics = ppo_update(pipe, rollout, optimizer, config, device, dtype)
         metrics["epoch"] = epoch
         history.append(metrics)
         save_json(output_dir / "history.json", history)
         
-        # Save evaluation metrics
+        # Save evaluation metrics from the current epoch training
         save_evaluation_metrics("ddpo", epoch, metrics, rollout.get("images"), rollout.get("prompts"), output_dir)
         
         if epoch % config.log_every == 0:
@@ -182,7 +184,9 @@ def train(config: DDPOConfig) -> list[dict[str, float]]:
         gc.collect()
         if device.type == "cuda":
             torch.cuda.empty_cache()
-    evaluate(pipe, config, device)
+    
+        if config.evaluate_every > 0 and epoch % config.evaluate_every == 0:
+            evaluate(pipe, config, device, epoch=epoch)
     
     # Save final training data
     save_training_data("ddpo", history)

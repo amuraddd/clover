@@ -122,10 +122,39 @@ def generate_eval_images(
     return images
 
 
-def evaluate(pipe: Any, config: Any, device: torch.device) -> None:
+def evaluate(pipe: Any, config: Any, device: torch.device, epoch: int | None = None) -> None:
     prompts = standard_eval_prompts(config)
     images = generate_eval_images(pipe, prompts, config, device)
-    save_image_grid_outputs(images, prompts, Path(config.output_dir), "eval")
+    eval_dir = Path(config.output_dir) / "evals"
+    image_dir = eval_dir / "images"
+    eval_dir.mkdir(parents=True, exist_ok=True)
+    image_dir.mkdir(parents=True, exist_ok=True)
+    image_prefix = f"epoch_{epoch:04d}_eval" if epoch is not None else "eval"
+    manifest_entries = save_image_grid_outputs(images, prompts, image_dir, image_prefix, epoch=epoch)
+
+    from clover.utils.rewards_utils import bert_reward, clip_reward
+
+    clip_scores = clip_reward(images, prompts, device=device).tolist()
+    bert_scores = bert_reward(images, prompts, device=device).tolist()
+
+    evaluate_metrics = {
+        "epoch": epoch,
+        "prompts": prompts,
+        "image_paths": [entry["image"] for entry in manifest_entries],
+        "clip_reward": clip_scores,
+        "bert_reward": bert_scores,
+    }
+
+    eval_metrics_file = eval_dir / "eval_metrics.json"
+    eval_metrics_history: list[dict[str, Any]] = []
+    if eval_metrics_file.exists():
+        with eval_metrics_file.open("r", encoding="utf-8") as file:
+            loaded_metrics = json.load(file)
+            if isinstance(loaded_metrics, list):
+                eval_metrics_history = loaded_metrics
+
+    eval_metrics_history.append(evaluate_metrics)
+    save_json(eval_metrics_file, eval_metrics_history)
 
 
 def save_trajectory_data(
@@ -227,8 +256,10 @@ def save_evaluation_metrics(
     else:
         output_dir = Path(output_dir)
 
-    eval_dir = output_dir / "evals/images/"
+    eval_dir = output_dir / "training_evals"
+    image_dir = eval_dir / "images"
     eval_dir.mkdir(parents=True, exist_ok=True)
+    image_dir.mkdir(parents=True, exist_ok=True)
 
     # Prepare evaluation record
     eval_data = {
@@ -240,7 +271,7 @@ def save_evaluation_metrics(
         eval_data["prompts"] = prompts
 
     # Keep all epoch metrics in one file for straightforward comparison.
-    eval_file = eval_dir / "evaluation_metrics.json"
+    eval_file = eval_dir / "training_metrics.json"
     evaluations = []
     if eval_file.exists():
         with eval_file.open("r", encoding="utf-8") as file:
@@ -251,7 +282,7 @@ def save_evaluation_metrics(
 
     # Save images if provided
     if images and prompts:
-        save_image_grid_outputs(images, prompts, eval_dir, f"epoch_{epoch:04d}", epoch=epoch)
+        save_image_grid_outputs(images, prompts, image_dir, f"epoch_{epoch:04d}", epoch=epoch)
 
 
 def save_training_data(

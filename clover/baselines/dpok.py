@@ -70,8 +70,8 @@ class DPOKConfig:
     guidance_scale: float = 7.5
     eta: float = 1.0
     rollouts_per_epoch: int = 1
-    train_epochs: int = 1
-    dpok_epochs: int = 1
+    train_epochs: int = 10
+    dpok_epochs: int = 5
     minibatch_size: int = 8
     learning_rate: float = 1e-9
     adam_epsilon: float = 1e-4
@@ -87,6 +87,7 @@ class DPOKConfig:
     gradient_checkpointing: bool = True
     log_every: int = 1
     save_every: int = 5
+    evaluate_every: int = 2
 
 
 @torch.no_grad()
@@ -308,7 +309,8 @@ def train(config: DPOKConfig) -> list[dict[str, float]]:
         gc.collect()
         if device.type == "cuda":
             torch.cuda.empty_cache()
-    evaluate(pipe, config, device)
+        if config.evaluate_every > 0 and epoch % config.evaluate_every == 0:
+            evaluate(pipe, config, device, epoch=epoch)
     
     # Save final training data
     save_training_data("dpok", history)

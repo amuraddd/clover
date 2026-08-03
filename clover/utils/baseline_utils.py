@@ -637,7 +637,7 @@ def select_branch_extremes(
     )
 
 
-def standard_eval_prompts(config: Any, limit: int = 4) -> list[str]:
+def standard_eval_prompts(config: Any, limit: int = 10) -> list[str]:
     """Get evaluation prompts from config.
     
     Prefers config.eval_prompts if defined, otherwise falls back to
@@ -650,9 +650,12 @@ def standard_eval_prompts(config: Any, limit: int = 4) -> list[str]:
     Returns:
         List of evaluation prompts, up to limit
     """
+    import random
+    random.seed(123)
     # Prefer explicit eval_prompts when available
     if hasattr(config, "eval_prompts") and config.eval_prompts:
-        return list(config.eval_prompts)[:limit]
+        eval_prompts = random.sample(list(config.eval_prompts), k=limit)
+        return eval_prompts
     
     # Fallback to legacy behavior for backward compatibility
     prompts = [config.prompt, *list(config.train_prompts)]

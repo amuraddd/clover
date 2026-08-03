@@ -1,4 +1,36 @@
+---
+description: Progress log for Clover baseline implementation and experiment support work
+ms.date: 2026-08-03
+---
+
 # Clover Project Progress
+
+## 2026-08-03
+
+### Task: Added CLIP prompt-to-prompt similarity utility
+
+**Completed:**
+- Added `clip_prompt_cosine_similarity()` to `clover/utils/rewards_utils.py`
+- Kept `clip_reward()` unchanged and isolated the new behavior to the prompt similarity helper
+- Implemented prompt similarity with OpenCLIP text embeddings from `ViT-H-14` with `laion2b_s32b_b79k` weights
+- Returned cosine similarity between the two prompt embeddings, which is equivalent to `1 - cosine_distance`
+
+**Notes:**
+- The function accepts two prompt strings plus an optional device override
+- The return value is a scalar CPU tensor for easy downstream logging or comparison
+
+### Task: Added shared default CLI arguments to the unified baseline runner
+
+**Completed:**
+- Updated `main.py` to define a shared `DEFAULT_BASELINE_ARGS` configuration
+- Added `build_default_argv()` to convert those defaults into the CLI flags expected by each baseline
+- Passed the generated arguments to every baseline invocation through `sys.argv`
+- Printed the effective arguments before each baseline starts for easier traceability
+
+**Notes:**
+- The shared defaults currently cover `seed`, `train_epochs`, `rollouts_per_epoch`, `learning_rate`, and `gpu_ids`
+- Mixed precision can be disabled centrally by setting `mixed_precision` to `False` in `DEFAULT_BASELINE_ARGS`
+- File diagnostics for `main.py` passed after the change
 
 ## 2026-07-30
 
@@ -258,5 +290,45 @@ else:
 - Updated `save_trajectory_data()` to save complete rollout tensors with `torch.save`.
 - Each run appends to one `clover/data/{baseline_name}/trajectories.pt` dictionary instead of creating per-trajectory files.
 - Top-level rollout numbers increase monotonically, while each entry records its epoch, so repeated epoch numbers from later runs never overwrite existing data.
+
+## 2026-08-03 — Configurable evaluation cadence
+
+- Added `evaluate_every` to baseline configs in `clover/baselines/ddpo.py`, `clover/baselines/dpok.py`, and `clover/baselines/b2diffurl.py`.
+- Updated each training loop to call `evaluate(...)` only when `epoch % evaluate_every == 0`.
+- Moved DPOK and B2-DiffuRL evaluation from end-of-training to in-loop cadence-based evaluation for consistent behavior across baselines.
 - Entries contain `epoch`, `state`, `action`, `prompts`, `rewards`, `timesteps`, `old_log_probs`, and `images`; model tensors are stored on CPU and images are RGB uint8 BCHW tensors.
 - Added validation for missing rollout fields and atomic file replacement; verified repeated-epoch retention and PIL image reconstruction from reloaded tensors.
+
+## 2026-08-03 — Evaluation metrics with CLIP and BERT rewards
+
+- Updated `evaluate()` in `clover/baselines/common.py` to compute `clip_reward` and `bert_reward` on generated evaluation images.
+- Added an `evaluate_metrics` payload containing `epoch`, `prompts`, `image_paths`, `clip_reward`, and `bert_reward`.
+- Persisted metrics by appending to `outputs/{baseline_name}/evals/eval_metrics.json` on each evaluation run.
+- Updated DDPO, DPOK, and B2-DiffuRL training loops to pass `epoch` into `evaluate(...)` so saved evaluation entries are epoch-tagged.
+
+## 2026-08-03 — Max-diversity rollout aggregation in notebook
+
+- Updated the notebook helper in `clover/exp/max_diversity_generation.ipynb` to compare the reference rollout final state against each prompt-matched rollout final state using SSIM.
+- Changed the helper to collect only rollouts below the diversity threshold and merge `state`, `action`, `old_log_probs`, `timesteps`, `prompts`, and `rewards` into one returned rollout dict.
+- Kept the fallback behavior deterministic by returning the reference rollout fields when no qualifying rollout is found.
+- Refined tensor concatenation to preserve the leading rollout axis and concatenate on the sample axis, so shapes such as `[1, 30, 4, 64, 64]` now merge into `[1, 60, 4, 64, 64]` when a second qualifying rollout is included.
+- Ensured the returned combined rollout always exposes `state`, `action`, `prompts`, `rewards`, `timesteps`, `old_log_probs`, and `images`.
+- Fixed a runtime error in the same helper by inferring the concatenation axis per tensor field, which allows `images` tensors to concatenate on their batch axis instead of incorrectly forcing the state sample axis.
+
+## 2026-08-03 — MD3PO rollout-format bridge
+
+- Updated `md3p_combined_rollouts()` in `clover/baselines/md3po.py` to accept both live training rollouts (`states` and `actions`) and saved trajectory entries (`state` and `action`).
+- Normalized the helper output back into the live training rollout format so `ppo_update()` continues to receive `states`, `actions`, `old_log_probs`, `timesteps`, `prompts`, `rewards`, and `images`.
+- Loaded saved MD3PO trajectories with CPU mapping and `weights_only=True` to match the existing trajectory persistence path.
+
+## 2026-08-03 — Restored deleted MD3PO baseline file
+
+- Recreated `clover/baselines/md3po.py` after accidental deletion.
+- Preserved the latest rollout-combination logic and the live-vs-saved rollout format bridge used by `md3p_combined_rollouts()`.
+- Verified that `main.py` can resolve `clover.baselines.md3po` again with no editor diagnostics.
+
+## 2026-08-03 — CLIP image similarity utility
+
+- Added `clip_image_cosine_similarity()` to `clover/utils/rewards_utils.py`.
+- The utility preprocesses two PIL images with CLIP, compares their normalized
+  image embeddings using cosine similarity, and returns the score as a Python float.

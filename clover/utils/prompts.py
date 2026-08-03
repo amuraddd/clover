@@ -51,6 +51,7 @@ For manifest-based datasets, this module is superseded by data/manifests/.
 Override config.train_prompts and config.eval_prompts in baseline configs when
 custom prompt sets are needed.
 """
+import random
 
 # Default training prompts shared across baselines
 DEFAULT_TRAIN_PROMPTS: tuple[str, ...] = (
@@ -340,6 +341,7 @@ generalize across all three semantic families.
 For targeted evaluation, use individual template train/eval splits to isolate
 performance by semantic category.
 """
+random.seed(123)
 
 # Combined B2 template sets for baselines that want all templates
 B2_FULL_TRAIN_PROMPTS = (
@@ -347,9 +349,12 @@ B2_FULL_TRAIN_PROMPTS = (
     *TEMPLATE_2_TRAIN_PROMPTS,
     *TEMPLATE_3_TRAIN_PROMPTS,
 )  # 150 train prompts total (90 + 30 + 30)
+B2_FULL_TRAIN_PROMPTS = tuple(random.sample(B2_FULL_TRAIN_PROMPTS, len(B2_FULL_TRAIN_PROMPTS)))  # Shuffle for training
+
 
 B2_FULL_EVAL_PROMPTS = (
     *TEMPLATE_1_EVAL_PROMPTS,
     *TEMPLATE_2_EVAL_PROMPTS,
     *TEMPLATE_3_EVAL_PROMPTS,
 )  # 65 eval prompts total (45 + 10 + 10)
+B2_FULL_EVAL_PROMPTS = tuple(random.sample(B2_FULL_EVAL_PROMPTS, len(B2_FULL_EVAL_PROMPTS)))  # Shuffle for evaluation
