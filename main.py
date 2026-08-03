@@ -36,7 +36,7 @@ DEFAULT_BASELINE_ARGS = {
     "seed": 123,
     "train_epochs": 100,
     "rollouts_per_epoch": 1,
-    "learning_rate": 10e-4,
+    "learning_rate": 3e-4,
     "gpu_ids": [0],
     "save_every": 25,
 }

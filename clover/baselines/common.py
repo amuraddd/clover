@@ -54,6 +54,7 @@ def parse_config(config_type: type[ConfigT], description: str) -> ConfigT:
     parser.add_argument("--train-epochs", type=int)
     parser.add_argument("--rollouts-per-epoch", type=int)
     parser.add_argument("--learning-rate", type=float)
+    parser.add_argument("--save-every", type=int)
     parser.add_argument(
         "--gpu-ids",
         type=int,

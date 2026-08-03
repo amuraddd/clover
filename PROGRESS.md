@@ -7,6 +7,17 @@ ms.date: 2026-08-03
 
 ## 2026-08-03
 
+### Task: Fixed unified baseline runner CLI mismatch for checkpoint cadence
+
+**Completed:**
+- Added `--save-every` to the shared parser in `clover/baselines/common.py`
+- Aligned the common CLI with the arguments emitted by `main.py`
+- Removed the immediate argparse failure that was stopping `python -m main` before baseline execution
+
+**Notes:**
+- The failure surfaced as `main.py: error: unrecognized arguments: --save-every 25`
+- Baseline config dataclasses already define `save_every`, so the issue was isolated to shared argument parsing
+
 ### Task: Added CLIP prompt-to-prompt similarity utility
 
 **Completed:**
