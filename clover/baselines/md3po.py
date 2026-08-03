@@ -307,6 +307,7 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
     reference_batch = _extract_state_batch(reference_rollout)
     reference_sample_count = reference_batch.shape[0]
     reference_final_image = _to_rgba_uint8(reference_batch[-1])[..., :3]
+    reference_final_image_pil = Image.fromarray(reference_final_image, mode="RGB")
 
     required_fields = ("state", "action", "prompts", "rewards", "timesteps", "old_log_probs", "images")
     rollouts_to_combine = [reference_rollout]
@@ -329,8 +330,9 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
             )
 
         rollout_final_image = _to_rgba_uint8(rollout_batch[-1])[..., :3]
+        rollout_final_image_pil = Image.fromarray(rollout_final_image, mode="RGB")
         ssim_score = calculate_ssim(reference_final_image, rollout_final_image)
-        clip_cosine_score = clip_image_cosine_similarity(reference_final_image, rollout_final_image)
+        clip_cosine_score = clip_image_cosine_similarity(reference_final_image_pil, rollout_final_image_pil)
         if clip_cosine_score <= diversity_threshold:
             rollouts_to_combine.append(rollout)
 

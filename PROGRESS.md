@@ -18,6 +18,28 @@ ms.date: 2026-08-03
 - The failure surfaced as `main.py: error: unrecognized arguments: --save-every 25`
 - Baseline config dataclasses already define `save_every`, so the issue was isolated to shared argument parsing
 
+### Task: Fixed MD3PO rollout image-type mismatch during diversity filtering
+
+**Completed:**
+- Updated `clover/baselines/md3po.py` to convert rollout comparison frames back into PIL images before CLIP image similarity
+- Aligned the data type passed into `clip_image_cosine_similarity()` with that helper's `.convert("RGB")` expectation
+- Removed the runtime failure that stopped MD3PO after epoch 4 with `'numpy.ndarray' object has no attribute 'convert'`
+
+**Notes:**
+- The bug was in the saved-rollout diversity filter, not in epoch counting or history writing
+- `history.json` stopped at epoch 4 because training crashed before appending epoch 5
+
+### Task: Preserved SSIM image format while keeping PIL inputs for CLIP similarity
+
+**Completed:**
+- Kept the original NumPy image arrays for `calculate_ssim()` in `clover/baselines/md3po.py`
+- Added separate PIL image variables for `clip_image_cosine_similarity()`
+- Split the two comparison paths so each metric receives the image type it expects
+
+**Notes:**
+- SSIM still operates on array data passed through OpenCV grayscale conversion
+- CLIP image similarity now uses dedicated PIL wrappers without mutating the SSIM inputs
+
 ### Task: Added CLIP prompt-to-prompt similarity utility
 
 **Completed:**

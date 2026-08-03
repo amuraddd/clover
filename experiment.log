@@ -7,7 +7,75 @@ Running all Clover baselines with shared default arguments
 Arguments: --seed 123 --train-epochs 100 --rollouts-per-epoch 1 --learning-rate 0.0003 --save-every 25 --gpu-ids 0
 cuda:0 torch.float16 gpu_ids=[0]
 Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]
-Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 3036.68it/s]
-Loading pipeline components...:  17%|█▋        | 1/6 [00:00<00:00,  6.24it/s]Loading pipeline components...:  33%|███▎      | 2/6 [00:00<00:00,  6.88it/s]Loading pipeline components...:  83%|████████▎ | 5/6 [00:00<00:00,  6.95it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:00<00:00,  8.26it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 4351.84it/s]
+Loading pipeline components...:  50%|█████     | 3/6 [00:00<00:00, 15.64it/s]Loading pipeline components...:  83%|████████▎ | 5/6 [00:00<00:00,  6.75it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:00<00:00,  8.42it/s]
 xFormers memory efficient attention enabled
 Training 2,390,016 LoRA parameters
+{'loss': 0.12416750480731328, 'approx_kl': 7266.950511680786, 'clip_frac': 0.11333333333333333, 'reward_mean': 1.1920929132713809e-08, 'reward_std': 1.0000001192092896, 'skipped_updates': 0, 'selected_samples': 1, 'epoch': 1}
+{'loss': 0.12416791627804438, 'approx_kl': 1528.2519044953522, 'clip_frac': 0.06, 'reward_mean': -3.973643192267673e-09, 'reward_std': 1.0, 'skipped_updates': 0, 'selected_samples': 1, 'epoch': 2}
+  0%|          | 0/100 [00:00<?, ?it/s]  1%|          | 1/100 [00:33<55:22, 33.56s/it]
+  0%|          | 0/30 [00:00<?, ?it/s][A
+  3%|▎         | 1/30 [00:00<00:06,  4.67it/s][A
+ 10%|█         | 3/30 [00:00<00:03,  8.39it/s][A
+ 17%|█▋        | 5/30 [00:00<00:02,  9.71it/s][A
+ 23%|██▎       | 7/30 [00:00<00:02, 10.41it/s][A
+ 30%|███       | 9/30 [00:00<00:01, 10.80it/s][A
+ 37%|███▋      | 11/30 [00:01<00:01, 10.90it/s][A
+ 43%|████▎     | 13/30 [00:01<00:01, 11.00it/s][A
+ 50%|█████     | 15/30 [00:01<00:01, 11.13it/s][A
+ 57%|█████▋    | 17/30 [00:01<00:01, 11.23it/s][A
+ 63%|██████▎   | 19/30 [00:01<00:00, 11.27it/s][A
+ 70%|███████   | 21/30 [00:01<00:00, 11.27it/s][A
+ 77%|███████▋  | 23/30 [00:02<00:00, 11.19it/s][A
+ 83%|████████▎ | 25/30 [00:02<00:00, 11.21it/s][A
+ 90%|█████████ | 27/30 [00:02<00:00, 11.26it/s][A
+ 97%|█████████▋| 29/30 [00:02<00:00, 11.30it/s][A100%|██████████| 30/30 [00:02<00:00, 10.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 35749.27it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 36508.21it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.12416883736848831, 'approx_kl': 2779.589518369095, 'clip_frac': 0.06666666666666667, 'reward_mean': 0.0, 'reward_std': 1.0, 'skipped_updates': 0, 'selected_samples': 1, 'epoch': 3}
+{'loss': 0.12416974912087123, 'approx_kl': 1968.0917868232943, 'clip_frac': 0.04666666666666667, 'reward_mean': -3.973643192267673e-09, 'reward_std': 1.0, 'skipped_updates': 0, 'selected_samples': 1, 'epoch': 4}
+  2%|▏         | 2/100 [01:24<1:11:32, 43.80s/it]  3%|▎         | 3/100 [02:05<1:08:58, 42.66s/it]
+  0%|          | 0/30 [00:00<?, ?it/s][A
+  7%|▋         | 2/30 [00:00<00:02, 11.81it/s][A
+ 13%|█▎        | 4/30 [00:00<00:02, 11.51it/s][A
+ 20%|██        | 6/30 [00:00<00:02, 11.49it/s][A
+ 27%|██▋       | 8/30 [00:00<00:01, 11.50it/s][A
+ 33%|███▎      | 10/30 [00:00<00:01, 11.45it/s][A
+ 40%|████      | 12/30 [00:01<00:01, 11.23it/s][A
+ 47%|████▋     | 14/30 [00:01<00:01, 11.28it/s][A
+ 53%|█████▎    | 16/30 [00:01<00:01, 11.35it/s][A
+ 60%|██████    | 18/30 [00:01<00:01, 11.39it/s][A
+ 67%|██████▋   | 20/30 [00:01<00:00, 11.42it/s][A
+ 73%|███████▎  | 22/30 [00:01<00:00, 11.34it/s][A
+ 80%|████████  | 24/30 [00:02<00:00, 11.27it/s][A
+ 87%|████████▋ | 26/30 [00:02<00:00, 11.30it/s][A
+ 93%|█████████▎| 28/30 [00:02<00:00, 11.33it/s][A
+100%|██████████| 30/30 [00:02<00:00, 11.33it/s][A100%|██████████| 30/30 [00:02<00:00, 11.36it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 35972.25it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 39251.10it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
