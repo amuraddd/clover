@@ -68,6 +68,37 @@ def clip_reward(images: list[Image.Image], prompts: list[str], device: torch.dev
 
     return scores.cpu()
 
+@torch.no_grad()
+def clip_prompt_embeddings(
+    prompts: list[str] | tuple[str, ...],
+    model,
+    tokenizer,
+    device: torch.device | str,
+    batch_size: int = 4,
+) -> Tensor:
+    """Encode prompts with CLIP in bounded batches and return normalized CPU embeddings."""
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
+    encoded_batches = []
+    autocast_device = "cuda" if str(device).startswith("cuda") else "cpu"
+    for start in range(0, len(prompts), batch_size):
+        tokens = tokenizer(list(prompts[start:start + batch_size])).to(device)
+        with torch.autocast(autocast_device, enabled=autocast_device == "cuda"):
+            embeddings = model.encode_text(tokens).float()
+        encoded_batches.append(torch.nn.functional.normalize(embeddings, dim=-1).cpu())
+    if not encoded_batches:
+        raise ValueError("prompts must not be empty")
+    return torch.cat(encoded_batches, dim=0)
+
+
+def load_clip_text_encoder(device: torch.device | str | None = None):
+    """Load the shared CLIP text model and tokenizer used by reward utilities."""
+    import open_clip
+
+    device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
+    model, _, _ = open_clip.create_model_and_transforms("ViT-H-14", pretrained="laion2b_s32b_b79k")
+    return model.to(device).eval(), open_clip.get_tokenizer("ViT-H-14"), device
+
 
 @torch.no_grad()
 def clip_prompt_cosine_similarity(

@@ -83,6 +83,7 @@ class DPOKConfig:
     lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q")
     reward_weight: float = 1.0
     kl_weight: float = 0.01
+    clip_range: float = 1e-4  # CLI compatibility placeholder; unused by DPOK.
     normalize_rewards: bool = False
     max_grad_norm: float = 0.1
     mixed_precision: bool = True

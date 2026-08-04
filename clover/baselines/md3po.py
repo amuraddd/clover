@@ -43,7 +43,7 @@ from clover.utils.baseline_utils import (
     trainable_parameters,
     unet_config,
 )
-from clover.utils.rewards_utils import clip_prompt_cosine_similarity, clip_image_cosine_similarity
+from clover.utils.rewards_utils import clip_prompt_embeddings, load_clip_text_encoder
 from clover.utils.prompts import B2_FULL_EVAL_PROMPTS, B2_FULL_TRAIN_PROMPTS
 
 
@@ -184,172 +184,123 @@ def _to_rgba_uint8(frame_chw):
 
 
 def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_threshold=0.5, prompt_similarity_threshold=0.9):
-    """Combine the reference rollout with prompt-matched diverse saved rollouts."""
+    """Combine rollout samples along the leading batch dimension.
+
+    Prompt and complete-state encodings are normalized before aligned dot
+    products are used for sample-wise prompt-similarity and diversity filters.
+    """
     if trajectories is None:
         try:
             trajectories = torch.load("clover/data/md3po/trajectories.pt", map_location="cpu", weights_only=True)
         except FileNotFoundError:
             return reference_rollout
 
-    def _canonicalize_rollout(rollout_data):
-        if not isinstance(rollout_data, dict):
-            raise TypeError("rollout_data must be a dict")
-
-        field_aliases = {
-            "state": ("state", "states"),
-            "action": ("action", "actions"),
-            "prompts": ("prompts",),
-            "rewards": ("rewards",),
-            "timesteps": ("timesteps",),
-            "old_log_probs": ("old_log_probs",),
+    def canonicalize(data):
+        if not isinstance(data, dict):
+            raise TypeError("rollout data must be a dict")
+        aliases = {
+            "state": ("state", "states"), "action": ("action", "actions"),
+            "prompts": ("prompts",), "rewards": ("rewards",),
+            "timesteps": ("timesteps",), "old_log_probs": ("old_log_probs",),
             "images": ("images",),
         }
+        result = {}
+        for name, candidates in aliases.items():
+            result[name] = next((data[key] for key in candidates if key in data), None)
+            if result[name] is None:
+                raise KeyError(f"Rollout is missing field: {name}")
+        return result
 
-        canonical_rollout = {}
-        missing_fields = []
-        for canonical_name, aliases in field_aliases.items():
-            for alias in aliases:
-                if alias in rollout_data:
-                    canonical_rollout[canonical_name] = rollout_data[alias]
-                    break
+    def validate(data):
+        states = data["state"]
+        if not torch.is_tensor(states) or states.ndim < 2:
+            raise ValueError(f"Expected batched states, got {getattr(states, 'shape', type(states))}")
+        if not isinstance(data["prompts"], (list, tuple)) or len(data["prompts"]) != states.shape[0]:
+            raise ValueError(f"Expected one prompt per state sample ({states.shape[0]})")
+        return states
+
+    def encode_states(states, batch_size=4):
+        encoded_batches = []
+        for start in range(0, states.shape[0], batch_size):
+            state_batch = states[start:start + batch_size]
+            flattened = state_batch.detach().to(device="cpu", dtype=torch.float32).flatten(start_dim=1)
+            encoded_batches.append(torch.nn.functional.normalize(flattened, dim=-1))
+        return torch.cat(encoded_batches, dim=0)
+
+    def select_batch(data, mask):
+        indices = mask.nonzero(as_tuple=False).flatten()
+        selected = {}
+        for field, value in data.items():
+            if field == "timesteps":
+                selected[field] = value
+            elif torch.is_tensor(value):
+                if value.ndim == 0 or value.shape[0] != mask.numel():
+                    raise ValueError(f"Field '{field}' does not have batch size {mask.numel()}")
+                selected[field] = value.index_select(0, indices.to(value.device))
+            elif isinstance(value, (list, tuple)):
+                selected[field] = [value[index] for index in indices.tolist()]
             else:
-                missing_fields.append(canonical_name)
+                raise TypeError(f"Unsupported field type for '{field}': {type(value)}")
+        return selected
 
-        if missing_fields:
-            raise KeyError(f"Rollout is missing fields: {missing_fields}")
-
-        return canonical_rollout
-
-    def _to_training_rollout(rollout_data):
+    def training_format(data):
         return {
-            "prompts": rollout_data["prompts"],
-            "states": rollout_data["state"],
-            "actions": rollout_data["action"],
-            "old_log_probs": rollout_data["old_log_probs"],
-            "timesteps": rollout_data["timesteps"],
-            "rewards": rollout_data["rewards"],
-            "images": rollout_data["images"],
+            "prompts": data["prompts"], "states": data["state"], "actions": data["action"],
+            "old_log_probs": data["old_log_probs"], "timesteps": data["timesteps"],
+            "rewards": data["rewards"], "images": data["images"],
         }
 
-    def _extract_prompt(rollout_data):
-        prompt = rollout_data.get("prompts")
-        if isinstance(prompt, (list, tuple)):
-            return prompt[0] if prompt else None
-        return prompt
-
-    def _extract_state_batch(rollout_data):
-        state_batch = rollout_data.get("state")
-        if state_batch is None:
-            raise ValueError("Missing 'state' in rollout data")
-
-        while hasattr(state_batch, "ndim") and state_batch.ndim > 4:
-            if state_batch.shape[0] == 1:
-                state_batch = state_batch[0]
-            else:
-                state_batch = state_batch[-1]
-
-        if not hasattr(state_batch, "shape") or state_batch.ndim != 4:
-            raise ValueError(
-                f"Expected batch shape (N, C, H, W), got {getattr(state_batch, 'shape', type(state_batch))}"
-            )
-        return state_batch
-
-    def _infer_concat_dim(values, field_name, sample_count):
-        first_value = values[0]
-        if not torch.is_tensor(first_value):
-            raise TypeError(f"Expected tensor values for '{field_name}', got {type(first_value)}")
-
-        preferred_dims = []
-        if first_value.ndim >= 2 and first_value.shape[1] == sample_count:
-            preferred_dims.append(1)
-        if first_value.shape[0] == sample_count:
-            preferred_dims.append(0)
-        if 0 not in preferred_dims:
-            preferred_dims.append(0)
-
-        for dim in preferred_dims:
-            if all(
-                value.ndim == first_value.ndim
-                and all(
-                    value.shape[axis] == first_value.shape[axis]
-                    for axis in range(first_value.ndim)
-                    if axis != dim
-                )
-                for value in values[1:]
-            ):
-                return dim
-
-        raise ValueError(
-            f"Could not determine concat axis for '{field_name}' with shapes "
-            f"{[tuple(value.shape) for value in values]} and sample_count={sample_count}"
-        )
-
-    def _concat_values(values, field_name, sample_count):
-        first_value = values[0]
-        if torch.is_tensor(first_value):
-            concat_dim = _infer_concat_dim(values, field_name, sample_count)
-            return torch.cat(values, dim=concat_dim)
-        if isinstance(first_value, list):
-            merged = []
-            for value in values:
-                merged.extend(value)
-            return merged
-        if isinstance(first_value, tuple):
-            merged = []
-            for value in values:
-                merged.extend(list(value))
-            return merged
-        raise TypeError(f"Unsupported field type for '{field_name}': {type(first_value)}")
-
     if not isinstance(reference_rollout, dict):
-        raise TypeError("reference_rollout must be a rollout data structure (dict)")
+        raise TypeError("reference_rollout must be a dict")
+    reference = canonicalize(reference_rollout)
+    reference_states = validate(reference)
+    reference_state_encodings = encode_states(reference_states)
 
-    reference_rollout = _canonicalize_rollout(reference_rollout)
-    reference_prompt = _extract_prompt(reference_rollout)
-    reference_batch = _extract_state_batch(reference_rollout)
-    reference_sample_count = reference_batch.shape[0]
-    reference_final_image = _to_rgba_uint8(reference_batch[-1])[..., :3]
-    reference_final_image_pil = Image.fromarray(reference_final_image, mode="RGB")
+    clip_model, clip_tokenizer, clip_device = load_clip_text_encoder()
 
-    required_fields = ("state", "action", "prompts", "rewards", "timesteps", "old_log_probs", "images")
-    rollouts_to_combine = [reference_rollout]
-
-    for rollout in trajectories.values():
-        if not isinstance(rollout, dict):
-            continue
-
-        rollout = _canonicalize_rollout(rollout)
-        
-        # if the prompt similarity is below the threshold, skip this rollout else use the rollout for combination
-        if clip_prompt_cosine_similarity(_extract_prompt(rollout), reference_prompt) < prompt_similarity_threshold:
-            continue
-
-        rollout_batch = _extract_state_batch(rollout)
-        if rollout_batch.shape[0] != reference_sample_count:
-            raise ValueError(
-                f"Mismatched sample count: reference has {reference_sample_count}, "
-                f"rollout has {rollout_batch.shape[0]}"
-            )
-
-        rollout_final_image = _to_rgba_uint8(rollout_batch[-1])[..., :3]
-        rollout_final_image_pil = Image.fromarray(rollout_final_image, mode="RGB")
-        ssim_score = calculate_ssim(reference_final_image, rollout_final_image)
-        clip_cosine_score = clip_image_cosine_similarity(reference_final_image_pil, rollout_final_image_pil)
-        if clip_cosine_score <= diversity_threshold:
-            rollouts_to_combine.append(rollout)
-
-    if len(rollouts_to_combine) == 1:
-        return _to_training_rollout(reference_rollout)
-
-    combined_rollout = {}
-    for field in required_fields:
-        combined_rollout[field] = _concat_values(
-            [rollout[field] for rollout in rollouts_to_combine],
-            field,
-            reference_sample_count,
+    def encode_prompts(prompts):
+        return clip_prompt_embeddings(
+            prompts,
+            model=clip_model,
+            tokenizer=clip_tokenizer,
+            device=clip_device,
+            batch_size=4,
         )
 
-    return _to_training_rollout(combined_rollout)
+    reference_prompt_encodings = encode_prompts(reference["prompts"])
+
+    accepted = [reference]
+    for saved_rollout in trajectories.values():
+        if not isinstance(saved_rollout, dict):
+            continue
+        rollout = canonicalize(saved_rollout)
+        states = validate(rollout)
+        if states.shape != reference_states.shape:
+            raise ValueError(
+                f"State shape mismatch: reference has {tuple(reference_states.shape)}, "
+                f"rollout has {tuple(states.shape)}"
+            )
+        state_scores = torch.sum(reference_state_encodings * encode_states(states), dim=-1)
+        prompt_scores = torch.sum(reference_prompt_encodings * encode_prompts(rollout["prompts"]), dim=-1)
+        keep = (state_scores <= diversity_threshold) & (prompt_scores >= prompt_similarity_threshold)
+        if keep.any():
+            accepted.append(select_batch(rollout, keep))
+
+    if len(accepted) == 1:
+        return training_format(reference)
+
+    combined = {}
+    for field in ("state", "action", "prompts", "rewards", "timesteps", "old_log_probs", "images"):
+        values = [rollout[field] for rollout in accepted]
+        if field == "timesteps":
+            if not all(torch.equal(values[0], value) for value in values[1:]):
+                raise ValueError("Cannot combine rollouts with different timestep schedules")
+            combined[field] = values[0]
+        elif torch.is_tensor(values[0]):
+            combined[field] = torch.cat(values, dim=0)
+        else:
+            combined[field] = [item for value in values for item in value]
+    return training_format(combined)
 
 def train(config: MD3POConfig) -> list[dict[str, float]]:
     output_dir = prepare_output(config)

@@ -163,18 +163,29 @@ def predict_noise(
     return guided_noise
 
 
-def decode_latents(pipe: StableDiffusionPipeline, latents: Tensor) -> list[Image.Image]:
+def decode_latents(
+    pipe: StableDiffusionPipeline,
+    latents: Tensor,
+    decode_batch_size: int = 4,
+) -> list[Image.Image]:
+    """Decode latent samples with the VAE in memory-bounded batches."""
+    if decode_batch_size <= 0:
+        raise ValueError("decode_batch_size must be positive.")
     if not torch.isfinite(latents).all():
         raise FloatingPointError("Cannot decode non-finite latents; the rollout/update became unstable.")
-    latents = latents / pipe.vae.config.scaling_factor
-    with torch.no_grad():
-        images = pipe.vae.decode(latents.to(dtype=pipe.vae.dtype)).sample
-    if not torch.isfinite(images).all():
-        raise FloatingPointError("VAE decoded non-finite images; the latents are unstable.")
-    images = (images / 2 + 0.5).clamp(0, 1)
-    images = images.detach().cpu().permute(0, 2, 3, 1).float().numpy()
-    images = (images * 255).round().astype("uint8")
-    return [Image.fromarray(image) for image in images]
+
+    scaled_latents = latents / pipe.vae.config.scaling_factor
+    pil_images: list[Image.Image] = []
+    for latent_batch in scaled_latents.split(decode_batch_size):
+        with torch.no_grad():
+            image_batch = pipe.vae.decode(latent_batch.to(dtype=pipe.vae.dtype)).sample
+        if not torch.isfinite(image_batch).all():
+            raise FloatingPointError("VAE decoded non-finite images; the latents are unstable.")
+        image_batch = (image_batch / 2 + 0.5).clamp(0, 1)
+        image_batch = image_batch.detach().cpu().permute(0, 2, 3, 1).float().numpy()
+        image_batch = (image_batch * 255).round().astype("uint8")
+        pil_images.extend(Image.fromarray(image) for image in image_batch)
+    return pil_images
 
 
 def previous_timestep(scheduler: DDPMScheduler, timestep: int) -> int:

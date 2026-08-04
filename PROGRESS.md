@@ -377,3 +377,32 @@ else:
 - Updated `main.py` to launch baselines as isolated subprocesses in pairs, assigning one Slurm-allocated GPU to each process.
 - Made GPU assignment respect `CUDA_VISIBLE_DEVICES` and fail clearly when fewer than two GPUs are allocated.
 - Updated `run_experiments.sh` to request exactly two GPUs and verified pair scheduling with mocked processes without launching GPU work.
+
+## 2026-08-04 — Added DPOK clip-range compatibility field
+
+- Added an unused `clip_range` placeholder to `DPOKConfig` so the shared baseline CLI can pass `--clip-range` without raising a constructor error.
+- Verified DPOK configuration parsing with the shared clip-range argument.
+
+## 2026-08-04 — Batched VAE latent decoding
+
+- Updated the shared `decode_latents()` helper to decode rollout latents in batches of four, reducing peak VAE memory usage for every baseline.
+- Preserved float32 baseline execution and verified chunk sizes, image count, and output ordering with a mock VAE.
+
+## 2026-08-04 — Sample-wise MD3PO rollout batch aggregation
+
+- Updated `md3po_combined_rollouts()` to encode every prompt with CLIP and every complete state trajectory as a normalized flattened vector.
+- Added aligned per-sample dot-product scoring for both state diversity and prompt similarity, retaining only saved samples that pass both configured thresholds.
+- Combined accepted states, actions, log probabilities, rewards, images, and prompts strictly on batch dimension 0 while preserving the shared timestep schedule.
+- Verified sample-wise filtering and batch growth with a mocked CLIP encoder; a two-sample reference plus one accepted saved sample produced states shaped `(3, 1, 1, 1, 1)`.
+
+## 2026-08-04 — Memory-bounded MD3PO rollout encoding
+
+- Changed MD3PO state trajectory encoding to process at most four rollout samples at a time before concatenating normalized CPU encodings.
+- Added reusable `clip_prompt_embeddings()` and `load_clip_text_encoder()` helpers to `clover/utils/rewards_utils.py` and routed MD3PO prompt encoding through them with a batch size of four.
+- Verified ten-sample reference and saved rollouts produce encoder calls of `(4, 4, 2)` for both states and prompts, while preserving the expected combined batch size.
+
+## 2026-08-04 — MD3PO method documentation
+
+- Added `clover/baselines/README_MD3PO.md` describing rollout collection, memory-bounded state and CLIP prompt encoding, per-sample diversity and prompt-similarity filtering, batch-dimension replay aggregation, PPO optimization, and output persistence.
+- Added Mermaid diagrams for the full MD3PO epoch flow and a concrete combined-rollout example in which 32 reference samples plus 10 accepted replay samples produce a batch of 42.
+- Documented tensor shape contracts, threshold directions, shared timestep handling, and the current training-loop defaults.
