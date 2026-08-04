@@ -9,7 +9,7 @@
 #SBATCH --error=error.txt
 #SBATCH --time=0-08:00:00
 #SBATCH --nodelist=aiau011
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:2
 #SBATCH --partition=general
 
 # module load python3

@@ -365,3 +365,15 @@ else:
 - Added `clip_image_cosine_similarity()` to `clover/utils/rewards_utils.py`.
 - The utility preprocesses two PIL images with CLIP, compares their normalized
   image embeddings using cosine similarity, and returns the score as a Python float.
+
+## 2026-08-04 — Updated baseline optimization and sampling defaults
+
+- Updated B2-DiffuRL, DDPO, DPOK, and MD3PO defaults to use Adam beta1=0.9 and beta2=0.999, a minibatch size of 64, and 256 rollout samples per training iteration.
+- Wired the configured Adam betas into each baseline AdamW optimizer.
+- Verified all four modules compile and their configuration defaults instantiate with the requested values.
+
+## 2026-08-04 — Parallelized baseline execution across two GPUs
+
+- Updated `main.py` to launch baselines as isolated subprocesses in pairs, assigning one Slurm-allocated GPU to each process.
+- Made GPU assignment respect `CUDA_VISIBLE_DEVICES` and fail clearly when fewer than two GPUs are allocated.
+- Updated `run_experiments.sh` to request exactly two GPUs and verified pair scheduling with mocked processes without launching GPU work.

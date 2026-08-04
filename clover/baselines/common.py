@@ -55,6 +55,13 @@ def parse_config(config_type: type[ConfigT], description: str) -> ConfigT:
     parser.add_argument("--rollouts-per-epoch", type=int)
     parser.add_argument("--learning-rate", type=float)
     parser.add_argument("--save-every", type=int)
+    parser.add_argument("--num-inference-steps", type=int)
+    parser.add_argument("--guidance-scale", type=float)
+    parser.add_argument("--adam-epsilon", type=float)
+    parser.add_argument("--eta", type=float)
+    parser.add_argument("--max-grad-norm", type=float)
+    parser.add_argument("--clip-range", type=float)
+    parser.add_argument("--minibatch-size", type=int)
     parser.add_argument(
         "--gpu-ids",
         type=int,

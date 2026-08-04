@@ -69,11 +69,13 @@ class DPOKConfig:
     num_inference_steps: int = 30
     guidance_scale: float = 7.5
     eta: float = 1.0
-    rollouts_per_epoch: int = 1
+    rollouts_per_epoch: int = 256
     train_epochs: int = 10
-    dpok_epochs: int = 5
-    minibatch_size: int = 8
+    dpok_epochs: int = 4
+    minibatch_size: int = 64
     learning_rate: float = 1e-9
+    adam_beta1: float = 0.9
+    adam_beta2: float = 0.999
     adam_epsilon: float = 1e-4
     lora_rank: int = 16
     lora_alpha: int = 2
@@ -271,7 +273,7 @@ def train(config: DPOKConfig) -> list[dict[str, float]]:
     output_dir = prepare_output(config)
     gpu_ids = resolve_gpu_ids(config)
     device = torch.device(f"cuda:{gpu_ids[0]}" if gpu_ids else "cpu")
-    dtype = torch.float16 if device.type == "cuda" and config.mixed_precision else torch.float32
+    dtype = torch.float32 if device.type == "cuda" and config.mixed_precision else torch.float16
     generator = set_seed(config.seed, device)
     print(device, dtype, f"gpu_ids={gpu_ids}")
     reward_fn = make_reward_fn(device, config.reward_type)
@@ -280,7 +282,12 @@ def train(config: DPOKConfig) -> list[dict[str, float]]:
     reference_pipe.scheduler.set_timesteps(config.num_inference_steps, device=device)
     parameters = trainable_parameters(pipe.unet)
     print(f"Training {sum(parameter.numel() for parameter in parameters):,} LoRA parameters")
-    optimizer = torch.optim.AdamW(parameters, lr=config.learning_rate, eps=config.adam_epsilon)
+    optimizer = torch.optim.AdamW(
+        parameters,
+        lr=config.learning_rate,
+        betas=(config.adam_beta1, config.adam_beta2),
+        eps=config.adam_epsilon,
+    )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     history: list[dict[str, float]] = []
     for epoch in trange(1, config.train_epochs + 1):
