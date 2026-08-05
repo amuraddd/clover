@@ -97,6 +97,28 @@ def collect_rollouts(
     reward_fn: Any,
     vae_scale_factor: int,
 ) -> dict[str, Tensor | list[str] | list[Image.Image]]:
+    """Collect one on-policy batch of complete diffusion trajectories.
+
+    The function samples training prompts and initial latents, records every
+    denoising transition, decodes the terminal images, evaluates them with the
+    configured reward function, and normalizes the resulting rewards.
+
+    Args:
+        pipe: Diffusion pipeline containing the UNet, scheduler, and VAE.
+        batch_size: Number of trajectories to sample.
+        config: MD3PO sampling and training configuration.
+        device: Device on which diffusion sampling is performed.
+        dtype: Floating-point dtype used by the diffusion model.
+        generator: Seeded PyTorch generator used for stochastic sampling.
+        reward_fn: Callable accepting images and prompts and returning one
+            reward per sample.
+        vae_scale_factor: Spatial downsampling factor used to size the latents.
+
+    Returns:
+        A live-training rollout dictionary containing prompts, states, actions,
+        old log probabilities, scheduler timesteps, normalized rewards, and
+        decoded terminal images.
+    """
     pipe.unet.eval()
     prompts = sample_prompt_batch(config.train_prompts, batch_size)
     prompt_embeds = encode_prompts(pipe, prompts, config.negative_prompt, device, dtype)
@@ -150,7 +172,16 @@ def collect_rollouts(
 
 
 def calculate_ssim(image_a, image_b):
-    """Calculate grayscale SSIM between two RGB images."""
+    """Calculate grayscale structural similarity between two color images.
+
+    Args:
+        image_a: First OpenCV-compatible image array.
+        image_b: Second OpenCV-compatible image array with the same shape as
+            ``image_a``.
+
+    Returns:
+        The scalar structural similarity index produced by scikit-image.
+    """
     gray_a = cv2.cvtColor(image_a, cv2.COLOR_BGR2GRAY)
     gray_b = cv2.cvtColor(image_b, cv2.COLOR_BGR2GRAY)
     score, _ = ssim(gray_a, gray_b, full=True)
@@ -158,7 +189,19 @@ def calculate_ssim(image_a, image_b):
 
 
 def _to_rgba_uint8(frame_chw):
-    """Convert a single frame from CHW tensor/array to HWC uint8 RGBA."""
+    """Convert one tensor or array frame to an HWC ``uint8`` RGBA array.
+
+    Channel-first inputs are transposed, grayscale and RGB inputs receive the
+    required channel expansion, and floating-point values are min-max scaled
+    to the range 0–255.
+
+    Args:
+        frame_chw: Tensor or NumPy-compatible array representing one image,
+            normally in channel-first layout.
+
+    Returns:
+        A NumPy ``uint8`` array in height-width-channel RGBA layout.
+    """
     frame = frame_chw.detach().cpu().numpy() if hasattr(frame_chw, "detach") else np.asarray(frame_chw)
 
     if frame.ndim == 3 and frame.shape[0] in (1, 3, 4):
@@ -184,10 +227,34 @@ def _to_rgba_uint8(frame_chw):
 
 
 def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_threshold=0.5, prompt_similarity_threshold=0.9):
-    """Combine rollout samples along the leading batch dimension.
+    """Combine a reference rollout with samples from the latest saved rollout.
 
     Prompt and complete-state encodings are normalized before aligned dot
     products are used for sample-wise prompt-similarity and diversity filters.
+    Older saved rollouts are ignored so replay is limited to the immediately
+    preceding iteration.
+
+    Args:
+        reference_rollout: Current iteration's pre-replay rollout in live or
+            saved trajectory field format.
+        trajectories: Optional mapping from integer-like rollout numbers to
+            saved rollout dictionaries. When omitted, trajectories are loaded
+            from ``clover/data/md3po/trajectories.pt``.
+        diversity_threshold: Maximum cosine similarity between aligned state
+            trajectories for a saved sample to be retained.
+        prompt_similarity_threshold: Minimum cosine similarity between aligned
+            prompt embeddings for a saved sample to be retained.
+
+    Returns:
+        A live-training rollout containing every reference sample followed by
+        qualifying samples from only the latest saved rollout. If no saved
+        trajectory exists or no sample qualifies, returns the reference data.
+
+    Raises:
+        TypeError: If rollout containers or fields have unsupported types.
+        KeyError: If a required rollout field is missing.
+        ValueError: If batch shapes, prompt counts, timestep schedules, or
+            trajectory keys are invalid.
     """
     if trajectories is None:
         try:
@@ -196,6 +263,19 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
             return reference_rollout
 
     def canonicalize(data):
+        """Map live and persisted field aliases to one internal representation.
+
+        Args:
+            data: Rollout dictionary using either singular saved tensor names
+                or plural live-training tensor names.
+
+        Returns:
+            A dictionary with canonical singular state and action keys.
+
+        Raises:
+            TypeError: If ``data`` is not a dictionary.
+            KeyError: If any required rollout field is absent.
+        """
         if not isinstance(data, dict):
             raise TypeError("rollout data must be a dict")
         aliases = {
@@ -212,6 +292,18 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
         return result
 
     def validate(data):
+        """Validate the state batch and its one-to-one prompt alignment.
+
+        Args:
+            data: Canonical rollout dictionary.
+
+        Returns:
+            The validated batched state tensor.
+
+        Raises:
+            ValueError: If states are not batched tensors or prompt count does
+                not equal the state batch size.
+        """
         states = data["state"]
         if not torch.is_tensor(states) or states.ndim < 2:
             raise ValueError(f"Expected batched states, got {getattr(states, 'shape', type(states))}")
@@ -220,6 +312,17 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
         return states
 
     def encode_states(states, batch_size=4):
+        """Flatten and L2-normalize complete state trajectories on the CPU.
+
+        Args:
+            states: Batched trajectory tensor whose leading dimension indexes
+                samples.
+            batch_size: Maximum number of trajectories encoded per chunk.
+
+        Returns:
+            A two-dimensional float32 tensor containing one normalized vector
+            per trajectory.
+        """
         encoded_batches = []
         for start in range(0, states.shape[0], batch_size):
             state_batch = states[start:start + batch_size]
@@ -228,6 +331,22 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
         return torch.cat(encoded_batches, dim=0)
 
     def select_batch(data, mask):
+        """Select masked samples consistently across all rollout fields.
+
+        The shared timestep vector is retained unchanged; tensors and sequence
+        fields are indexed along their leading batch dimension.
+
+        Args:
+            data: Canonical rollout dictionary to filter.
+            mask: One-dimensional Boolean tensor with one value per sample.
+
+        Returns:
+            A rollout dictionary containing only selected samples.
+
+        Raises:
+            ValueError: If a tensor field does not match the mask batch size.
+            TypeError: If a field has an unsupported value type.
+        """
         indices = mask.nonzero(as_tuple=False).flatten()
         selected = {}
         for field, value in data.items():
@@ -244,6 +363,16 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
         return selected
 
     def training_format(data):
+        """Convert canonical rollout fields to the shared PPO input schema.
+
+        Args:
+            data: Canonical rollout dictionary with singular state and action
+                keys.
+
+        Returns:
+            A dictionary using plural ``states`` and ``actions`` keys expected
+            by the shared PPO update.
+        """
         return {
             "prompts": data["prompts"], "states": data["state"], "actions": data["action"],
             "old_log_probs": data["old_log_probs"], "timesteps": data["timesteps"],
@@ -259,6 +388,14 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
     clip_model, clip_tokenizer, clip_device = load_clip_text_encoder()
 
     def encode_prompts(prompts):
+        """Encode prompt strings as normalized CLIP text embeddings.
+
+        Args:
+            prompts: Sequence of prompt strings to encode.
+
+        Returns:
+            A two-dimensional tensor containing one embedding per prompt.
+        """
         return clip_prompt_embeddings(
             prompts,
             model=clip_model,
@@ -270,9 +407,23 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
     reference_prompt_encodings = encode_prompts(reference["prompts"])
 
     accepted = [reference]
-    for saved_rollout in trajectories.values():
-        if not isinstance(saved_rollout, dict):
-            continue
+    if not isinstance(trajectories, dict):
+        raise TypeError("trajectories must be a dict keyed by rollout number")
+
+    valid_trajectory_keys = [
+        key for key, saved_rollout in trajectories.items()
+        if isinstance(saved_rollout, dict)
+    ]
+    if not valid_trajectory_keys:
+        return training_format(reference)
+
+    try:
+        latest_trajectory_key = max(valid_trajectory_keys, key=lambda key: int(key))
+    except (TypeError, ValueError) as error:
+        raise ValueError("trajectory keys must be integer-like rollout numbers") from error
+
+    saved_rollout = trajectories[latest_trajectory_key]
+    if isinstance(saved_rollout, dict):
         rollout = canonicalize(saved_rollout)
         states = validate(rollout)
         if states.shape != reference_states.shape:
@@ -303,6 +454,19 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
     return training_format(combined)
 
 def train(config: MD3POConfig) -> list[dict[str, float]]:
+    """Train an MD3PO LoRA policy and persist its experiment artifacts.
+
+    Each iteration collects a reference rollout, augments it with qualifying
+    samples from only the preceding saved rollout, performs a PPO update, and
+    saves only the uncombined reference rollout for the next iteration.
+
+    Args:
+        config: Complete MD3PO model, sampling, optimization, evaluation, and
+            output configuration.
+
+    Returns:
+        One metrics dictionary per completed training epoch.
+    """
     output_dir = prepare_output(config)
     gpu_ids = resolve_gpu_ids(config)
     device = torch.device(f"cuda:{gpu_ids[0]}" if gpu_ids else "cpu")
@@ -322,11 +486,11 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     history: list[dict[str, float]] = []
     for epoch in trange(1, config.train_epochs + 1):
-        rollout = collect_rollouts(
+        reference_rollout = collect_rollouts(
             pipe, config.rollouts_per_epoch, config, device, dtype, generator, reward_fn, vae_scale_factor
         )
         
-        combined_rollout = md3po_combined_rollouts(rollout, diversity_threshold=0.5)
+        combined_rollout = md3po_combined_rollouts(reference_rollout, diversity_threshold=0.5)
         
         # apply PPO update to the model using the collected rollouts and save the metrics to history
         metrics = ppo_update(pipe, combined_rollout, optimizer, config, device, dtype)
@@ -334,19 +498,26 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         history.append(metrics)
         save_json(output_dir / "history.json", history)
         
-        # Save trajectory data for the current epoch
-        save_trajectory_data("md3po", epoch, rollout)
+        # Persist only the current iteration's pre-replay reference rollout.
+        save_trajectory_data("md3po", epoch, reference_rollout)
         
         # Save evaluation metrics from the current epoch training
-        save_evaluation_metrics("md3po", epoch, metrics, rollout.get("images"), rollout.get("prompts"), output_dir)
+        save_evaluation_metrics(
+            "md3po",
+            epoch,
+            metrics,
+            reference_rollout.get("images"),
+            reference_rollout.get("prompts"),
+            output_dir,
+        )
         
         if epoch % config.log_every == 0:
             print(metrics)
         if epoch % config.save_every == 0:
             save_lora_weights(pipe, output_dir / f"lora_epoch_{epoch:04d}")
-            for index, image in enumerate(rollout["images"]):
+            for index, image in enumerate(reference_rollout["images"]):
                 image.save(output_dir / f"epoch_{epoch:04d}_sample_{index:02d}.png")
-        del rollout
+        del reference_rollout, combined_rollout
         gc.collect()
         if device.type == "cuda":
             torch.cuda.empty_cache()
@@ -366,6 +537,11 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
 
 
 def main() -> None:
+    """Parse command-line configuration and run MD3PO training.
+
+    Returns:
+        None.
+    """
     train(parse_config(MD3POConfig, __doc__ or "Train MD3PO"))
 
 

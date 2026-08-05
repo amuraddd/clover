@@ -23,9 +23,9 @@ from clover.utils.baseline_utils import save_json
 
 BASELINES = [
     ("md3po", "clover.baselines.md3po"),
-    # ("ddpo", "clover.baselines.ddpo"),
-    ("dpok", "clover.baselines.dpok"),
-    ("b2diffurl", "clover.baselines.b2diffurl"),
+    ("ddpo", "clover.baselines.ddpo"),
+    # ("dpok", "clover.baselines.dpok"),
+    # ("b2diffurl", "clover.baselines.b2diffurl"),
 ]
 
 DEFAULT_GPU_IDS = ("0", "1")
@@ -49,12 +49,12 @@ def allocated_gpu_ids() -> tuple[str, str]:
 DEFAULT_BASELINE_ARGS = {
     "seed": 123,
     "train_epochs": 10,
-    "rollouts_per_epoch": 32,
+    "rollouts_per_epoch": 128,
     "learning_rate": 3e-4,
     "gpu_ids": [0, 1],
     "save_every": 25,
     "num_inference_steps": 50,
-    "minibatch_size": 16,
+    "minibatch_size": 32,
     "guidance_scale": 5.0,
     "adam_epsilon": 1e-8,
     "eta": 1.0,
@@ -150,6 +150,6 @@ if __name__ == "__main__":
     total_time = time.time() - start_time
     print(f"\nTotal execution time: {total_time:.2f} seconds")
     save_json(
-        {"baseline": "total", "execution_time": total_time, "runs": baseline_results},
         "execution_time.json",
+        {"baseline": "total", "execution_time": total_time, "runs": baseline_results},
     )

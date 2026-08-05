@@ -406,3 +406,16 @@ else:
 - Added `clover/baselines/README_MD3PO.md` describing rollout collection, memory-bounded state and CLIP prompt encoding, per-sample diversity and prompt-similarity filtering, batch-dimension replay aggregation, PPO optimization, and output persistence.
 - Added Mermaid diagrams for the full MD3PO epoch flow and a concrete combined-rollout example in which 32 reference samples plus 10 accepted replay samples produce a batch of 42.
 - Documented tensor shape contracts, threshold directions, shared timestep handling, and the current training-loop defaults.
+
+## 2026-08-05 — Fixed aggregate execution summary persistence
+
+- Corrected the `save_json()` argument order in `main.py` so the aggregate baseline execution summary is written to `execution_time.json` instead of raising a post-training `TypeError`.
+
+## 2026-08-05 — Limited MD3PO replay to the previous iteration
+
+- Updated MD3PO replay selection to combine the current reference rollout with samples from only the most recently saved trajectory, ignoring older trajectories.
+- Made the pre-combination `reference_rollout` explicit in the training loop and ensured that only this current-iteration rollout is persisted as trajectory data.
+
+## 2026-08-05 — Documented MD3PO functions
+
+- Added behavior, argument, return-value, and applicable exception documentation to every top-level and nested function in `clover/baselines/md3po.py`.

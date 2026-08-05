@@ -15,7 +15,7 @@ MD3PO in this repository extends denoising diffusion policy optimization with re
   - `rewards`: zero at intermediate steps and the configured image reward at the terminal step, followed by normalization.
   - `images` and `prompts`: decoded terminal images and their conditioning text.
 - Treats the newly collected batch as the reference rollout.
-- Loads prior MD3PO trajectories from `clover/data/md3po/trajectories.pt` when that file exists.
+- Loads only the most recently saved MD3PO trajectory from `clover/data/md3po/trajectories.pt` when that file exists; older trajectories are ignored.
 - Accepts both live rollout field names such as `states` and saved field names such as `state`, then converts the result back to the live training format.
 - Encodes complete state trajectories by flattening each sample, converting it to CPU `float32`, and L2-normalizing it.
 - Encodes prompts using normalized CLIP text embeddings from `clover/utils/rewards_utils.py`.
@@ -48,7 +48,7 @@ flowchart TD
     G --> H[Compute and normalize rewards]
     H --> R[Reference rollout with batch B]
 
-    T[Load saved MD3PO trajectories] --> N[Canonicalize and validate rollout fields]
+    T[Load latest saved MD3PO trajectory] --> N[Canonicalize and validate rollout fields]
     R --> RE[Encode reference states and prompts in chunks of 4]
     N --> SE[Encode saved states and prompts in chunks of 4]
     RE --> DS[Aligned state dot products]
@@ -102,6 +102,7 @@ flowchart LR
 ## Important implementation constraints
 
 - A saved rollout must have the same full state shape as the reference rollout before filtering.
+- Only the trajectory with the highest rollout number is eligible for replay in the next iteration.
 - Prompt count must equal state batch size.
 - All tensor fields other than `timesteps` must expose the same leading batch dimension.
 - Lower state similarity is interpreted as greater diversity; higher prompt similarity is interpreted as better semantic alignment.
