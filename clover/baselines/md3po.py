@@ -21,7 +21,6 @@ from tqdm.auto import trange
 from clover.baselines.common import (
     evaluate,
     make_reward_fn,
-    normalize_rewards,
     parse_config,
     prepare_output,
     save_evaluation_metrics,
@@ -32,6 +31,7 @@ from clover.utils.baseline_utils import (
     ddpm_step_with_log_prob,
     decode_latents,
     encode_prompts,
+    load_training_checkpoint,
     load_lora_pipeline,
     ppo_update,
     predict_noise,
@@ -39,11 +39,16 @@ from clover.utils.baseline_utils import (
     sample_prompt_batch,
     save_json,
     save_lora_weights,
+    save_training_checkpoint,
     set_seed,
     trainable_parameters,
     unet_config,
 )
-from clover.utils.rewards_utils import clip_prompt_embeddings, load_clip_text_encoder
+from clover.utils.rewards_utils import (
+    clip_image_embeddings,
+    clip_prompt_embeddings,
+    load_clip_encoder,
+)
 from clover.utils.prompts import B2_FULL_EVAL_PROMPTS, B2_FULL_TRAIN_PROMPTS
 
 
@@ -66,18 +71,19 @@ class MD3POConfig:
     eta: float = 1.0
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
-    ppo_epochs: int = 4
+    ppo_epochs: int = 1
     minibatch_size: int = 64
-    learning_rate: float = 1e-9
+    learning_rate: float = 3e-6
     adam_beta1: float = 0.9
     adam_beta2: float = 0.999
     adam_epsilon: float = 1e-4
     lora_rank: int = 16
     lora_alpha: int = 2
     lora_dropout: float = 0.0
-    lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q")
-    clip_range: float = 1e-4
+    lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
+    clip_range: float = 0.1
     ppo_log_ratio_clip: float = 2.0
+    target_kl: float = 0.1
     max_grad_norm: float = 0.1
     mixed_precision: bool = True
     gradient_checkpointing: bool = True
@@ -116,7 +122,7 @@ def collect_rollouts(
 
     Returns:
         A live-training rollout dictionary containing prompts, states, actions,
-        old log probabilities, scheduler timesteps, normalized rewards, and
+        old log probabilities, scheduler timesteps, raw trajectory rewards, and
         decoded terminal images.
     """
     pipe.unet.eval()
@@ -131,34 +137,36 @@ def collect_rollouts(
     )
     latents = torch.randn(latent_shape, generator=generator, device=device, dtype=dtype)
     latents = latents * pipe.scheduler.init_noise_sigma
-    states, actions, log_probs, timesteps, rewards = [], [], [], [], []
+    states, actions, log_probs, timesteps = [], [], [], []
     images: list[Image.Image] = []
-    zero_rewards = torch.zeros(batch_size, dtype=torch.float32)
+    terminal_rewards: Tensor | None = None
 
     for timestep_tensor in pipe.scheduler.timesteps:
         timestep = int(timestep_tensor.item())
-        states.append(latents.detach().float().cpu())
+        trainable_transition = timestep > 0
+        if trainable_transition:
+            states.append(latents.detach().float().cpu())
         noise_pred = predict_noise(pipe, latents, timestep_tensor, prompt_embeds, config.guidance_scale)
         next_latents, log_prob = ddpm_step_with_log_prob(
             pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta
         )
-        actions.append(next_latents.detach().float().cpu())
-        log_probs.append(log_prob.detach().float().cpu())
-        timesteps.append(timestep)
+        if trainable_transition:
+            actions.append(next_latents.detach().float().cpu())
+            log_probs.append(log_prob.detach().float().cpu())
+            timesteps.append(timestep)
         latents = next_latents
 
         if timestep_tensor == pipe.scheduler.timesteps[-1]:
             images = decode_latents(pipe, latents)
-            rewards.append(reward_fn(images, prompts).detach().float().cpu())
-        else:
-            rewards.append(zero_rewards.clone())
+            terminal_rewards = reward_fn(images, prompts).detach().float().cpu()
 
     if not images:
         images = decode_latents(pipe, latents)
+        terminal_rewards = reward_fn(images, prompts).detach().float().cpu()
     pipe.unet.train()
-
-    rewards_tensor = torch.stack(rewards, dim=1)
-    normalized_rewards = normalize_rewards(rewards_tensor)
+    if terminal_rewards is None:
+        raise RuntimeError("terminal rewards were not computed")
+    rewards = terminal_rewards[:, None].expand(-1, len(timesteps)).clone()
 
     return {
         "prompts": prompts,
@@ -166,7 +174,7 @@ def collect_rollouts(
         "actions": torch.stack(actions, dim=1),
         "old_log_probs": torch.stack(log_probs, dim=1),
         "timesteps": torch.tensor(timesteps, dtype=torch.long),
-        "rewards": normalized_rewards,
+        "rewards": rewards,
         "images": images,
     }
 
@@ -229,10 +237,10 @@ def _to_rgba_uint8(frame_chw):
 def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_threshold=0.5, prompt_similarity_threshold=0.9):
     """Combine a reference rollout with samples from the latest saved rollout.
 
-    Prompt and complete-state encodings are normalized before aligned dot
-    products are used for sample-wise prompt-similarity and diversity filters.
-    Older saved rollouts are ignored so replay is limited to the immediately
-    preceding iteration.
+    Every saved sample from the immediately preceding iteration is compared
+    with every current sample using CLIP prompt and image similarities. A saved
+    sample is retained when at least one current sample has sufficiently similar
+    prompt semantics and sufficiently diverse image semantics.
 
     Args:
         reference_rollout: Current iteration's pre-replay rollout in live or
@@ -240,8 +248,8 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
         trajectories: Optional mapping from integer-like rollout numbers to
             saved rollout dictionaries. When omitted, trajectories are loaded
             from ``clover/data/md3po/trajectories.pt``.
-        diversity_threshold: Maximum cosine similarity between aligned state
-            trajectories for a saved sample to be retained.
+        diversity_threshold: Maximum CLIP image cosine similarity for a saved
+            sample/current sample pair to count as visually diverse.
         prompt_similarity_threshold: Minimum cosine similarity between aligned
             prompt embeddings for a saved sample to be retained.
 
@@ -311,25 +319,6 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
             raise ValueError(f"Expected one prompt per state sample ({states.shape[0]})")
         return states
 
-    def encode_states(states, batch_size=4):
-        """Flatten and L2-normalize complete state trajectories on the CPU.
-
-        Args:
-            states: Batched trajectory tensor whose leading dimension indexes
-                samples.
-            batch_size: Maximum number of trajectories encoded per chunk.
-
-        Returns:
-            A two-dimensional float32 tensor containing one normalized vector
-            per trajectory.
-        """
-        encoded_batches = []
-        for start in range(0, states.shape[0], batch_size):
-            state_batch = states[start:start + batch_size]
-            flattened = state_batch.detach().to(device="cpu", dtype=torch.float32).flatten(start_dim=1)
-            encoded_batches.append(torch.nn.functional.normalize(flattened, dim=-1))
-        return torch.cat(encoded_batches, dim=0)
-
     def select_batch(data, mask):
         """Select masked samples consistently across all rollout fields.
 
@@ -382,10 +371,9 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
     if not isinstance(reference_rollout, dict):
         raise TypeError("reference_rollout must be a dict")
     reference = canonicalize(reference_rollout)
-    reference_states = validate(reference)
-    reference_state_encodings = encode_states(reference_states)
+    validate(reference)
 
-    clip_model, clip_tokenizer, clip_device = load_clip_text_encoder()
+    clip_model, clip_preprocess, clip_tokenizer, clip_device = load_clip_encoder()
 
     def encode_prompts(prompts):
         """Encode prompt strings as normalized CLIP text embeddings.
@@ -405,6 +393,13 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
         )
 
     reference_prompt_encodings = encode_prompts(reference["prompts"])
+    reference_image_encodings = clip_image_embeddings(
+        reference["images"],
+        model=clip_model,
+        preprocess=clip_preprocess,
+        device=clip_device,
+        batch_size=4,
+    )
 
     accepted = [reference]
     if not isinstance(trajectories, dict):
@@ -425,15 +420,23 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
     saved_rollout = trajectories[latest_trajectory_key]
     if isinstance(saved_rollout, dict):
         rollout = canonicalize(saved_rollout)
-        states = validate(rollout)
-        if states.shape != reference_states.shape:
-            raise ValueError(
-                f"State shape mismatch: reference has {tuple(reference_states.shape)}, "
-                f"rollout has {tuple(states.shape)}"
-            )
-        state_scores = torch.sum(reference_state_encodings * encode_states(states), dim=-1)
-        prompt_scores = torch.sum(reference_prompt_encodings * encode_prompts(rollout["prompts"]), dim=-1)
-        keep = (state_scores <= diversity_threshold) & (prompt_scores >= prompt_similarity_threshold)
+        validate(rollout)
+        if not torch.equal(reference["timesteps"], rollout["timesteps"]):
+            return training_format(reference)
+        previous_prompt_encodings = encode_prompts(rollout["prompts"])
+        previous_image_encodings = clip_image_embeddings(
+            rollout["images"],
+            model=clip_model,
+            preprocess=clip_preprocess,
+            device=clip_device,
+            batch_size=4,
+        )
+        prompt_scores = previous_prompt_encodings @ reference_prompt_encodings.T
+        image_scores = previous_image_encodings @ reference_image_encodings.T
+        qualifying_pairs = (prompt_scores >= prompt_similarity_threshold) & (
+            image_scores <= diversity_threshold
+        )
+        keep = qualifying_pairs.any(dim=1)
         if keep.any():
             accepted.append(select_batch(rollout, keep))
 
@@ -484,8 +487,8 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         eps=config.adam_epsilon,
     )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
-    history: list[dict[str, float]] = []
-    for epoch in trange(1, config.train_epochs + 1):
+    last_epoch, history = load_training_checkpoint(pipe, optimizer, output_dir, device, generator)
+    for epoch in trange(last_epoch + 1, config.train_epochs + 1):
         reference_rollout = collect_rollouts(
             pipe, config.rollouts_per_epoch, config, device, dtype, generator, reward_fn, vae_scale_factor
         )
@@ -499,7 +502,7 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         save_json(output_dir / "history.json", history)
         
         # Persist only the current iteration's pre-replay reference rollout.
-        save_trajectory_data("md3po", epoch, reference_rollout)
+        save_trajectory_data("md3po", epoch, reference_rollout, keep_latest_only=True)
         
         # Save evaluation metrics from the current epoch training
         save_evaluation_metrics(
@@ -514,7 +517,7 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         if epoch % config.log_every == 0:
             print(metrics)
         if epoch % config.save_every == 0:
-            save_lora_weights(pipe, output_dir / f"lora_epoch_{epoch:04d}")
+            save_training_checkpoint(pipe, optimizer, output_dir, epoch, history, generator)
             for index, image in enumerate(reference_rollout["images"]):
                 image.save(output_dir / f"epoch_{epoch:04d}_sample_{index:02d}.png")
         del reference_rollout, combined_rollout

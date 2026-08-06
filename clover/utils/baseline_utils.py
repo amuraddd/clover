@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import random
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -10,7 +11,7 @@ import numpy as np
 import torch
 from diffusers import DDPMScheduler, StableDiffusionPipeline
 from peft import LoraConfig
-from peft.utils import get_peft_model_state_dict
+from peft.utils import get_peft_model_state_dict, set_peft_model_state_dict
 from torch import Tensor
 from PIL import Image
 
@@ -51,6 +52,70 @@ def save_lora_weights(pipe: StableDiffusionPipeline, save_dir: Path | str) -> No
         unet_lora_layers=get_peft_model_state_dict(unet),
         safe_serialization=True,
     )
+
+
+def save_training_checkpoint(
+    pipe: StableDiffusionPipeline,
+    optimizer: torch.optim.Optimizer,
+    output_dir: Path | str,
+    epoch: int,
+    history: list[dict[str, float]],
+    generator: torch.Generator,
+) -> Path:
+    """Atomically overwrite the resumable checkpoint for one baseline."""
+    checkpoint_dir = Path(output_dir) / "checkpoint"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint_path = checkpoint_dir / "checkpoint.pt"
+    temporary_path = checkpoint_dir / "checkpoint.pt.tmp"
+    payload = {
+        "epoch": epoch,
+        "history": history,
+        "lora_state_dict": {
+            name: tensor.detach().cpu()
+            for name, tensor in get_peft_model_state_dict(unwrap_unet(pipe.unet)).items()
+        },
+        "optimizer_state_dict": optimizer.state_dict(),
+        "python_rng_state": random.getstate(),
+        "numpy_rng_state": np.random.get_state(),
+        "torch_rng_state": torch.get_rng_state(),
+        "cuda_rng_state": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+        "generator_state": generator.get_state(),
+    }
+    try:
+        torch.save(payload, temporary_path)
+        os.replace(temporary_path, checkpoint_path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
+    print(f"Saved checkpoint for completed epoch {epoch} to {checkpoint_path}")
+    return checkpoint_path
+
+
+def load_training_checkpoint(
+    pipe: StableDiffusionPipeline,
+    optimizer: torch.optim.Optimizer,
+    output_dir: Path | str,
+    device: torch.device,
+    generator: torch.Generator,
+) -> tuple[int, list[dict[str, float]]]:
+    """Restore a baseline checkpoint and return its last epoch and history."""
+    checkpoint_path = Path(output_dir) / "checkpoint" / "checkpoint.pt"
+    if not checkpoint_path.is_file():
+        return 0, []
+
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    set_peft_model_state_dict(unwrap_unet(pipe.unet), checkpoint["lora_state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    random.setstate(checkpoint["python_rng_state"])
+    np.random.set_state(checkpoint["numpy_rng_state"])
+    torch.set_rng_state(checkpoint["torch_rng_state"].cpu())
+    cuda_rng_state = checkpoint.get("cuda_rng_state")
+    if device.type == "cuda" and cuda_rng_state is not None:
+        torch.cuda.set_rng_state_all(cuda_rng_state)
+    generator.set_state(checkpoint["generator_state"].cpu())
+    epoch = int(checkpoint["epoch"])
+    history = list(checkpoint.get("history", []))
+    print(f"Resuming from checkpoint {checkpoint_path} after completed epoch {epoch}")
+    return epoch, history
 
 
 def load_lora_pipeline(
@@ -414,7 +479,12 @@ def ppo_update(
             "clip_frac": float("nan"),
             "reward_mean": float("nan"),
             "reward_std": float("nan"),
+            "raw_reward_mean": float("nan"),
+            "raw_reward_std": float("nan"),
+            "advantage_mean": float("nan"),
+            "advantage_std": float("nan"),
             "skipped_updates": 0,
+            "early_stopped": False,
             "selected_samples": 0,
         }
 
@@ -422,6 +492,7 @@ def ppo_update(
     indices = torch.arange(batch_size)
     losses, approx_kls, clip_fracs = [], [], []
     skipped_updates = 0
+    early_stopped = False
 
     pipe.unet.train()
     if not finite_trainable_parameters(pipe.unet):
@@ -438,6 +509,7 @@ def ppo_update(
 
             optimizer.zero_grad(set_to_none=True)
             try:
+                minibatch_kls = []
                 for step_idx, timestep in enumerate(timesteps):
                     t = torch.tensor(timestep, device=device, dtype=torch.long)
                     state = states[mb_idx, step_idx].to(device=device, dtype=dtype)
@@ -459,7 +531,10 @@ def ppo_update(
                         adv = mb_advantages[:, step_idx].to(device=device, dtype=log_prob.dtype)
 
                     log_ratio = log_prob - old
-                    ratio = torch.exp(log_ratio.clamp(-config.ppo_log_ratio_clip, config.ppo_log_ratio_clip))
+                    bounded_log_ratio = log_ratio.clamp(
+                        -config.ppo_log_ratio_clip, config.ppo_log_ratio_clip
+                    )
+                    ratio = torch.exp(bounded_log_ratio)
                     unclipped = ratio * adv
                     clipped = torch.clamp(ratio, 1 - config.clip_range, 1 + config.clip_range) * adv
                     step_loss = -torch.min(unclipped, clipped).mean() / trajectory_len
@@ -468,23 +543,36 @@ def ppo_update(
                     step_loss.backward()
 
                     with torch.no_grad():
-                        approx_kl = (old - log_prob).mean().abs()
+                        approx_kl = ((ratio - 1) - bounded_log_ratio).mean()
                         clip_frac = ((ratio - 1).abs() > config.clip_range).float().mean()
+                    minibatch_kls.append(float(approx_kl.detach().cpu()))
                     losses.append(float((step_loss * trajectory_len).detach().cpu()))
                     approx_kls.append(float(approx_kl.detach().cpu()))
                     clip_fracs.append(float(clip_frac.detach().cpu()))
 
                     del state, action, noise_pred, log_prob, old, adv, log_ratio, ratio, unclipped, clipped, step_loss
 
-                grad_norm = torch.nn.utils.clip_grad_norm_(trainable_parameters(pipe.unet), config.max_grad_norm)
-                if not torch.isfinite(grad_norm):
-                    raise FloatingPointError("Non-finite LoRA gradients; skipped this minibatch update.")
+                minibatch_kl = safe_metric_mean(minibatch_kls)
+                target_kl = getattr(config, "target_kl", None)
+                if target_kl is not None and target_kl > 0 and minibatch_kl > target_kl:
+                    optimizer.zero_grad(set_to_none=True)
+                    early_stopped = True
+                    print(
+                        f"Stopped PPO update early: minibatch KL {minibatch_kl:.6f} "
+                        f"exceeded target {target_kl:.6f}"
+                    )
+                else:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(
+                        trainable_parameters(pipe.unet), config.max_grad_norm
+                    )
+                    if not torch.isfinite(grad_norm):
+                        raise FloatingPointError("Non-finite LoRA gradients; skipped this minibatch update.")
 
-                optimizer.step()
-                if not finite_trainable_parameters(pipe.unet):
-                    restore_trainable_parameters(pipe.unet, parameter_snapshot)
-                    clear_optimizer_state(optimizer)
-                    raise FloatingPointError("AdamW produced non-finite LoRA parameters; restored previous weights and cleared optimizer state.")
+                    optimizer.step()
+                    if not finite_trainable_parameters(pipe.unet):
+                        restore_trainable_parameters(pipe.unet, parameter_snapshot)
+                        clear_optimizer_state(optimizer)
+                        raise FloatingPointError("AdamW produced non-finite LoRA parameters; restored previous weights and cleared optimizer state.")
 
             except FloatingPointError as exc:
                 restore_trainable_parameters(pipe.unet, parameter_snapshot)
@@ -497,6 +585,10 @@ def ppo_update(
 
             if device.type == "cuda":
                 torch.cuda.empty_cache()
+            if early_stopped:
+                break
+        if early_stopped:
+            break
 
     if torch.is_tensor(reward_values) and reward_values.numel() > 0:
         reward_values = reward_values.float()
@@ -505,6 +597,7 @@ def ppo_update(
     else:
         reward_mean = float("nan")
         reward_std = float("nan")
+    advantage_values = advantages.float()
 
     return {
         "loss": safe_metric_mean(losses),
@@ -512,7 +605,14 @@ def ppo_update(
         "clip_frac": safe_metric_mean(clip_fracs),
         "reward_mean": reward_mean,
         "reward_std": reward_std,
+        "raw_reward_mean": reward_mean,
+        "raw_reward_std": reward_std,
+        "advantage_mean": float(advantage_values.mean().item()),
+        "advantage_std": float(advantage_values.std(unbiased=False).item())
+        if advantage_values.numel() > 1
+        else 0.0,
         "skipped_updates": skipped_updates,
+        "early_stopped": early_stopped,
         "selected_samples": int(batch_size),
     }
 

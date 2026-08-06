@@ -419,3 +419,30 @@ else:
 ## 2026-08-05 — Documented MD3PO functions
 
 - Added behavior, argument, return-value, and applicable exception documentation to every top-level and nested function in `clover/baselines/md3po.py`.
+
+## 2026-08-06 — Memory-bounded B2DiffuRL rollout inference
+
+- Added B2DiffuRL-only UNet inference chunking with a default rollout chunk size of 32.
+- Applied chunking to both shared-prefix sampling and expanded branch sampling while preserving classifier-free-guidance embedding alignment and sample ordering.
+- Left the shared prediction helper and all other baselines unchanged.
+
+## 2026-08-06 — Resumable baseline checkpoints
+
+- Added atomic, overwriting checkpoints for DDPO, DPOK, B2DiffuRL, and MD3PO every five completed epochs.
+- Checkpoints persist LoRA weights, optimizer state, completed epoch, metric history, and random-number-generator states under `outputs/{baseline}/checkpoint/checkpoint.pt`.
+- Each baseline now restores an available checkpoint at startup and resumes from the epoch following the last completed checkpoint while retaining the final `lora_final` export.
+
+## 2026-08-06 — Stabilized diffusion policy optimization and MD3PO replay
+
+- Replaced zero-filled per-step rewards with raw terminal trajectory rewards broadcast across trainable denoising transitions for DDPO, DPOK, MD3PO, and B2DiffuRL.
+- Excluded the final near-deterministic diffusion transition from policy objectives while retaining it for terminal image generation and reward evaluation.
+- Reduced the default learning rate to `3e-6`, policy update passes to one, gradient norm to `0.1`, and set PPO clipping to `0.1`.
+- Added target-KL early stopping at `0.1`, standard nonnegative approximate-KL measurement, and separate raw-reward and normalized-advantage metrics.
+- Changed MD3PO replay to compare every sample from the latest previous iteration against every current sample using CLIP prompt and image embeddings, retaining previous samples that pass both semantic-similarity and visual-diversity filters against at least one current sample.
+- Added compatibility handling that skips replay for legacy trajectories whose timestep schema includes the removed deterministic transition.
+
+## 2026-08-06 — Retained only the latest MD3PO trajectory
+
+- Updated trajectory persistence with an opt-in latest-only mode that atomically replaces the saved trajectory collection with the current epoch.
+- Enabled latest-only retention for MD3PO, ensuring each iteration compares against exactly the immediately preceding iteration without accumulating obsolete trajectories.
+- Left trajectory accumulation behavior unchanged for the other baselines.

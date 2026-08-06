@@ -19,7 +19,6 @@ from tqdm.auto import trange
 from clover.baselines.common import (
     evaluate,
     make_reward_fn,
-    normalize_rewards,
     parse_config,
     prepare_output,
     save_evaluation_metrics,
@@ -32,6 +31,7 @@ from clover.utils.baseline_utils import (
     decode_latents,
     ddpm_step_with_log_prob,
     encode_prompts,
+    load_training_checkpoint,
     load_lora_pipeline,
     ppo_update,
     predict_noise,
@@ -40,6 +40,7 @@ from clover.utils.baseline_utils import (
     save_image_grid_outputs,
     save_json,
     save_lora_weights,
+    save_training_checkpoint,
     select_branch_extremes,
     set_seed,
     suffix_step_indices,
@@ -67,20 +68,22 @@ class B2DiffuRLConfig:
     eta: float = 1.0
     rollouts_per_epoch: int = 256
     branch_size: int = 3
+    rollout_chunk_size: int = 32
     initial_interval_steps: int = 6
     train_epochs: int = 10
-    ppo_epochs: int = 4
+    ppo_epochs: int = 1
     minibatch_size: int = 64
-    learning_rate: float = 1e-9
+    learning_rate: float = 3e-6
     adam_beta1: float = 0.9
     adam_beta2: float = 0.999
     adam_epsilon: float = 1e-4
     lora_rank: int = 16
     lora_alpha: int = 2
     lora_dropout: float = 0.0
-    lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q")
-    clip_range: float = 1e-4
+    lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
+    clip_range: float = 0.1
     ppo_log_ratio_clip: float = 2.0
+    target_kl: float = 0.1
     min_reward_gap: float = 0.0
     max_grad_norm: float = 0.1
     mixed_precision: bool = True
@@ -88,6 +91,45 @@ class B2DiffuRLConfig:
     log_every: int = 1
     save_every: int = 5
     evaluate_every: int = 2
+
+
+def predict_noise_chunked(
+    pipe: Any,
+    latents: Tensor,
+    timestep: Tensor | int,
+    prompt_embeds: Tensor,
+    guidance_scale: float,
+    chunk_size: int,
+) -> Tensor:
+    """Run B2DiffuRL rollout inference in bounded batches.
+
+    ``encode_prompts`` stores all unconditional embeddings before all conditional
+    embeddings. Rebuilding that layout for each chunk keeps classifier-free
+    guidance aligned with the corresponding latent samples.
+    """
+    if chunk_size < 1:
+        raise ValueError("rollout_chunk_size must be at least 1")
+    batch_size = latents.shape[0]
+    if prompt_embeds.shape[0] != 2 * batch_size:
+        raise ValueError("prompt_embeds must contain unconditional and conditional embeddings")
+
+    negative_embeds, positive_embeds = prompt_embeds.chunk(2, dim=0)
+    predictions = []
+    for start in range(0, batch_size, chunk_size):
+        stop = min(start + chunk_size, batch_size)
+        chunk_embeds = torch.cat(
+            [negative_embeds[start:stop], positive_embeds[start:stop]], dim=0
+        )
+        predictions.append(
+            predict_noise(
+                pipe,
+                latents[start:stop],
+                timestep,
+                chunk_embeds,
+                guidance_scale,
+            )
+        )
+    return torch.cat(predictions, dim=0)
 
 
 @torch.no_grad()
@@ -121,7 +163,14 @@ def collect_branch_rollouts(
     latents = latents * pipe.scheduler.init_noise_sigma
     for prefix_idx in range(branch_start_idx):
         timestep_tensor = pipe.scheduler.timesteps[prefix_idx]
-        noise_pred = predict_noise(pipe, latents, timestep_tensor, root_embeds, config.guidance_scale)
+        noise_pred = predict_noise_chunked(
+            pipe,
+            latents,
+            timestep_tensor,
+            root_embeds,
+            config.guidance_scale,
+            config.rollout_chunk_size,
+        )
         latents, _ = ddpm_step_with_log_prob(
             pipe.scheduler,
             noise_pred,
@@ -135,35 +184,37 @@ def collect_branch_rollouts(
     latents = latents.repeat_interleave(config.branch_size, dim=0)
     branch_batch = len(branch_prompts)
     states, actions, log_probs, active_timesteps = [], [], [], []
-    rewards: list[Tensor] = []
-    zero_rewards = torch.zeros(branch_batch, dtype=torch.float32)
     for step_idx in step_indices:
         timestep_tensor = pipe.scheduler.timesteps[step_idx]
         timestep = timesteps[step_idx]
-        states.append(latents.detach().float().cpu())
-        noise_pred = predict_noise(pipe, latents, timestep_tensor, branch_embeds, config.guidance_scale)
+        trainable_transition = timestep > 0
+        if trainable_transition:
+            states.append(latents.detach().float().cpu())
+        noise_pred = predict_noise_chunked(
+            pipe,
+            latents,
+            timestep_tensor,
+            branch_embeds,
+            config.guidance_scale,
+            config.rollout_chunk_size,
+        )
         next_latents, log_prob = ddpm_step_with_log_prob(
             pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta
         )
-        actions.append(next_latents.detach().float().cpu())
-        log_probs.append(log_prob.detach().float().cpu())
-        active_timesteps.append(timestep)
+        if trainable_transition:
+            actions.append(next_latents.detach().float().cpu())
+            log_probs.append(log_prob.detach().float().cpu())
+            active_timesteps.append(timestep)
         latents = next_latents
-        rewards.append(zero_rewards.clone())
     images = decode_latents(pipe, latents)
     terminal_rewards = reward_fn(images, branch_prompts).detach().float().cpu()
-    rewards[-1] = terminal_rewards
-    
-    # Normalize rewards to have mean 0 and variance 1 before selection
-    rewards_tensor = torch.stack(rewards, dim=1)
-    normalized_rewards = normalize_rewards(rewards_tensor)
-    
     selected_idx, advantages, reward_pairs = select_branch_extremes(
         terminal_rewards,
         branch_size=config.branch_size,
         min_reward_gap=config.min_reward_gap,
     )
     selected_idx = selected_idx.cpu()
+    selected_rewards = terminal_rewards[selected_idx]
     pipe.unet.train()
     return {
         "prompts": [branch_prompts[i] for i in selected_idx.tolist()],
@@ -171,7 +222,7 @@ def collect_branch_rollouts(
         "actions": torch.stack(actions, dim=1)[selected_idx],
         "old_log_probs": torch.stack(log_probs, dim=1)[selected_idx],
         "timesteps": torch.tensor(active_timesteps, dtype=torch.long),
-        "rewards": normalized_rewards[selected_idx],
+        "rewards": selected_rewards[:, None].expand(-1, len(active_timesteps)).clone(),
         "advantages": advantages.cpu(),
         "branch_reward_pairs": reward_pairs.cpu(),
         "images": [images[i] for i in selected_idx.tolist()],
@@ -201,8 +252,8 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
         eps=config.adam_epsilon,
     )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
-    history: list[dict[str, float]] = []
-    for epoch in trange(1, config.train_epochs + 1):
+    last_epoch, history = load_training_checkpoint(pipe, optimizer, output_dir, device, generator)
+    for epoch in trange(last_epoch + 1, config.train_epochs + 1):
         interval_steps = backward_progressive_interval_length(
             epoch, config.train_epochs, config.num_inference_steps, config.initial_interval_steps
         )
@@ -219,7 +270,7 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
         )
         
         # Save trajectory data
-        save_trajectory_data("b2diffurl", epoch, rollout)
+        # save_trajectory_data("b2diffurl", epoch, rollout)
         
         metrics = ppo_update(
             pipe,
@@ -249,7 +300,7 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
         if epoch % config.log_every == 0:
             print(metrics)
         if epoch % config.save_every == 0:
-            save_lora_weights(pipe, output_dir / f"lora_epoch_{epoch:04d}")
+            save_training_checkpoint(pipe, optimizer, output_dir, epoch, history, generator)
             save_image_grid_outputs(
                 rollout["images"], rollout["prompts"], output_dir, f"epoch_{epoch:04d}_sample"
             )

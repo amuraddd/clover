@@ -24,8 +24,8 @@ from clover.utils.baseline_utils import save_json
 BASELINES = [
     ("md3po", "clover.baselines.md3po"),
     ("ddpo", "clover.baselines.ddpo"),
-    # ("dpok", "clover.baselines.dpok"),
-    # ("b2diffurl", "clover.baselines.b2diffurl"),
+    ("dpok", "clover.baselines.dpok"),
+    ("b2diffurl", "clover.baselines.b2diffurl"),
 ]
 
 DEFAULT_GPU_IDS = ("0", "1")
@@ -49,17 +49,18 @@ def allocated_gpu_ids() -> tuple[str, str]:
 DEFAULT_BASELINE_ARGS = {
     "seed": 123,
     "train_epochs": 10,
-    "rollouts_per_epoch": 128,
-    "learning_rate": 3e-4,
+    "rollouts_per_epoch": 256,
+    "learning_rate": 3e-6,
     "gpu_ids": [0, 1],
-    "save_every": 25,
+    "save_every": 5,
     "num_inference_steps": 50,
-    "minibatch_size": 32,
+    "minibatch_size": 64,
     "guidance_scale": 5.0,
     "adam_epsilon": 1e-8,
     "eta": 1.0,
-    "max_grad_norm": 1.0,
-    "clip_range": 1e-4,
+    "max_grad_norm": 0.1,
+    "clip_range": 0.1,
+    "target_kl": 0.1,
 }
 
 
@@ -77,6 +78,7 @@ def build_default_argv(script_name: str) -> list[str]:
     argv.extend(["--eta", str(DEFAULT_BASELINE_ARGS["eta"])])
     argv.extend(["--max-grad-norm", str(DEFAULT_BASELINE_ARGS["max_grad_norm"])])
     argv.extend(["--clip-range", str(DEFAULT_BASELINE_ARGS["clip_range"])])
+    argv.extend(["--target-kl", str(DEFAULT_BASELINE_ARGS["target_kl"])])
     argv.extend(["--minibatch-size", str(DEFAULT_BASELINE_ARGS["minibatch_size"])])
 
     gpu_ids = DEFAULT_BASELINE_ARGS.get("gpu_ids")

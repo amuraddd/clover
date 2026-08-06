@@ -1,0 +1,30 @@
+{
+  "baseline": "total",
+  "execution_time": 19.51140785217285,
+  "runs": [
+    {
+      "baseline": "md3po",
+      "execution_time": 9.86291217803955,
+      "gpu_id": "4",
+      "returncode": 1
+    },
+    {
+      "baseline": "ddpo",
+      "execution_time": 9.861869812011719,
+      "gpu_id": "5",
+      "returncode": 1
+    },
+    {
+      "baseline": "dpok",
+      "execution_time": 9.647942304611206,
+      "gpu_id": "4",
+      "returncode": 1
+    },
+    {
+      "baseline": "b2diffurl",
+      "execution_time": 9.64641547203064,
+      "gpu_id": "5",
+      "returncode": 1
+    }
+  ]
+}

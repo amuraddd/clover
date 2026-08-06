@@ -91,13 +91,54 @@ def clip_prompt_embeddings(
     return torch.cat(encoded_batches, dim=0)
 
 
-def load_clip_text_encoder(device: torch.device | str | None = None):
-    """Load the shared CLIP text model and tokenizer used by reward utilities."""
+@torch.no_grad()
+def clip_image_embeddings(
+    images: list[Image.Image] | Tensor,
+    model,
+    preprocess,
+    device: torch.device | str,
+    batch_size: int = 4,
+) -> Tensor:
+    """Encode PIL or uint8 tensor images into normalized CPU CLIP embeddings."""
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
+    if torch.is_tensor(images):
+        image_list = [
+            Image.fromarray(image.permute(1, 2, 0).cpu().numpy().astype(np.uint8))
+            for image in images
+        ]
+    else:
+        image_list = list(images)
+
+    encoded_batches = []
+    autocast_device = "cuda" if str(device).startswith("cuda") else "cpu"
+    for start in range(0, len(image_list), batch_size):
+        image_batch = torch.stack(
+            [preprocess(image.convert("RGB")) for image in image_list[start:start + batch_size]]
+        ).to(device)
+        with torch.autocast(autocast_device, enabled=autocast_device == "cuda"):
+            embeddings = model.encode_image(image_batch).float()
+        encoded_batches.append(torch.nn.functional.normalize(embeddings, dim=-1).cpu())
+    if not encoded_batches:
+        raise ValueError("images must not be empty")
+    return torch.cat(encoded_batches, dim=0)
+
+
+def load_clip_encoder(device: torch.device | str | None = None):
+    """Load the shared CLIP model, image transform, tokenizer, and device."""
     import open_clip
 
     device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
-    model, _, _ = open_clip.create_model_and_transforms("ViT-H-14", pretrained="laion2b_s32b_b79k")
-    return model.to(device).eval(), open_clip.get_tokenizer("ViT-H-14"), device
+    model, _, preprocess = open_clip.create_model_and_transforms(
+        "ViT-H-14", pretrained="laion2b_s32b_b79k"
+    )
+    return model.to(device).eval(), preprocess, open_clip.get_tokenizer("ViT-H-14"), device
+
+
+def load_clip_text_encoder(device: torch.device | str | None = None):
+    """Load the shared CLIP text model and tokenizer used by reward utilities."""
+    model, _, tokenizer, device = load_clip_encoder(device)
+    return model, tokenizer, device
 
 
 @torch.no_grad()

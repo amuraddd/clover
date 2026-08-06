@@ -61,6 +61,7 @@ def parse_config(config_type: type[ConfigT], description: str) -> ConfigT:
     parser.add_argument("--eta", type=float)
     parser.add_argument("--max-grad-norm", type=float)
     parser.add_argument("--clip-range", type=float)
+    parser.add_argument("--target-kl", type=float)
     parser.add_argument("--minibatch-size", type=int)
     parser.add_argument(
         "--gpu-ids",
@@ -170,19 +171,21 @@ def save_trajectory_data(
     epoch: int,
     rollout: dict[str, Any],
     data_dir: Path | str = "clover/data",
+    keep_latest_only: bool = False,
 ) -> None:
-    """Append an offline-training trajectory to a consolidated PyTorch file.
+    """Persist an offline-training trajectory to a consolidated PyTorch file.
 
-    The saved object is a dictionary keyed by a monotonically increasing
-    rollout number. Tensor values are detached, cloned, and moved to CPU so
-    loading the dataset does not require the collection device. Images are
-    stored as RGB uint8 tensors shaped [batch, channels, height, width].
+    By default, trajectories accumulate under monotonically increasing rollout
+    numbers. With ``keep_latest_only=True``, the file is atomically replaced
+    with a single entry for the current epoch. Tensor values are moved to CPU,
+    and images are stored as RGB uint8 tensors.
 
     Args:
         baseline_name: Name of the baseline (e.g., 'ddpo', 'dpok', 'b2diffurl')
         epoch: Current training epoch number
         rollout: Dictionary containing trajectory data
         data_dir: Base data directory (default: 'clover/data')
+        keep_latest_only: Replace prior trajectories instead of appending.
     """
     data_dir = Path(data_dir)
     baseline_data_dir = data_dir / baseline_name
@@ -228,13 +231,17 @@ def save_trajectory_data(
 
     trajectories_file = baseline_data_dir / "trajectories.pt"
     existing_trajectories: dict[int, dict[str, Any]] = {}
-    if trajectories_file.exists():
+    if trajectories_file.exists() and not keep_latest_only:
         loaded = torch.load(trajectories_file, map_location="cpu", weights_only=True)
         if not isinstance(loaded, dict):
             raise TypeError(f"Expected a trajectory dictionary in {trajectories_file}")
         existing_trajectories.update(loaded)
 
-    rollout_number = max((int(key) for key in existing_trajectories), default=0) + 1
+    rollout_number = (
+        int(epoch)
+        if keep_latest_only
+        else max((int(key) for key in existing_trajectories), default=0) + 1
+    )
     existing_trajectories[rollout_number] = trajectory_data
     temporary_file = trajectories_file.with_suffix(".pt.tmp")
     torch.save(existing_trajectories, temporary_file)

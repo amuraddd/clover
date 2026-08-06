@@ -19,7 +19,6 @@ from tqdm.auto import trange
 from clover.baselines.common import (
     evaluate,
     make_reward_fn,
-    normalize_rewards,
     parse_config,
     prepare_output,
     save_evaluation_metrics,
@@ -31,6 +30,7 @@ from clover.utils.baseline_utils import (
     decode_latents,
     ddpm_step_with_log_prob,
     encode_prompts,
+    load_training_checkpoint,
     load_lora_pipeline,
     ppo_update,
     predict_noise,
@@ -38,6 +38,7 @@ from clover.utils.baseline_utils import (
     sample_prompt_batch,
     save_json,
     save_lora_weights,
+    save_training_checkpoint,
     set_seed,
     trainable_parameters,
     unet_config,
@@ -63,18 +64,19 @@ class DDPOConfig:
     eta: float = 1.0
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
-    ppo_epochs: int = 4
+    ppo_epochs: int = 1
     minibatch_size: int = 64
-    learning_rate: float = 1e-9
+    learning_rate: float = 3e-6
     adam_beta1: float = 0.9
     adam_beta2: float = 0.999
     adam_epsilon: float = 1e-4
     lora_rank: int = 16
     lora_alpha: int = 2
     lora_dropout: float = 0.0
-    lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q")
-    clip_range: float = 1e-4
+    lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
+    clip_range: float = 0.1
     ppo_log_ratio_clip: float = 2.0
+    target_kl: float = 0.1
     max_grad_norm: float = 0.1
     mixed_precision: bool = True
     gradient_checkpointing: bool = True
@@ -106,33 +108,33 @@ def collect_rollouts(
     )
     latents = torch.randn(latent_shape, generator=generator, device=device, dtype=dtype)
     latents = latents * pipe.scheduler.init_noise_sigma
-    states, actions, log_probs, timesteps, rewards = [], [], [], [], []
+    states, actions, log_probs, timesteps = [], [], [], []
     images: list[Image.Image] = []
-    zero_rewards = torch.zeros(batch_size, dtype=torch.float32)
+    terminal_rewards: Tensor | None = None
     for timestep_tensor in pipe.scheduler.timesteps:
         timestep = int(timestep_tensor.item())
-        states.append(latents.detach().float().cpu())
+        trainable_transition = timestep > 0
+        if trainable_transition:
+            states.append(latents.detach().float().cpu())
         noise_pred = predict_noise(pipe, latents, timestep_tensor, prompt_embeds, config.guidance_scale)
         next_latents, log_prob = ddpm_step_with_log_prob(
             pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta
         )
-        actions.append(next_latents.detach().float().cpu())
-        log_probs.append(log_prob.detach().float().cpu())
-        timesteps.append(timestep)
+        if trainable_transition:
+            actions.append(next_latents.detach().float().cpu())
+            log_probs.append(log_prob.detach().float().cpu())
+            timesteps.append(timestep)
         latents = next_latents
-        # Compute reward on the last timestep
         if timestep_tensor == pipe.scheduler.timesteps[-1]:
             images = decode_latents(pipe, latents)
-            rewards.append(reward_fn(images, prompts).detach().float().cpu())
-        else:
-            rewards.append(zero_rewards.clone())
+            terminal_rewards = reward_fn(images, prompts).detach().float().cpu()
     if not images:
         images = decode_latents(pipe, latents)
+        terminal_rewards = reward_fn(images, prompts).detach().float().cpu()
     pipe.unet.train()
-    
-    # Normalize rewards to have mean 0 and variance 1
-    rewards_tensor = torch.stack(rewards, dim=1)
-    normalized_rewards = normalize_rewards(rewards_tensor)
+    if terminal_rewards is None:
+        raise RuntimeError("terminal rewards were not computed")
+    rewards = terminal_rewards[:, None].expand(-1, len(timesteps)).clone()
     
     return {
         "prompts": prompts,
@@ -140,7 +142,7 @@ def collect_rollouts(
         "actions": torch.stack(actions, dim=1),
         "old_log_probs": torch.stack(log_probs, dim=1),
         "timesteps": torch.tensor(timesteps, dtype=torch.long),
-        "rewards": normalized_rewards,
+        "rewards": rewards,
         "images": images,
     }
 
@@ -163,14 +165,14 @@ def train(config: DDPOConfig) -> list[dict[str, float]]:
         eps=config.adam_epsilon,
     )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
-    history: list[dict[str, float]] = []
-    for epoch in trange(1, config.train_epochs + 1):
+    last_epoch, history = load_training_checkpoint(pipe, optimizer, output_dir, device, generator)
+    for epoch in trange(last_epoch + 1, config.train_epochs + 1):
         rollout = collect_rollouts(
             pipe, config.rollouts_per_epoch, config, device, dtype, generator, reward_fn, vae_scale_factor
         )
         
         # Save trajectory data
-        save_trajectory_data("ddpo", epoch, rollout)
+        # save_trajectory_data("ddpo", epoch, rollout)
         
         # apply PPO update to the model using the collected rollouts and save the metrics to history
         metrics = ppo_update(pipe, rollout, optimizer, config, device, dtype)
@@ -184,7 +186,7 @@ def train(config: DDPOConfig) -> list[dict[str, float]]:
         if epoch % config.log_every == 0:
             print(metrics)
         if epoch % config.save_every == 0:
-            save_lora_weights(pipe, output_dir / f"lora_epoch_{epoch:04d}")
+            save_training_checkpoint(pipe, optimizer, output_dir, epoch, history, generator)
             for index, image in enumerate(rollout["images"]):
                 image.save(output_dir / f"epoch_{epoch:04d}_sample_{index:02d}.png")
         del rollout
