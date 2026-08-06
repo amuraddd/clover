@@ -48,9 +48,9 @@ def allocated_gpu_ids() -> tuple[str, str]:
 
 DEFAULT_BASELINE_ARGS = {
     "seed": 123,
-    "train_epochs": 10,
+    "train_epochs": 50,
     "rollouts_per_epoch": 256,
-    "learning_rate": 3e-6,
+    "learning_rate": 4e-6,
     "gpu_ids": [0, 1],
     "save_every": 5,
     "num_inference_steps": 50,
@@ -61,6 +61,7 @@ DEFAULT_BASELINE_ARGS = {
     "max_grad_norm": 0.1,
     "clip_range": 0.1,
     "target_kl": 0.1,
+    "reward_type": "bert"
 }
 
 
@@ -80,7 +81,7 @@ def build_default_argv(script_name: str) -> list[str]:
     argv.extend(["--clip-range", str(DEFAULT_BASELINE_ARGS["clip_range"])])
     argv.extend(["--target-kl", str(DEFAULT_BASELINE_ARGS["target_kl"])])
     argv.extend(["--minibatch-size", str(DEFAULT_BASELINE_ARGS["minibatch_size"])])
-
+    argv.extend(["--reward-type", str(DEFAULT_BASELINE_ARGS["reward_type"])])
     gpu_ids = DEFAULT_BASELINE_ARGS.get("gpu_ids")
     if gpu_ids is not None:
         argv.append("--gpu-ids")

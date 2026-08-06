@@ -446,3 +446,8 @@ else:
 - Updated trajectory persistence with an opt-in latest-only mode that atomically replaces the saved trajectory collection with the current epoch.
 - Enabled latest-only retention for MD3PO, ensuring each iteration compares against exactly the immediately preceding iteration without accumulating obsolete trajectories.
 - Left trajectory accumulation behavior unchanged for the other baselines.
+
+## 2026-08-06 — Removed redundant checkpoint image saves
+
+- Removed checkpoint-time image copies from DDPO, DPOK, B2DiffuRL, and MD3PO.
+- Kept the per-epoch images saved alongside training evaluation metrics under each baseline's `training_evals/images` directory.

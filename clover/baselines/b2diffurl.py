@@ -37,7 +37,6 @@ from clover.utils.baseline_utils import (
     predict_noise,
     resolve_gpu_ids,
     sample_prompt_batch,
-    save_image_grid_outputs,
     save_json,
     save_lora_weights,
     save_training_checkpoint,
@@ -301,9 +300,6 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
             print(metrics)
         if epoch % config.save_every == 0:
             save_training_checkpoint(pipe, optimizer, output_dir, epoch, history, generator)
-            save_image_grid_outputs(
-                rollout["images"], rollout["prompts"], output_dir, f"epoch_{epoch:04d}_sample"
-            )
         save_json(output_dir / "history.json", history)
         del rollout
         gc.collect()

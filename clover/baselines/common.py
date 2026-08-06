@@ -63,6 +63,7 @@ def parse_config(config_type: type[ConfigT], description: str) -> ConfigT:
     parser.add_argument("--clip-range", type=float)
     parser.add_argument("--target-kl", type=float)
     parser.add_argument("--minibatch-size", type=int)
+    parser.add_argument("--reward-type", type=str)
     parser.add_argument(
         "--gpu-ids",
         type=int,

@@ -187,8 +187,6 @@ def train(config: DDPOConfig) -> list[dict[str, float]]:
             print(metrics)
         if epoch % config.save_every == 0:
             save_training_checkpoint(pipe, optimizer, output_dir, epoch, history, generator)
-            for index, image in enumerate(rollout["images"]):
-                image.save(output_dir / f"epoch_{epoch:04d}_sample_{index:02d}.png")
         del rollout
         gc.collect()
         if device.type == "cuda":

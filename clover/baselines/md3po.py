@@ -234,7 +234,7 @@ def _to_rgba_uint8(frame_chw):
     return frame
 
 
-def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_threshold=0.5, prompt_similarity_threshold=0.9):
+def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_threshold=0.35, prompt_similarity_threshold=0.9):
     """Combine a reference rollout with samples from the latest saved rollout.
 
     Every saved sample from the immediately preceding iteration is compared
@@ -518,8 +518,6 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
             print(metrics)
         if epoch % config.save_every == 0:
             save_training_checkpoint(pipe, optimizer, output_dir, epoch, history, generator)
-            for index, image in enumerate(reference_rollout["images"]):
-                image.save(output_dir / f"epoch_{epoch:04d}_sample_{index:02d}.png")
         del reference_rollout, combined_rollout
         gc.collect()
         if device.type == "cuda":
