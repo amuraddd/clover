@@ -35,7 +35,7 @@ from clover.utils.baseline_utils import (
     load_training_checkpoint,
     load_lora_pipeline,
     ppo_update,
-    predict_noise,
+    predict_noise_chunked,
     resolve_gpu_ids,
     sample_prompt_batch,
     save_json,
@@ -91,45 +91,6 @@ class B2DiffuRLConfig:
     log_every: int = 1
     save_every: int = 5
     evaluate_every: int = 2
-
-
-def predict_noise_chunked(
-    pipe: Any,
-    latents: Tensor,
-    timestep: Tensor | int,
-    prompt_embeds: Tensor,
-    guidance_scale: float,
-    chunk_size: int,
-) -> Tensor:
-    """Run B2DiffuRL rollout inference in bounded batches.
-
-    ``encode_prompts`` stores all unconditional embeddings before all conditional
-    embeddings. Rebuilding that layout for each chunk keeps classifier-free
-    guidance aligned with the corresponding latent samples.
-    """
-    if chunk_size < 1:
-        raise ValueError("rollout_chunk_size must be at least 1")
-    batch_size = latents.shape[0]
-    if prompt_embeds.shape[0] != 2 * batch_size:
-        raise ValueError("prompt_embeds must contain unconditional and conditional embeddings")
-
-    negative_embeds, positive_embeds = prompt_embeds.chunk(2, dim=0)
-    predictions = []
-    for start in range(0, batch_size, chunk_size):
-        stop = min(start + chunk_size, batch_size)
-        chunk_embeds = torch.cat(
-            [negative_embeds[start:stop], positive_embeds[start:stop]], dim=0
-        )
-        predictions.append(
-            predict_noise(
-                pipe,
-                latents[start:stop],
-                timestep,
-                chunk_embeds,
-                guidance_scale,
-            )
-        )
-    return torch.cat(predictions, dim=0)
 
 
 @torch.no_grad()

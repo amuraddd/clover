@@ -228,6 +228,43 @@ def predict_noise(
     return guided_noise
 
 
+def predict_noise_chunked(
+    pipe: StableDiffusionPipeline,
+    latents: Tensor,
+    timestep: Tensor | int,
+    prompt_embeds: Tensor,
+    guidance_scale: float,
+    chunk_size: int,
+) -> Tensor:
+    """Run classifier-free-guidance UNet inference in bounded sample chunks.
+
+    Prompt embeddings are stored as all unconditional embeddings followed by all
+    conditional embeddings. Each chunk rebuilds that ordering before delegating
+    to :func:`predict_noise`, preserving output order and autograd graphs.
+    """
+    if chunk_size < 1:
+        raise ValueError("rollout_chunk_size must be at least 1")
+    batch_size = latents.shape[0]
+    if batch_size < 1:
+        raise ValueError("latents must contain at least one sample")
+    if prompt_embeds.shape[0] != 2 * batch_size:
+        raise ValueError("prompt_embeds must contain unconditional and conditional embeddings")
+
+    negative_embeds, positive_embeds = prompt_embeds.chunk(2, dim=0)
+    predictions = []
+    for start in range(0, batch_size, chunk_size):
+        stop = min(start + chunk_size, batch_size)
+        chunk_embeds = torch.cat(
+            [negative_embeds[start:stop], positive_embeds[start:stop]], dim=0
+        )
+        predictions.append(
+            predict_noise(
+                pipe, latents[start:stop], timestep, chunk_embeds, guidance_scale
+            )
+        )
+    return torch.cat(predictions, dim=0)
+
+
 def decode_latents(
     pipe: StableDiffusionPipeline,
     latents: Tensor,
@@ -600,7 +637,14 @@ def ppo_update(
                     t = torch.tensor(timestep, device=device, dtype=torch.long)
                     state = states[mb_idx, step_idx].to(device=device, dtype=dtype)
                     action = actions[mb_idx, step_idx].to(device=device, dtype=dtype)
-                    noise_pred = predict_noise(pipe, state, t, prompt_embeds, config.guidance_scale)
+                    noise_pred = predict_noise_chunked(
+                        pipe,
+                        state,
+                        t,
+                        prompt_embeds,
+                        config.guidance_scale,
+                        config.rollout_chunk_size,
+                    )
                     _, log_prob = ddpm_step_with_log_prob(
                         pipe.scheduler,
                         noise_pred,

@@ -460,3 +460,19 @@ else:
 - Switched shared experiment defaults to CLIP reward and increased learning rate to `1e-5`, LoRA alpha to 16, update epochs to 2, and maximum gradient norm to 1.0 across all baselines; MD3PO replay behavior remains unchanged.
 - Added per-timestep KL/clipping, unclamped log-ratio percentiles, pre-clip gradient norms, LoRA parameter-update norms, prompt-category rewards, fixed-prompt evaluation confidence intervals, and separate MD3PO current/replay reward summaries.
 - Added focused regression coverage and verified 49 of 50 Stable Diffusion scheduler transitions remain trainable while the zero-variance terminal transition is excluded; all four tests and compilation checks pass.
+
+## 2026-08-07 — Registered generated baseline CLI arguments
+
+- Updated the shared configuration parser to register `--lora-alpha` and `--min-log-prob-std`, plus the baseline-appropriate `--ppo-epochs` or `--dpok-epochs` flag based on fields present in each configuration dataclass.
+- Added optional argument-list injection to `parse_config()` so generated command lines can be tested without launching model training.
+- Added an integration regression test that passes each complete `main.py` argument vector through the corresponding MD3PO, DDPO, DPOK, or B2-DiffuRL parser and verifies the new overrides.
+- Verified all five focused tests, Python compilation, module help construction, and scoped diff checks pass; no GPU experiment was launched.
+
+## 2026-08-07 — Shared chunked classifier-free-guidance inference
+
+- Moved classifier-free-guidance UNet chunking from B2-DiffuRL into the shared baseline utilities while preserving unconditional/conditional embedding alignment, output order, and autograd graphs.
+- Routed MD3PO, DDPO, DPOK, and B2-DiffuRL rollout collection through the shared chunked helper with a configurable default chunk size of 32.
+- Applied the same chunking to shared PPO updates and to both the trainable-policy and frozen-reference UNet forwards in DPOK updates.
+- Registered `--rollout-chunk-size` in the shared dataclass-aware parser and added it to the generated arguments in `main.py`.
+- Added functional regression coverage verifying a five-sample input with chunk size two creates CFG UNet batches `(4, 4, 2)`, preserves output order and gradients, and parses for all baseline configurations; all six focused tests and compilation checks pass.
+- Did not launch a GPU experiment.

@@ -7,7 +7,7 @@ import json
 import math
 
 import numpy as np
-from dataclasses import asdict
+from dataclasses import asdict, fields
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -48,8 +48,12 @@ def normalize_rewards(rewards: Tensor, eps: float = 1e-8) -> Tensor:
     return (rewards - mean) / std
 
 
-def parse_config(config_type: type[ConfigT], description: str) -> ConfigT:
-    """Build a config from the notebook defaults and common CLI overrides."""
+def parse_config(
+    config_type: type[ConfigT],
+    description: str,
+    argv: list[str] | None = None,
+) -> ConfigT:
+    """Build a config from dataclass defaults and supported CLI overrides."""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--model-id")
     parser.add_argument("--output-dir")
@@ -67,6 +71,21 @@ def parse_config(config_type: type[ConfigT], description: str) -> ConfigT:
     parser.add_argument("--target-kl", type=float)
     parser.add_argument("--minibatch-size", type=int)
     parser.add_argument("--reward-type", type=str)
+    config_fields = {field.name for field in fields(config_type)}
+    optional_arguments = {
+        "ppo_epochs": int,
+        "dpok_epochs": int,
+        "lora_alpha": int,
+        "min_log_prob_std": float,
+        "rollout_chunk_size": int,
+    }
+    for field_name, value_type in optional_arguments.items():
+        if field_name in config_fields:
+            parser.add_argument(
+                f"--{field_name.replace("_", "-")}",
+                dest=field_name,
+                type=value_type,
+            )
     parser.add_argument(
         "--gpu-ids",
         type=int,
@@ -78,7 +97,7 @@ def parse_config(config_type: type[ConfigT], description: str) -> ConfigT:
         action="store_true",
         help="Use float32 even when CUDA is available.",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     overrides: dict[str, Any] = {
         name: value
         for name, value in vars(args).items()

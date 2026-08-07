@@ -35,7 +35,7 @@ from clover.utils.baseline_utils import (
     load_training_checkpoint,
     load_lora_pipeline,
     ppo_update,
-    predict_noise,
+    predict_noise_chunked,
     resolve_gpu_ids,
     sample_prompt_batch,
     save_json,
@@ -71,6 +71,7 @@ class MD3POConfig:
     guidance_scale: float = 7.5
     eta: float = 1.0
     min_log_prob_std: float = 1e-4
+    rollout_chunk_size: int = 32
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
     ppo_epochs: int = 2
@@ -149,7 +150,14 @@ def collect_rollouts(
         )
         if trainable_transition:
             states.append(latents.detach().float().cpu())
-        noise_pred = predict_noise(pipe, latents, timestep_tensor, prompt_embeds, config.guidance_scale)
+        noise_pred = predict_noise_chunked(
+            pipe,
+            latents,
+            timestep_tensor,
+            prompt_embeds,
+            config.guidance_scale,
+            config.rollout_chunk_size,
+        )
         next_latents, log_prob = ddpm_step_with_log_prob(
             pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta
         )

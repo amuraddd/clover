@@ -42,7 +42,7 @@ from clover.utils.baseline_utils import (
     normalize_advantages,
     parameter_delta_norm,
     reward_metrics_by_prompt_category,
-    predict_noise,
+    predict_noise_chunked,
     resolve_gpu_ids,
     restore_trainable_parameters,
     safe_metric_mean,
@@ -74,6 +74,7 @@ class DPOKConfig:
     guidance_scale: float = 7.5
     eta: float = 1.0
     min_log_prob_std: float = 1e-4
+    rollout_chunk_size: int = 32
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
     dpok_epochs: int = 2
@@ -132,7 +133,14 @@ def collect_rollouts(
         )
         if trainable_transition:
             states.append(latents.detach().float().cpu())
-        noise_pred = predict_noise(pipe, latents, timestep_tensor, prompt_embeds, config.guidance_scale)
+        noise_pred = predict_noise_chunked(
+            pipe,
+            latents,
+            timestep_tensor,
+            prompt_embeds,
+            config.guidance_scale,
+            config.rollout_chunk_size,
+        )
         next_latents, log_prob = ddpm_step_with_log_prob(
             pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta
         )
@@ -211,7 +219,14 @@ def dpok_update(
                     t = torch.tensor(timestep, device=device, dtype=torch.long)
                     state = states[mb_idx, step_idx].to(device=device, dtype=dtype)
                     action = actions[mb_idx, step_idx].to(device=device, dtype=dtype)
-                    noise_pred = predict_noise(pipe, state, t, prompt_embeds, config.guidance_scale)
+                    noise_pred = predict_noise_chunked(
+                        pipe,
+                        state,
+                        t,
+                        prompt_embeds,
+                        config.guidance_scale,
+                        config.rollout_chunk_size,
+                    )
                     _, log_prob = ddpm_step_with_log_prob(
                         pipe.scheduler,
                         noise_pred,
@@ -224,8 +239,13 @@ def dpok_update(
                         pipe.scheduler, noise_pred, timestep, state, eta=config.eta
                     )
                     with torch.no_grad():
-                        reference_noise = predict_noise(
-                            reference_pipe, state, t, reference_embeds, config.guidance_scale
+                        reference_noise = predict_noise_chunked(
+                            reference_pipe,
+                            state,
+                            t,
+                            reference_embeds,
+                            config.guidance_scale,
+                            config.rollout_chunk_size,
                         )
                         reference_mean, reference_std = ddpm_mean_std(
                             reference_pipe.scheduler,

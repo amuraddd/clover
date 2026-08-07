@@ -58,6 +58,7 @@ DEFAULT_BASELINE_ARGS = {
     "ppo_epochs": 2,
     "lora_alpha": 16,
     "min_log_prob_std": 1e-4,
+    "rollout_chunk_size": 32,
     "guidance_scale": 5.0,
     "adam_epsilon": 1e-8,
     "eta": 1.0,
@@ -88,6 +89,7 @@ def build_default_argv(script_name: str) -> list[str]:
     argv.extend([epoch_flag, str(DEFAULT_BASELINE_ARGS["ppo_epochs"])])
     argv.extend(["--lora-alpha", str(DEFAULT_BASELINE_ARGS["lora_alpha"])])
     argv.extend(["--min-log-prob-std", str(DEFAULT_BASELINE_ARGS["min_log_prob_std"])])
+    argv.extend(["--rollout-chunk-size", str(DEFAULT_BASELINE_ARGS["rollout_chunk_size"])])
     argv.extend(["--reward-type", str(DEFAULT_BASELINE_ARGS["reward_type"])])
     gpu_ids = DEFAULT_BASELINE_ARGS.get("gpu_ids")
     if gpu_ids is not None:
