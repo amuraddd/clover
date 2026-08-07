@@ -32,6 +32,7 @@ from clover.utils.baseline_utils import (
     decode_latents,
     ddpm_mean_std,
     ddpm_step_with_log_prob,
+    is_stochastic_ddpm_transition,
     encode_prompts,
     finite_trainable_parameters,
     gaussian_kl,
@@ -39,6 +40,8 @@ from clover.utils.baseline_utils import (
     load_reference_pipeline,
     load_training_checkpoint,
     normalize_advantages,
+    parameter_delta_norm,
+    reward_metrics_by_prompt_category,
     predict_noise,
     resolve_gpu_ids,
     restore_trainable_parameters,
@@ -70,16 +73,17 @@ class DPOKConfig:
     num_inference_steps: int = 30
     guidance_scale: float = 7.5
     eta: float = 1.0
+    min_log_prob_std: float = 1e-4
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
-    dpok_epochs: int = 1
+    dpok_epochs: int = 2
     minibatch_size: int = 64
-    learning_rate: float = 3e-6
+    learning_rate: float = 1e-5
     adam_beta1: float = 0.9
     adam_beta2: float = 0.999
     adam_epsilon: float = 1e-4
     lora_rank: int = 16
-    lora_alpha: int = 2
+    lora_alpha: int = 16
     lora_dropout: float = 0.0
     lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
     reward_weight: float = 1.0
@@ -87,7 +91,7 @@ class DPOKConfig:
     clip_range: float = 0.1  # CLI compatibility placeholder; unused by DPOK.
     target_kl: float = 0.1
     normalize_rewards: bool = True
-    max_grad_norm: float = 0.1
+    max_grad_norm: float = 1.0
     mixed_precision: bool = True
     gradient_checkpointing: bool = True
     log_every: int = 1
@@ -123,7 +127,9 @@ def collect_rollouts(
     terminal_rewards: Tensor | None = None
     for timestep_tensor in pipe.scheduler.timesteps:
         timestep = int(timestep_tensor.item())
-        trainable_transition = timestep > 0
+        trainable_transition = is_stochastic_ddpm_transition(
+            pipe.scheduler, timestep, eta=config.eta, min_std=config.min_log_prob_std
+        )
         if trainable_transition:
             states.append(latents.detach().float().cpu())
         noise_pred = predict_noise(pipe, latents, timestep_tensor, prompt_embeds, config.guidance_scale)
@@ -176,6 +182,8 @@ def dpok_update(
     batch_size, trajectory_len = states.shape[:2]
     indices = torch.arange(batch_size)
     losses, policy_losses, kl_losses, kls = [], [], [], []
+    grad_norms, parameter_update_norms = [], []
+    timestep_kls: dict[int, list[float]] = {int(timestep): [] for timestep in timesteps}
     skipped_updates = 0
     early_stopped = False
     pipe.unet.train()
@@ -243,6 +251,7 @@ def dpok_update(
                     transition_kl = float(step_kl.mean().detach().cpu())
                     minibatch_transition_kls.append(transition_kl)
                     kls.append(transition_kl)
+                    timestep_kls[int(timestep)].append(transition_kl)
                 minibatch_kl = safe_metric_mean(minibatch_transition_kls)
                 if config.target_kl > 0 and minibatch_kl > config.target_kl:
                     optimizer.zero_grad(set_to_none=True)
@@ -257,11 +266,13 @@ def dpok_update(
                     )
                     if not torch.isfinite(grad_norm):
                         raise FloatingPointError("non-finite LoRA gradients")
+                    grad_norms.append(float(grad_norm.detach().cpu()))
                     optimizer.step()
                     if not finite_trainable_parameters(pipe.unet):
                         restore_trainable_parameters(pipe.unet, snapshot)
                         clear_optimizer_state(optimizer)
                         raise FloatingPointError("AdamW produced non-finite LoRA parameters")
+                    parameter_update_norms.append(parameter_delta_norm(pipe.unet, snapshot))
                     losses.append(float(minibatch_loss.cpu()))
                     policy_losses.append(float(minibatch_policy_loss.cpu()))
                     kl_losses.append(float(minibatch_kl_loss.cpu()))
@@ -287,6 +298,11 @@ def dpok_update(
         else 0.0,
         "skipped_updates": skipped_updates,
         "early_stopped": early_stopped,
+        "grad_norm_pre_clip_mean": safe_metric_mean(grad_norms),
+        "grad_norm_pre_clip_max": max(grad_norms, default=float("nan")),
+        "parameter_update_norm_mean": safe_metric_mean(parameter_update_norms),
+        "timestep_kl": {str(t): safe_metric_mean(values) for t, values in timestep_kls.items()},
+        "reward_by_prompt_category": reward_metrics_by_prompt_category(prompts, terminal_rewards),
     }
 
 

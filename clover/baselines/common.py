@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+
+import numpy as np
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any, TypeVar
@@ -147,12 +150,28 @@ def evaluate(pipe: Any, config: Any, device: torch.device, epoch: int | None = N
     clip_scores = clip_reward(images, prompts, device=device).tolist()
     bert_scores = bert_reward(images, prompts, device=device).tolist()
 
+    def score_summary(scores: list[float]) -> dict[str, float | int]:
+        values = np.asarray(scores, dtype=np.float64)
+        count = int(values.size)
+        std = float(values.std(ddof=1)) if count > 1 else 0.0
+        margin = 1.96 * std / math.sqrt(count) if count > 0 else float("nan")
+        mean = float(values.mean()) if count > 0 else float("nan")
+        return {
+            "mean": mean,
+            "std": std,
+            "count": count,
+            "ci95_low": mean - margin,
+            "ci95_high": mean + margin,
+        }
+
     evaluate_metrics = {
         "epoch": epoch,
         "prompts": prompts,
         "image_paths": [entry["image"] for entry in manifest_entries],
         "clip_reward": clip_scores,
         "bert_reward": bert_scores,
+        "clip_reward_summary": score_summary(clip_scores),
+        "bert_reward_summary": score_summary(bert_scores),
     }
 
     eval_metrics_file = eval_dir / "eval_metrics.json"

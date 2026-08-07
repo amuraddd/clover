@@ -451,3 +451,12 @@ else:
 
 - Removed checkpoint-time image copies from DDPO, DPOK, B2DiffuRL, and MD3PO.
 - Kept the per-epoch images saved alongside training evaluation metrics under each baseline's `training_evals/images` directory.
+
+## 2026-08-07 — Stabilized DDPM policy gradients and expanded learning diagnostics
+
+- Replaced timestep-number filtering with a shared posterior-standard-deviation criterion across DDPO, DPOK, B2-DiffuRL, and MD3PO, leaving deterministic terminal transitions in image sampling while excluding them from log-probability objectives.
+- Removed artificial minimum variance from `ddpm_mean_std()` and made deterministic log-probability evaluation fail explicitly instead of producing saturated PPO ratios.
+- Removed the pre-exponentiation PPO log-ratio clamp; retained standard PPO ratio clipping and added explicit non-finite-ratio handling.
+- Switched shared experiment defaults to CLIP reward and increased learning rate to `1e-5`, LoRA alpha to 16, update epochs to 2, and maximum gradient norm to 1.0 across all baselines; MD3PO replay behavior remains unchanged.
+- Added per-timestep KL/clipping, unclamped log-ratio percentiles, pre-clip gradient norms, LoRA parameter-update norms, prompt-category rewards, fixed-prompt evaluation confidence intervals, and separate MD3PO current/replay reward summaries.
+- Added focused regression coverage and verified 49 of 50 Stable Diffusion scheduler transitions remain trainable while the zero-variance terminal transition is excluded; all four tests and compilation checks pass.

@@ -29,6 +29,7 @@ from clover.baselines.common import (
 )
 from clover.utils.baseline_utils import (
     ddpm_step_with_log_prob,
+    is_stochastic_ddpm_transition,
     decode_latents,
     encode_prompts,
     load_training_checkpoint,
@@ -69,22 +70,22 @@ class MD3POConfig:
     num_inference_steps: int = 30
     guidance_scale: float = 7.5
     eta: float = 1.0
+    min_log_prob_std: float = 1e-4
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
-    ppo_epochs: int = 1
+    ppo_epochs: int = 2
     minibatch_size: int = 64
-    learning_rate: float = 3e-6
+    learning_rate: float = 1e-5
     adam_beta1: float = 0.9
     adam_beta2: float = 0.999
     adam_epsilon: float = 1e-4
     lora_rank: int = 16
-    lora_alpha: int = 2
+    lora_alpha: int = 16
     lora_dropout: float = 0.0
     lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
     clip_range: float = 0.1
-    ppo_log_ratio_clip: float = 2.0
     target_kl: float = 0.1
-    max_grad_norm: float = 0.1
+    max_grad_norm: float = 1.0
     mixed_precision: bool = True
     gradient_checkpointing: bool = True
     log_every: int = 1
@@ -143,7 +144,9 @@ def collect_rollouts(
 
     for timestep_tensor in pipe.scheduler.timesteps:
         timestep = int(timestep_tensor.item())
-        trainable_transition = timestep > 0
+        trainable_transition = is_stochastic_ddpm_transition(
+            pipe.scheduler, timestep, eta=config.eta, min_std=config.min_log_prob_std
+        )
         if trainable_transition:
             states.append(latents.detach().float().cpu())
         noise_pred = predict_noise(pipe, latents, timestep_tensor, prompt_embeds, config.guidance_scale)
@@ -497,6 +500,21 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         
         # apply PPO update to the model using the collected rollouts and save the metrics to history
         metrics = ppo_update(pipe, combined_rollout, optimizer, config, device, dtype)
+        reference_count = int(reference_rollout["rewards"].shape[0])
+        combined_rewards = combined_rollout["rewards"][:, 0].float()
+        current_rewards = combined_rewards[:reference_count]
+        replay_rewards = combined_rewards[reference_count:]
+        metrics.update(
+            current_reward_mean=float(current_rewards.mean()),
+            current_reward_std=float(current_rewards.std(unbiased=False)),
+            replay_reward_mean=float(replay_rewards.mean())
+            if replay_rewards.numel()
+            else float("nan"),
+            replay_reward_std=float(replay_rewards.std(unbiased=False))
+            if replay_rewards.numel() > 1
+            else (0.0 if replay_rewards.numel() else float("nan")),
+            replay_samples=int(replay_rewards.numel()),
+        )
         metrics["epoch"] = epoch
         history.append(metrics)
         save_json(output_dir / "history.json", history)

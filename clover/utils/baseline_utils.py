@@ -261,6 +261,48 @@ def previous_timestep(scheduler: DDPMScheduler, timestep: int) -> int:
     return int(timestep) - step
 
 
+def ddpm_transition_variance(
+    scheduler: DDPMScheduler,
+    timestep: int,
+    device: torch.device | None = None,
+) -> Tensor:
+    """Return the unclamped fixed DDPM posterior variance for one transition."""
+    t = int(timestep)
+    prev_t = previous_timestep(scheduler, t)
+    alphas_cumprod = scheduler.alphas_cumprod.to(device=device, dtype=torch.float32)
+    alpha_prod_t = alphas_cumprod[t]
+    if prev_t >= 0:
+        alpha_prod_t_prev = alphas_cumprod[prev_t]
+    elif hasattr(scheduler, "final_alpha_cumprod"):
+        alpha_prod_t_prev = scheduler.final_alpha_cumprod.to(
+            device=alphas_cumprod.device, dtype=torch.float32
+        )
+    elif hasattr(scheduler, "one"):
+        alpha_prod_t_prev = scheduler.one.to(
+            device=alphas_cumprod.device, dtype=torch.float32
+        )
+    else:
+        alpha_prod_t_prev = torch.ones((), device=alphas_cumprod.device)
+    beta_prod_t = 1 - alpha_prod_t
+    beta_prod_t_prev = 1 - alpha_prod_t_prev
+    current_beta_t = 1 - alpha_prod_t / alpha_prod_t_prev
+    return ((beta_prod_t_prev / beta_prod_t) * current_beta_t).clamp_min(0)
+
+
+def is_stochastic_ddpm_transition(
+    scheduler: DDPMScheduler,
+    timestep: int,
+    eta: float = 1.0,
+    min_std: float = 1e-4,
+) -> bool:
+    """Whether a transition has enough variance for a stable log-probability."""
+    if eta <= 0:
+        return False
+    variance = ddpm_transition_variance(scheduler, timestep)
+    std = float((variance.sqrt() * eta).detach().cpu())
+    return math.isfinite(std) and std >= min_std
+
+
 def ddpm_mean_std(
     scheduler: DDPMScheduler,
     model_output: Tensor,
@@ -316,9 +358,8 @@ def ddpm_mean_std(
     if not torch.isfinite(mean).all():
         raise FloatingPointError("Non-finite DDPM transition mean; reduce LR/clip range or disable mixed precision.")
 
-    variance = (beta_prod_t_prev / beta_prod_t) * current_beta_t
-    variance = variance.clamp(min=1e-12)
-    std = (eta * variance.sqrt()).clamp_min(1e-6)
+    variance = ddpm_transition_variance(scheduler, t, device=sample.device)
+    std = eta * variance.sqrt()
     if not torch.isfinite(std).all():
         raise FloatingPointError("Non-finite DDPM transition std; reduce LR/clip range or disable mixed precision.")
     return mean, std
@@ -327,7 +368,9 @@ def ddpm_mean_std(
 def transition_log_prob(mean: Tensor, std: Tensor, prev_sample: Tensor) -> Tensor:
     prev_sample = prev_sample.float()
     mean = mean.float()
-    std = std.float().clamp_min(1e-6)
+    std = std.float()
+    if (std <= 0).any():
+        raise ValueError("A deterministic DDPM transition has no Gaussian log-probability.")
     log_prob = -0.5 * ((prev_sample - mean) / std).pow(2) - torch.log(std) - 0.5 * math.log(2 * math.pi)
     if not torch.isfinite(log_prob).all():
         raise FloatingPointError("Non-finite transition log-prob; reduce LR/clip range or disable mixed precision.")
@@ -344,9 +387,14 @@ def ddpm_step_with_log_prob(
     eta: float = 1.0,
 ) -> tuple[Tensor, Tensor]:
     mean, std = ddpm_mean_std(scheduler, model_output, timestep, sample, eta=eta)
+    deterministic = bool((std <= 0).all().item())
     if prev_sample is None:
         noise = torch.randn(sample.shape, generator=generator, device=sample.device, dtype=torch.float32)
         prev_sample = (mean + std * noise).to(sample.dtype)
+        if deterministic:
+            return prev_sample, torch.zeros(sample.shape[0], device=sample.device, dtype=torch.float32)
+    elif deterministic:
+        raise ValueError("Cannot evaluate a log-probability for a deterministic DDPM transition.")
     log_prob = transition_log_prob(mean, std, prev_sample)
     return prev_sample, log_prob
 
@@ -360,6 +408,41 @@ def gaussian_kl(mean: Tensor, std: Tensor, ref_mean: Tensor, ref_std: Tensor) ->
     if not torch.isfinite(kl).all():
         raise FloatingPointError("Non-finite Gaussian KL; reduce LR or disable mixed precision.")
     return kl.flatten(1).mean(dim=1)
+
+
+def parameter_delta_norm(module: torch.nn.Module, snapshot: list[Tensor]) -> float:
+    """Return the L2 norm of trainable parameter changes from ``snapshot``."""
+    squared_norm = 0.0
+    with torch.no_grad():
+        for parameter, saved in zip(trainable_parameters(module), snapshot):
+            squared_norm += float((parameter.detach() - saved).float().pow(2).sum().cpu())
+    return math.sqrt(squared_norm)
+
+
+def reward_metrics_by_prompt_category(
+    prompts: list[str], rewards: Tensor
+) -> dict[str, dict[str, float | int]]:
+    """Aggregate terminal rewards into coarse color, spatial, and action groups."""
+    terminal = rewards[:, 0] if rewards.ndim > 1 else rewards
+    grouped: dict[str, list[float]] = {}
+    colors = ("red", "orange", "yellow", "green", "blue", "purple", "pink", "brown")
+    actions = ("playing", "riding", "washing")
+    spatial = (" on ", " under ", "left of", "right of")
+    for prompt, reward in zip(prompts, terminal.detach().float().cpu().tolist()):
+        lowered = f" {prompt.lower()} "
+        if any(f" {color} " in lowered for color in colors):
+            category = "color"
+        elif any(token in lowered for token in spatial):
+            category = "spatial"
+        elif any(f" {action} " in lowered for action in actions):
+            category = "action"
+        else:
+            category = "other"
+        grouped.setdefault(category, []).append(float(reward))
+    return {
+        category: {"mean": float(np.mean(values)), "std": float(np.std(values)), "count": len(values)}
+        for category, values in sorted(grouped.items())
+    }
 
 
 def sample_prompt_batch(train_prompts: tuple[str, ...], batch_size: int) -> list[str]:
@@ -491,6 +574,9 @@ def ppo_update(
     trajectory_len = old_log_probs.shape[1]
     indices = torch.arange(batch_size)
     losses, approx_kls, clip_fracs = [], [], []
+    grad_norms, parameter_update_norms, log_ratio_values = [], [], []
+    timestep_kls: dict[int, list[float]] = {int(timestep): [] for timestep in timesteps}
+    timestep_clip_fracs: dict[int, list[float]] = {int(timestep): [] for timestep in timesteps}
     skipped_updates = 0
     early_stopped = False
 
@@ -531,10 +617,11 @@ def ppo_update(
                         adv = mb_advantages[:, step_idx].to(device=device, dtype=log_prob.dtype)
 
                     log_ratio = log_prob - old
-                    bounded_log_ratio = log_ratio.clamp(
-                        -config.ppo_log_ratio_clip, config.ppo_log_ratio_clip
-                    )
-                    ratio = torch.exp(bounded_log_ratio)
+                    ratio = torch.exp(log_ratio)
+                    if not torch.isfinite(ratio).all():
+                        raise FloatingPointError(
+                            "Non-finite PPO probability ratio; lower the learning rate or inspect transition variance."
+                        )
                     unclipped = ratio * adv
                     clipped = torch.clamp(ratio, 1 - config.clip_range, 1 + config.clip_range) * adv
                     step_loss = -torch.min(unclipped, clipped).mean() / trajectory_len
@@ -543,12 +630,15 @@ def ppo_update(
                     step_loss.backward()
 
                     with torch.no_grad():
-                        approx_kl = ((ratio - 1) - bounded_log_ratio).mean()
+                        approx_kl = ((ratio - 1) - log_ratio).mean()
                         clip_frac = ((ratio - 1).abs() > config.clip_range).float().mean()
+                        log_ratio_values.append(log_ratio.detach().float().cpu().flatten())
                     minibatch_kls.append(float(approx_kl.detach().cpu()))
                     losses.append(float((step_loss * trajectory_len).detach().cpu()))
                     approx_kls.append(float(approx_kl.detach().cpu()))
                     clip_fracs.append(float(clip_frac.detach().cpu()))
+                    timestep_kls[int(timestep)].append(float(approx_kl.detach().cpu()))
+                    timestep_clip_fracs[int(timestep)].append(float(clip_frac.detach().cpu()))
 
                     del state, action, noise_pred, log_prob, old, adv, log_ratio, ratio, unclipped, clipped, step_loss
 
@@ -568,11 +658,13 @@ def ppo_update(
                     if not torch.isfinite(grad_norm):
                         raise FloatingPointError("Non-finite LoRA gradients; skipped this minibatch update.")
 
+                    grad_norms.append(float(grad_norm.detach().cpu()))
                     optimizer.step()
                     if not finite_trainable_parameters(pipe.unet):
                         restore_trainable_parameters(pipe.unet, parameter_snapshot)
                         clear_optimizer_state(optimizer)
                         raise FloatingPointError("AdamW produced non-finite LoRA parameters; restored previous weights and cleared optimizer state.")
+                    parameter_update_norms.append(parameter_delta_norm(pipe.unet, parameter_snapshot))
 
             except FloatingPointError as exc:
                 restore_trainable_parameters(pipe.unet, parameter_snapshot)
@@ -598,6 +690,14 @@ def ppo_update(
         reward_mean = float("nan")
         reward_std = float("nan")
     advantage_values = advantages.float()
+    if log_ratio_values:
+        all_log_ratios = torch.cat(log_ratio_values)
+        quantiles = torch.quantile(
+            all_log_ratios, torch.tensor([0.0, 0.01, 0.5, 0.99, 1.0])
+        ).tolist()
+        log_ratio_percentiles = dict(zip(("p0", "p1", "p50", "p99", "p100"), quantiles))
+    else:
+        log_ratio_percentiles = {}
 
     return {
         "loss": safe_metric_mean(losses),
@@ -614,6 +714,17 @@ def ppo_update(
         "skipped_updates": skipped_updates,
         "early_stopped": early_stopped,
         "selected_samples": int(batch_size),
+        "grad_norm_pre_clip_mean": safe_metric_mean(grad_norms),
+        "grad_norm_pre_clip_max": max(grad_norms, default=float("nan")),
+        "parameter_update_norm_mean": safe_metric_mean(parameter_update_norms),
+        "log_ratio_percentiles": log_ratio_percentiles,
+        "timestep_kl": {str(t): safe_metric_mean(values) for t, values in timestep_kls.items()},
+        "timestep_clip_frac": {
+            str(t): safe_metric_mean(values) for t, values in timestep_clip_fracs.items()
+        },
+        "reward_by_prompt_category": reward_metrics_by_prompt_category(prompts, reward_values)
+        if torch.is_tensor(reward_values)
+        else {},
     }
 
 

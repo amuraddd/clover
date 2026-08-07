@@ -30,6 +30,7 @@ from clover.utils.baseline_utils import (
     backward_progressive_interval_length,
     decode_latents,
     ddpm_step_with_log_prob,
+    is_stochastic_ddpm_transition,
     encode_prompts,
     load_training_checkpoint,
     load_lora_pipeline,
@@ -65,26 +66,26 @@ class B2DiffuRLConfig:
     num_inference_steps: int = 30
     guidance_scale: float = 7.5
     eta: float = 1.0
+    min_log_prob_std: float = 1e-4
     rollouts_per_epoch: int = 256
     branch_size: int = 3
     rollout_chunk_size: int = 32
     initial_interval_steps: int = 6
     train_epochs: int = 10
-    ppo_epochs: int = 1
+    ppo_epochs: int = 2
     minibatch_size: int = 64
-    learning_rate: float = 3e-6
+    learning_rate: float = 1e-5
     adam_beta1: float = 0.9
     adam_beta2: float = 0.999
     adam_epsilon: float = 1e-4
     lora_rank: int = 16
-    lora_alpha: int = 2
+    lora_alpha: int = 16
     lora_dropout: float = 0.0
     lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
     clip_range: float = 0.1
-    ppo_log_ratio_clip: float = 2.0
     target_kl: float = 0.1
     min_reward_gap: float = 0.0
-    max_grad_norm: float = 0.1
+    max_grad_norm: float = 1.0
     mixed_precision: bool = True
     gradient_checkpointing: bool = True
     log_every: int = 1
@@ -186,7 +187,9 @@ def collect_branch_rollouts(
     for step_idx in step_indices:
         timestep_tensor = pipe.scheduler.timesteps[step_idx]
         timestep = timesteps[step_idx]
-        trainable_transition = timestep > 0
+        trainable_transition = is_stochastic_ddpm_transition(
+            pipe.scheduler, timestep, eta=config.eta, min_std=config.min_log_prob_std
+        )
         if trainable_transition:
             states.append(latents.detach().float().cpu())
         noise_pred = predict_noise_chunked(

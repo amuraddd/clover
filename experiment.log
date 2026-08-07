@@ -18,3 +18,2703 @@ xFormers memory efficient attention enabled
 Training 3,188,736 LoRA parameters
 xFormers memory efficient attention enabled
 Training 3,188,736 LoRA parameters
+  0%|          | 0/50 [00:00<?, ?it/s]  0%|          | 0/50 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 33697.49it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38409.08it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 54705.86it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 41485.42it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006197680030018091, 'approx_kl': 0.022706706595026844, 'clip_frac': 0.02, 'reward_mean': 0.6410225033760071, 'reward_std': 0.1307353526353836, 'raw_reward_mean': 0.6410225033760071, 'raw_reward_std': 0.1307353526353836, 'advantage_mean': -3.330409370505549e-08, 'advantage_std': 0.9999998211860657, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 1}
+  2%|▏         | 1/50 [31:59<26:07:16, 1919.11s/it]  2%|▏         | 1/50 [32:04<26:11:32, 1924.34s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 36348.59it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 65254.82it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.00619818557985127, 'approx_kl': 0.022706706731851226, 'clip_frac': 0.02, 'reward_mean': 0.6410225629806519, 'reward_std': 0.1307353526353836, 'raw_reward_mean': 0.6410225629806519, 'raw_reward_std': 0.1307353526353836, 'advantage_mean': -4.813074951925955e-07, 'advantage_std': 0.9999998211860657, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 1}
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 46436.48it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40977.74it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.00623857417376712, 'approx_kl': 0.02270670636486102, 'clip_frac': 0.02, 'reward_mean': 0.628162145614624, 'reward_std': 0.14818072319030762, 'raw_reward_mean': 0.628162145614624, 'raw_reward_std': 0.14818072319030762, 'advantage_mean': 5.677342329590829e-08, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 2}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.95it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.95it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.82it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.82it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.82it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.84it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.85it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.85it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.84it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.84it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.84it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.84it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.84it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:05,  2.84it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.84it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.84it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.85it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.84it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.84it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.84it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.84it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.84it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.84it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.84it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.84it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.84it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.84it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.84it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 44098.55it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 41143.50it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.016683652386069298, 'approx_kl': 0.022706706890755022, 'clip_frac': 0.02, 'reward_mean': 0.6241453289985657, 'reward_std': 0.1429414302110672, 'raw_reward_mean': 0.6241453289985657, 'raw_reward_std': 0.1429414302110672, 'advantage_mean': 3.427947774525819e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 289, 'epoch': 2}
+  4%|▍         | 2/50 [1:04:30<25:50:36, 1938.25s/it]
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.92it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.94it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.82it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.85it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.85it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.83it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.81it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.82it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.82it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.82it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.82it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.82it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.82it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:12<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.82it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.82it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.82it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.82it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.81it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 50990.97it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 39895.81it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+  4%|▍         | 2/50 [1:08:03<27:30:00, 2062.50s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 57403.02it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 47258.39it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 47277.50it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 42037.30it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006251104618422687, 'approx_kl': 0.02270670701839208, 'clip_frac': 0.02, 'reward_mean': 0.6446806192398071, 'reward_std': 0.1349363476037979, 'raw_reward_mean': 0.6446806192398071, 'raw_reward_std': 0.1349363476037979, 'advantage_mean': 4.1276217643826385e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 3}
+  6%|▌         | 3/50 [1:36:31<25:12:08, 1930.39s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 52998.85it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 55795.59it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.016034338176250457, 'approx_kl': 0.02270670736390496, 'clip_frac': 0.02, 'reward_mean': 0.6396155953407288, 'reward_std': 0.13413305580615997, 'raw_reward_mean': 0.6396155953407288, 'raw_reward_std': 0.13413305580615997, 'advantage_mean': 3.107550980985252e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 294, 'epoch': 3}
+  6%|▌         | 3/50 [1:44:00<27:29:31, 2105.78s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 49778.09it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 53351.80it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006381723657250404, 'approx_kl': 0.02270670636612067, 'clip_frac': 0.02, 'reward_mean': 0.6469380259513855, 'reward_std': 0.15095405280590057, 'raw_reward_mean': 0.6469380259513855, 'raw_reward_std': 0.15095405280590057, 'advantage_mean': -5.778670129075181e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 4}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.95it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.95it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.81it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.85it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.81it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.85it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.85it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.82it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.84it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.84it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.84it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.84it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.84it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.85it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.84it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.84it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.85it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.84it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:05,  2.83it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.84it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.82it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.84it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.82it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.84it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.82it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.84it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.84it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.84it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.83it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 37775.01it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 39018.65it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+  8%|▊         | 4/50 [2:09:03<24:46:21, 1938.73s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40954.25it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 34371.55it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.014748147390782833, 'approx_kl': 0.02270670650368722, 'clip_frac': 0.02, 'reward_mean': 0.6393845081329346, 'reward_std': 0.14685024321079254, 'raw_reward_mean': 0.6393845081329346, 'raw_reward_std': 0.14685024321079254, 'advantage_mean': 7.495433607118684e-09, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 299, 'epoch': 4}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.95it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.95it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.82it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.82it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.82it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.83it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.82it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.82it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.82it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.82it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.82it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.82it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.81it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.82it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.83it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 50825.07it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 31895.85it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+  8%|▊         | 4/50 [2:21:06<27:30:48, 2153.24s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 45855.81it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 43052.64it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006091860188171268, 'approx_kl': 0.022706706582766856, 'clip_frac': 0.02, 'reward_mean': 0.641944944858551, 'reward_std': 0.15132282674312592, 'raw_reward_mean': 0.641944944858551, 'raw_reward_std': 0.15132282674312592, 'advantage_mean': 4.079937809819967e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 5}
+Saved checkpoint for completed epoch 5 to outputs/ddpo/checkpoint/checkpoint.pt
+ 10%|█         | 5/50 [2:41:06<24:09:51, 1933.14s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 49273.67it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 37116.04it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.013424562811851502, 'approx_kl': 0.022706706572703003, 'clip_frac': 0.02, 'reward_mean': 0.638411819934845, 'reward_std': 0.14406076073646545, 'raw_reward_mean': 0.638411819934845, 'raw_reward_std': 0.14406076073646545, 'advantage_mean': 7.759589237821274e-08, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 293, 'epoch': 5}
+Saved checkpoint for completed epoch 5 to outputs/md3po/checkpoint/checkpoint.pt
+ 10%|█         | 5/50 [2:57:04<26:56:04, 2154.76s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 36280.12it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 54005.11it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006252856235951185, 'approx_kl': 0.022706707009881484, 'clip_frac': 0.02, 'reward_mean': 0.642974853515625, 'reward_std': 0.1431649923324585, 'raw_reward_mean': 0.642974853515625, 'raw_reward_std': 0.1431649923324585, 'advantage_mean': -3.5911799756149776e-08, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 6}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.98it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.97it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.84it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.87it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.84it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.82it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.84it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.84it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.84it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.84it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:05,  2.84it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.82it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.82it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.84it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.84it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.84it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.84it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.84it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.83it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 48058.57it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 39101.15it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 12%|█▏        | 6/50 [3:13:40<23:42:47, 1940.17s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 46149.15it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 41770.79it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.01722724662721157, 'approx_kl': 0.02270670684854001, 'clip_frac': 0.02, 'reward_mean': 0.6328959465026855, 'reward_std': 0.1488719880580902, 'raw_reward_mean': 0.6328959465026855, 'raw_reward_std': 0.1488719880580902, 'advantage_mean': 2.7058877094532363e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 292, 'epoch': 6}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.94it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.95it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.82it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.83it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.82it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.83it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.82it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.82it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.82it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.82it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.82it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.82it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 43023.63it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 45234.18it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 12%|█▏        | 6/50 [3:33:34<26:28:53, 2166.67s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 30360.02it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 58617.22it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006168118938803673, 'approx_kl': 0.022706706724493417, 'clip_frac': 0.02, 'reward_mean': 0.6372117400169373, 'reward_std': 0.13729166984558105, 'raw_reward_mean': 0.6372117400169373, 'raw_reward_std': 0.13729166984558105, 'advantage_mean': -2.786517150354939e-08, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 7}
+ 14%|█▍        | 7/50 [3:45:42<23:06:18, 1934.38s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40598.07it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 41781.51it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.004126722821965813, 'approx_kl': 0.022706706467397454, 'clip_frac': 0.02, 'reward_mean': 0.6273682713508606, 'reward_std': 0.14089259505271912, 'raw_reward_mean': 0.6273682713508606, 'raw_reward_std': 0.14089259505271912, 'advantage_mean': 4.3100780544591544e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 288, 'epoch': 7}
+ 14%|█▍        | 7/50 [4:09:02<25:43:45, 2154.09s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 48802.17it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 39857.70it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006384831871837377, 'approx_kl': 0.02270670712685387, 'clip_frac': 0.02, 'reward_mean': 0.6405174136161804, 'reward_std': 0.14442135393619537, 'raw_reward_mean': 0.6405174136161804, 'raw_reward_std': 0.14442135393619537, 'advantage_mean': 2.7894972731701273e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 8}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.99it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.96it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.87it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.81it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.85it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.86it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.82it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.82it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.82it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.85it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.82it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.83it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.82it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.82it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.84it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.84it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.82it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.84it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.83it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 52539.88it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 42943.58it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 16%|█▌        | 8/50 [4:18:13<22:37:44, 1939.62s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 46197.51it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 44955.52it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.005376441493630409, 'approx_kl': 0.022706707055403983, 'clip_frac': 0.02, 'reward_mean': 0.6347970962524414, 'reward_std': 0.1443793624639511, 'raw_reward_mean': 0.6347970962524414, 'raw_reward_std': 0.1443793624639511, 'advantage_mean': 3.7688159260085285e-09, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 291, 'epoch': 8}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  3.00it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.98it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.84it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.87it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.90it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.85it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.84it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.82it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.84it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.82it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.82it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.82it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 37831.20it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 42498.37it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 16%|█▌        | 8/50 [4:45:21<25:13:22, 2161.96s/it] 18%|█▊        | 9/50 [4:50:14<22:01:24, 1933.78s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 33710.08it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40713.25it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006225559338927269, 'approx_kl': 0.022706706507551643, 'clip_frac': 0.02, 'reward_mean': 0.6429023146629333, 'reward_std': 0.1353781372308731, 'raw_reward_mean': 0.6429023146629333, 'raw_reward_std': 0.1353781372308731, 'advantage_mean': -7.577240523914952e-08, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 9}
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 43291.20it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 37702.48it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006082321787253022, 'approx_kl': 0.022706706349645174, 'clip_frac': 0.02, 'reward_mean': 0.6316714286804199, 'reward_std': 0.15396176278591156, 'raw_reward_mean': 0.6316714286804199, 'raw_reward_std': 0.15396176278591156, 'advantage_mean': 3.959238483730587e-07, 'advantage_std': 0.9999998211860657, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 10}
+Saved checkpoint for completed epoch 10 to outputs/ddpo/checkpoint/checkpoint.pt
+ 18%|█▊        | 9/50 [5:21:05<24:33:32, 2156.41s/it]
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.95it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.95it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.81it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.85it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.85it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.84it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.82it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.85it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.82it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.82it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.83it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.82it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.82it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.82it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.82it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.84it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.84it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 37862.24it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 47534.47it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.02529918600618839, 'approx_kl': 0.02270670616719659, 'clip_frac': 0.02, 'reward_mean': 0.6341286301612854, 'reward_std': 0.1399673968553543, 'raw_reward_mean': 0.6341286301612854, 'raw_reward_std': 0.1399673968553543, 'advantage_mean': -2.0263935596176452e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 290, 'epoch': 9}
+ 20%|██        | 10/50 [5:22:46<21:32:49, 1939.24s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 51047.39it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 54064.32it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 55054.97it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 57023.37it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.017649720411747696, 'approx_kl': 0.02270670701788868, 'clip_frac': 0.02, 'reward_mean': 0.6252237558364868, 'reward_std': 0.1486482471227646, 'raw_reward_mean': 0.6252237558364868, 'raw_reward_std': 0.1486482471227646, 'advantage_mean': 9.09223416556415e-08, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 295, 'epoch': 10}
+Saved checkpoint for completed epoch 10 to outputs/md3po/checkpoint/checkpoint.pt
+ 22%|██▏       | 11/50 [5:54:46<20:56:44, 1933.45s/it]
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.93it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.94it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.85it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.84it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.83it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.83it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.82it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.83it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.82it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.84it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.82it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.82it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.82it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.82it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.82it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.81it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.81it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.82it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.82it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.81it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 43479.05it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 56355.92it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006069349609315395, 'approx_kl': 0.022706706643639336, 'clip_frac': 0.02, 'reward_mean': 0.6399533152580261, 'reward_std': 0.14605019986629486, 'raw_reward_mean': 0.6399533152580261, 'raw_reward_std': 0.14605019986629486, 'advantage_mean': 6.660818741011099e-08, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 11}
+ 20%|██        | 10/50 [5:57:48<24:07:09, 2170.75s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 49218.66it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 56764.80it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 47097.92it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 55899.08it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.0062667567422613505, 'approx_kl': 0.02270670652433637, 'clip_frac': 0.02, 'reward_mean': 0.6369602680206299, 'reward_std': 0.1391129344701767, 'raw_reward_mean': 0.6369602680206299, 'raw_reward_std': 0.1391129344701767, 'advantage_mean': 3.1724573545943713e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 12}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.99it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.97it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.82it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.82it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.82it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.84it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:05,  2.84it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.82it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.82it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.84it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.84it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.84it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.83it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.83it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 41150.48it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40742.81it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 24%|██▍       | 12/50 [6:27:15<20:27:33, 1938.26s/it] 22%|██▏       | 11/50 [6:33:43<23:27:51, 2165.93s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40087.00it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 49683.71it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.01117804668005556, 'approx_kl': 0.02270670711064742, 'clip_frac': 0.02, 'reward_mean': 0.6387404799461365, 'reward_std': 0.14597029983997345, 'raw_reward_mean': 0.6387404799461365, 'raw_reward_std': 0.14597029983997345, 'advantage_mean': -1.7862677736957266e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 293, 'epoch': 11}
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 32865.71it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 41963.59it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006317380927503109, 'approx_kl': 0.022706706498474886, 'clip_frac': 0.02, 'reward_mean': 0.6529688835144043, 'reward_std': 0.1318722665309906, 'raw_reward_mean': 0.6529688835144043, 'raw_reward_std': 0.1318722665309906, 'advantage_mean': 3.2603739441583457e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 13}
+ 26%|██▌       | 13/50 [6:59:16<19:51:57, 1932.91s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 54116.36it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 63342.28it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.0005971568897366524, 'approx_kl': 0.022706706388897487, 'clip_frac': 0.02, 'reward_mean': 0.6304002404212952, 'reward_std': 0.14151032269001007, 'raw_reward_mean': 0.6304002404212952, 'raw_reward_std': 0.14151032269001007, 'advantage_mean': -3.0645159654341114e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 299, 'epoch': 12}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.92it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.94it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.82it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.85it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.82it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.82it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.82it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.82it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.82it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.83it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.82it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.81it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.82it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.82it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.82it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.82it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.82it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.82it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.82it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.82it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.81it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38677.91it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 62128.35it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 24%|██▍       | 12/50 [7:10:51<23:03:49, 2185.00s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38523.19it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 47616.52it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006154919024556876, 'approx_kl': 0.022706707244187784, 'clip_frac': 0.02, 'reward_mean': 0.6398427486419678, 'reward_std': 0.14334075152873993, 'raw_reward_mean': 0.6398427486419678, 'raw_reward_std': 0.14334075152873993, 'advantage_mean': 2.868473529815674e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 14}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.99it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.97it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.82it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.85it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.87it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.82it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.82it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.82it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.84it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.85it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.84it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.85it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.84it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.84it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.85it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.84it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.83it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.84it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.84it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.84it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.82it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.82it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.83it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.83it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 43967.59it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 44091.95it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 28%|██▊       | 14/50 [7:31:46<19:22:53, 1938.15s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 36405.28it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 39775.87it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.002718573451042175, 'approx_kl': 0.022706705441500278, 'clip_frac': 0.02, 'reward_mean': 0.6458507776260376, 'reward_std': 0.13278427720069885, 'raw_reward_mean': 0.6458507776260376, 'raw_reward_std': 0.13278427720069885, 'advantage_mean': 1.4620813715282566e-07, 'advantage_std': 0.9999998211860657, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 290, 'epoch': 13}
+ 26%|██▌       | 13/50 [7:46:35<22:19:45, 2172.58s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 55082.48it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 47580.33it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006015573441982269, 'approx_kl': 0.022706706492174364, 'clip_frac': 0.02, 'reward_mean': 0.6472606062889099, 'reward_std': 0.1328749656677246, 'raw_reward_mean': 0.6472606062889099, 'raw_reward_std': 0.1328749656677246, 'advantage_mean': 1.99079508433897e-07, 'advantage_std': 0.9999998211860657, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 15}
+Saved checkpoint for completed epoch 15 to outputs/ddpo/checkpoint/checkpoint.pt
+ 30%|███       | 15/50 [8:03:48<18:47:40, 1933.15s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 41889.02it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 47247.41it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.02298039371520281, 'approx_kl': 0.02270670647458479, 'clip_frac': 0.02, 'reward_mean': 0.6389696598052979, 'reward_std': 0.14389953017234802, 'raw_reward_mean': 0.6389696598052979, 'raw_reward_std': 0.14389953017234802, 'advantage_mean': -2.0129457212192392e-08, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 289, 'epoch': 14}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.97it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.96it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.84it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.81it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.82it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.81it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.82it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.82it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.83it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.82it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.83it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.83it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.82it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.82it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.82it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.81it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.82it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.82it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.82it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.82it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.81it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.82it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.82it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40407.88it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 59162.76it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 28%|██▊       | 14/50 [8:22:38<21:41:45, 2169.58s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 45099.02it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 61762.87it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006224346049129963, 'approx_kl': 0.022706706479505102, 'clip_frac': 0.02, 'reward_mean': 0.6363518238067627, 'reward_std': 0.13645385205745697, 'raw_reward_mean': 0.6363518238067627, 'raw_reward_std': 0.13645385205745697, 'advantage_mean': 4.2259694055246655e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 16}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.99it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.98it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.84it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.82it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.85it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.84it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:05,  2.84it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.84it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.84it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.84it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.84it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.84it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.84it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.83it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.84it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 34741.37it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40502.49it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 32%|███▏      | 16/50 [8:36:18<18:18:22, 1938.32s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 53805.21it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 54469.66it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.004904595997184515, 'approx_kl': 0.02270670646980166, 'clip_frac': 0.02, 'reward_mean': 0.64176344871521, 'reward_std': 0.13635315001010895, 'raw_reward_mean': 0.64176344871521, 'raw_reward_std': 0.13635315001010895, 'advantage_mean': -5.436947390080604e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 285, 'epoch': 15}
+Saved checkpoint for completed epoch 15 to outputs/md3po/checkpoint/checkpoint.pt
+ 30%|███       | 15/50 [8:57:44<20:54:29, 2150.54s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 54047.07it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 53019.81it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006284299958497286, 'approx_kl': 0.02270670653932939, 'clip_frac': 0.02, 'reward_mean': 0.6379874348640442, 'reward_std': 0.14247959852218628, 'raw_reward_mean': 0.6379874348640442, 'raw_reward_std': 0.14247959852218628, 'advantage_mean': 7.539987478821786e-08, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 17}
+ 34%|███▍      | 17/50 [9:08:23<17:43:53, 1934.35s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 55444.24it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 46007.86it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.009153506465256214, 'approx_kl': 0.022706706288007097, 'clip_frac': 0.02, 'reward_mean': 0.6322796940803528, 'reward_std': 0.13339269161224365, 'raw_reward_mean': 0.6322796940803528, 'raw_reward_std': 0.13339269161224365, 'advantage_mean': 2.8331263024483633e-07, 'advantage_std': 0.9999998211860657, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 294, 'epoch': 16}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.93it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.95it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.82it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.82it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.83it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.83it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.82it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.82it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 46084.83it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 49211.95it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006377531464677304, 'approx_kl': 0.02270670648790201, 'clip_frac': 0.02, 'reward_mean': 0.6398119330406189, 'reward_std': 0.1487509161233902, 'raw_reward_mean': 0.6398119330406189, 'raw_reward_std': 0.1487509161233902, 'advantage_mean': -2.583861373750551e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 18}
+ 32%|███▏      | 16/50 [9:34:21<20:26:28, 2164.37s/it]
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.98it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.96it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.83it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.82it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.82it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.83it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.82it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.83it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:05,  2.83it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.84it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.84it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.84it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.84it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.82it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.83it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38426.19it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 53227.90it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 36%|███▌      | 18/50 [9:40:53<17:14:08, 1939.02s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 32881.51it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 47937.73it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 42822.12it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 36871.33it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.0012983977794647217, 'approx_kl': 0.0227067070590094, 'clip_frac': 0.02, 'reward_mean': 0.6311595439910889, 'reward_std': 0.13846085965633392, 'raw_reward_mean': 0.6311595439910889, 'raw_reward_std': 0.13846085965633392, 'advantage_mean': -7.516510436289536e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 294, 'epoch': 17}
+ 34%|███▍      | 17/50 [10:10:20<19:49:36, 2162.92s/it] 38%|███▊      | 19/50 [10:12:54<16:38:58, 1933.51s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 39715.45it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 45613.26it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006084428292233497, 'approx_kl': 0.022706706333069634, 'clip_frac': 0.02, 'reward_mean': 0.6454097032546997, 'reward_std': 0.13251852989196777, 'raw_reward_mean': 0.6454097032546997, 'raw_reward_std': 0.13251852989196777, 'advantage_mean': 2.87592399672576e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 19}
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 58156.88it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40512.57it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006304551102221012, 'approx_kl': 0.022706705831396903, 'clip_frac': 0.02, 'reward_mean': 0.6394595503807068, 'reward_std': 0.13160361349582672, 'raw_reward_mean': 0.6394595503807068, 'raw_reward_std': 0.13160361349582672, 'advantage_mean': 4.636496271359647e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 20}
+Saved checkpoint for completed epoch 20 to outputs/ddpo/checkpoint/checkpoint.pt
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.95it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.95it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.87it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.85it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.82it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.82it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.82it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.84it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.84it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.84it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.84it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.84it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.83it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.83it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 54298.54it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40943.72it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.0032058211490511896, 'approx_kl': 0.02270670705087447, 'clip_frac': 0.02, 'reward_mean': 0.6330527067184448, 'reward_std': 0.1456345170736313, 'raw_reward_mean': 0.6330527067184448, 'raw_reward_std': 0.1456345170736313, 'advantage_mean': 4.0014305757729574e-10, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 286, 'epoch': 18}
+ 40%|████      | 20/50 [10:45:24<16:09:16, 1938.55s/it]
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  3.00it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.97it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.85it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.87it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.90it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.87it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.84it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.85it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.84it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.82it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.82it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.85it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.82it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.83it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.84it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.84it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.84it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.84it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.84it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.83it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 48184.63it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 61610.89it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 36%|███▌      | 18/50 [10:46:07<19:11:00, 2158.13s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 37860.08it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 46670.20it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 34813.30it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 44103.90it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006235707271844149, 'approx_kl': 0.022706706919652788, 'clip_frac': 0.02, 'reward_mean': 0.6448009014129639, 'reward_std': 0.14654414355754852, 'raw_reward_mean': 0.6448009014129639, 'raw_reward_std': 0.14654414355754852, 'advantage_mean': -8.18073715436185e-08, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 21}
+ 42%|████▏     | 21/50 [11:17:28<15:34:53, 1934.26s/it] 38%|███▊      | 19/50 [11:21:14<18:27:03, 2142.69s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 41970.55it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 54899.64it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.0001620604544878006, 'approx_kl': 0.022706706889753302, 'clip_frac': 0.02, 'reward_mean': 0.6370636224746704, 'reward_std': 0.1345382034778595, 'raw_reward_mean': 0.6370636224746704, 'raw_reward_std': 0.1345382034778595, 'advantage_mean': 6.531997200909245e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 284, 'epoch': 19}
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 47811.87it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 30957.22it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006255115933017805, 'approx_kl': 0.022706706555318305, 'clip_frac': 0.02, 'reward_mean': 0.642508864402771, 'reward_std': 0.14522475004196167, 'raw_reward_mean': 0.642508864402771, 'raw_reward_std': 0.14522475004196167, 'advantage_mean': -4.4293702217146347e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 22}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  3.00it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.97it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.84it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.87it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.82it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.82it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.82it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.84it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.84it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.84it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.84it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.83it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.83it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 42542.05it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 55766.91it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.01669239351153374, 'approx_kl': 0.022706706775876228, 'clip_frac': 0.02, 'reward_mean': 0.6314771771430969, 'reward_std': 0.13345813751220703, 'raw_reward_mean': 0.6314771771430969, 'raw_reward_std': 0.13345813751220703, 'advantage_mean': -1.2295113549498637e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 288, 'epoch': 20}
+Saved checkpoint for completed epoch 20 to outputs/md3po/checkpoint/checkpoint.pt
+ 44%|████▍     | 22/50 [11:50:04<15:05:43, 1940.83s/it]
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  3.00it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.98it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.85it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.82it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.82it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.82it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.82it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.82it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.83it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.82it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.83it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.82it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.83it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.82it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.82it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.82it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.82it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.81it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.81it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 41549.51it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 43004.86it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 40%|████      | 20/50 [11:57:10<17:53:24, 2146.81s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 39374.93it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 45402.02it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 36573.06it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 43224.17it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.0062459871917963025, 'approx_kl': 0.022706706665539967, 'clip_frac': 0.02, 'reward_mean': 0.6426064968109131, 'reward_std': 0.13785825669765472, 'raw_reward_mean': 0.6426064968109131, 'raw_reward_std': 0.13785825669765472, 'advantage_mean': -6.169080535300964e-08, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 23}
+ 46%|████▌     | 23/50 [12:22:10<14:31:16, 1936.15s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 39472.86it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 54707.70it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.024089377664029597, 'approx_kl': 0.022706706629399092, 'clip_frac': 0.02, 'reward_mean': 0.6369140148162842, 'reward_std': 0.1478523463010788, 'raw_reward_mean': 0.6369140148162842, 'raw_reward_std': 0.1478523463010788, 'advantage_mean': -1.8801008749846915e-08, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 280, 'epoch': 21}
+ 42%|████▏     | 21/50 [12:31:57<17:08:56, 2128.83s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 37839.13it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 52253.72it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.0062465578317642215, 'approx_kl': 0.022706706674243834, 'clip_frac': 0.02, 'reward_mean': 0.6407407522201538, 'reward_std': 0.14972129464149475, 'raw_reward_mean': 0.6407407522201538, 'raw_reward_std': 0.14972129464149475, 'advantage_mean': 1.0188669108401882e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 24}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.98it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.96it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.87it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.90it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.82it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.84it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.84it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.85it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.84it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.84it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.84it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.84it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.85it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.83it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:05,  2.84it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.84it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.84it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.84it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.84it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.84it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.84it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.83it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.84it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.84it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.83it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38470.15it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 56923.64it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 48%|████▊     | 24/50 [12:54:41<14:00:56, 1940.62s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 32330.65it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 46239.24it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.017766541749238966, 'approx_kl': 0.022706707055159904, 'clip_frac': 0.02, 'reward_mean': 0.6359668374061584, 'reward_std': 0.1441480666399002, 'raw_reward_mean': 0.6359668374061584, 'raw_reward_std': 0.1441480666399002, 'advantage_mean': -1.5555781374132494e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 289, 'epoch': 22}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.96it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.96it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.81it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.85it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.85it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.84it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.82it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.85it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.82it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.82it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.82it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.83it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.84it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.84it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.82it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.82it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.82it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.82it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.82it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.82it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38458.22it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 50969.02it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 44%|████▍     | 22/50 [13:08:05<16:38:51, 2140.40s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 47113.58it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 47934.90it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.005903432965278625, 'approx_kl': 0.02270670663391684, 'clip_frac': 0.02, 'reward_mean': 0.6366352438926697, 'reward_std': 0.14644081890583038, 'raw_reward_mean': 0.6366352438926697, 'raw_reward_std': 0.14644081890583038, 'advantage_mean': 2.674758547982492e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 25}
+Saved checkpoint for completed epoch 25 to outputs/ddpo/checkpoint/checkpoint.pt
+ 50%|█████     | 25/50 [13:26:43<13:26:17, 1935.09s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38984.96it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 49319.33it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.018816060692071916, 'approx_kl': 0.022706706366256362, 'clip_frac': 0.02, 'reward_mean': 0.6369602084159851, 'reward_std': 0.13443391025066376, 'raw_reward_mean': 0.6369602084159851, 'raw_reward_std': 0.13443391025066376, 'advantage_mean': 3.170649165440409e-07, 'advantage_std': 0.9999998211860657, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 300, 'epoch': 23}
+ 46%|████▌     | 23/50 [13:44:50<16:11:52, 2159.71s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 43447.63it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 42818.16it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006179860868724063, 'approx_kl': 0.02270670663870078, 'clip_frac': 0.02, 'reward_mean': 0.6414362192153931, 'reward_std': 0.14505988359451294, 'raw_reward_mean': 0.6414362192153931, 'raw_reward_std': 0.14505988359451294, 'advantage_mean': -7.339194212363509e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 26}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.99it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.97it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.82it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.85it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.84it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.85it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.84it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.85it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.84it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.84it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.82it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.82it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.84it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.83it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:05,  2.84it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.84it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.84it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.82it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.84it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.84it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.84it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.83it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.84it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.84it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.83it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.84it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40019.89it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 38480.76it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 52%|█████▏    | 26/50 [13:59:17<12:56:19, 1940.81s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 35683.04it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 59532.85it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.012783261656761169, 'approx_kl': 0.022706706805488884, 'clip_frac': 0.02, 'reward_mean': 0.6321485042572021, 'reward_std': 0.14702996611595154, 'raw_reward_mean': 0.6321485042572021, 'raw_reward_std': 0.14702996611595154, 'advantage_mean': -9.297493619442321e-08, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 287, 'epoch': 24}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.99it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.98it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.84it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.87it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.85it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.84it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:13,  2.84it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.82it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.84it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.82it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.82it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.82it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.82it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.83it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.81it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38477.61it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 56901.75it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+ 48%|████▊     | 24/50 [14:20:42<15:34:55, 2157.51s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 33028.22it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40852.24it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006087691697175614, 'approx_kl': 0.022706707049574105, 'clip_frac': 0.02, 'reward_mean': 0.6331121325492859, 'reward_std': 0.14326652884483337, 'raw_reward_mean': 0.6331121325492859, 'raw_reward_std': 0.14326652884483337, 'advantage_mean': -1.2218951894737984e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 27}
+ 54%|█████▍    | 27/50 [14:31:19<12:21:46, 1935.06s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 35163.17it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 55306.37it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.006330348365008831, 'approx_kl': 0.022706706024621326, 'clip_frac': 0.02, 'reward_mean': 0.6402783393859863, 'reward_std': 0.14116434752941132, 'raw_reward_mean': 0.6402783393859863, 'raw_reward_std': 0.14116434752941132, 'advantage_mean': 1.128017927953806e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 256, 'epoch': 28}
+ 50%|█████     | 25/50 [14:56:43<14:59:27, 2158.71s/it]
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.98it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.97it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.83it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.86it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.88it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.82it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.84it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.85it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.82it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.83it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.84it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.83it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.85it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.82it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.82it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.82it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.84it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.84it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.83it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.84it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.83it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:05,  2.84it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.83it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.84it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.84it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.84it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.85it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.84it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.84it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.84it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.84it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.83it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.83it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.84it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.84it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.84it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.83it/s][A100%|██████████| 50/50 [00:17<00:00,  2.84it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 46769.27it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 35438.90it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.00807504989206791, 'approx_kl': 0.022706706829954307, 'clip_frac': 0.02, 'reward_mean': 0.6315402984619141, 'reward_std': 0.14503739774227142, 'raw_reward_mean': 0.6315402984619141, 'raw_reward_std': 0.14503739774227142, 'advantage_mean': -1.6326383445175452e-07, 'advantage_std': 0.9999999403953552, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 293, 'epoch': 25}
+Saved checkpoint for completed epoch 25 to outputs/md3po/checkpoint/checkpoint.pt
+ 56%|█████▌    | 28/50 [15:03:47<11:51:01, 1939.18s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38426.93it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40308.87it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 46349.69it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 43785.88it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': 0.011025650344789029, 'approx_kl': 0.02270670656675735, 'clip_frac': 0.02, 'reward_mean': 0.635784387588501, 'reward_std': 0.1448851227760315, 'raw_reward_mean': 0.635784387588501, 'raw_reward_std': 0.1448851227760315, 'advantage_mean': -3.5552847066355753e-07, 'advantage_std': 0.9999998807907104, 'skipped_updates': 0, 'early_stopped': False, 'selected_samples': 293, 'epoch': 26}
+
+  0%|          | 0/50 [00:00<?, ?it/s][A
+  2%|▏         | 1/50 [00:00<00:16,  2.98it/s][A
+  4%|▍         | 2/50 [00:00<00:16,  2.97it/s][A
+  6%|▌         | 3/50 [00:01<00:16,  2.84it/s][A
+  8%|▊         | 4/50 [00:01<00:16,  2.87it/s][A
+ 10%|█         | 5/50 [00:01<00:15,  2.89it/s][A
+ 12%|█▏        | 6/50 [00:02<00:15,  2.83it/s][A
+ 14%|█▍        | 7/50 [00:02<00:15,  2.85it/s][A
+ 16%|█▌        | 8/50 [00:02<00:14,  2.86it/s][A
+ 18%|█▊        | 9/50 [00:03<00:14,  2.83it/s][A
+ 20%|██        | 10/50 [00:03<00:14,  2.85it/s][A
+ 22%|██▏       | 11/50 [00:03<00:13,  2.84it/s][A
+ 24%|██▍       | 12/50 [00:04<00:13,  2.82it/s][A
+ 26%|██▌       | 13/50 [00:04<00:12,  2.85it/s][A
+ 28%|██▊       | 14/50 [00:04<00:12,  2.83it/s][A
+ 30%|███       | 15/50 [00:05<00:12,  2.82it/s][A
+ 32%|███▏      | 16/50 [00:05<00:11,  2.84it/s][A
+ 34%|███▍      | 17/50 [00:05<00:11,  2.83it/s][A
+ 36%|███▌      | 18/50 [00:06<00:11,  2.83it/s][A
+ 38%|███▊      | 19/50 [00:06<00:10,  2.84it/s][A
+ 40%|████      | 20/50 [00:07<00:10,  2.83it/s][A
+ 42%|████▏     | 21/50 [00:07<00:10,  2.83it/s][A
+ 44%|████▍     | 22/50 [00:07<00:09,  2.84it/s][A
+ 46%|████▌     | 23/50 [00:08<00:09,  2.83it/s][A
+ 48%|████▊     | 24/50 [00:08<00:09,  2.83it/s][A
+ 50%|█████     | 25/50 [00:08<00:08,  2.84it/s][A
+ 52%|█████▏    | 26/50 [00:09<00:08,  2.83it/s][A
+ 54%|█████▍    | 27/50 [00:09<00:08,  2.83it/s][A
+ 56%|█████▌    | 28/50 [00:09<00:07,  2.83it/s][A
+ 58%|█████▊    | 29/50 [00:10<00:07,  2.82it/s][A
+ 60%|██████    | 30/50 [00:10<00:07,  2.82it/s][A
+ 62%|██████▏   | 31/50 [00:10<00:06,  2.83it/s][A
+ 64%|██████▍   | 32/50 [00:11<00:06,  2.83it/s][A
+ 66%|██████▌   | 33/50 [00:11<00:06,  2.82it/s][A
+ 68%|██████▊   | 34/50 [00:11<00:05,  2.84it/s][A
+ 70%|███████   | 35/50 [00:12<00:05,  2.83it/s][A
+ 72%|███████▏  | 36/50 [00:12<00:04,  2.83it/s][A
+ 74%|███████▍  | 37/50 [00:13<00:04,  2.83it/s][A
+ 76%|███████▌  | 38/50 [00:13<00:04,  2.83it/s][A
+ 78%|███████▊  | 39/50 [00:13<00:03,  2.83it/s][A
+ 80%|████████  | 40/50 [00:14<00:03,  2.83it/s][A
+ 82%|████████▏ | 41/50 [00:14<00:03,  2.83it/s][A
+ 84%|████████▍ | 42/50 [00:14<00:02,  2.82it/s][A
+ 86%|████████▌ | 43/50 [00:15<00:02,  2.82it/s][A
+ 88%|████████▊ | 44/50 [00:15<00:02,  2.83it/s][A
+ 90%|█████████ | 45/50 [00:15<00:01,  2.82it/s][A
+ 92%|█████████▏| 46/50 [00:16<00:01,  2.82it/s][A
+ 94%|█████████▍| 47/50 [00:16<00:01,  2.82it/s][A
+ 96%|█████████▌| 48/50 [00:16<00:00,  2.83it/s][A
+ 98%|█████████▊| 49/50 [00:17<00:00,  2.82it/s][A
+100%|██████████| 50/50 [00:17<00:00,  2.82it/s][A100%|██████████| 50/50 [00:17<00:00,  2.83it/s]
+
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 42811.03it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 51880.58it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+ 52%|█████▏    | 26/50 [15:33:17<14:27:43, 2169.30s/it] 58%|█████▊    | 29/50 [15:35:50<11:17:01, 1934.37s/it]slurmstepd: error: *** STEP 21145.0 ON aiau011 CANCELLED AT 2026-08-07T09:31:01 ***
