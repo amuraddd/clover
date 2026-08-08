@@ -1,10 +1,12 @@
 import inspect
+import random
 import unittest
 from types import SimpleNamespace
 
 import torch
 from diffusers import DDPMScheduler
 
+from clover.baselines import b2diffurl, ddpo, dpok, md3po
 from clover.baselines.b2diffurl import B2DiffuRLConfig
 from clover.baselines.ddpo import DDPOConfig
 from clover.baselines.dpok import DPOKConfig
@@ -16,6 +18,7 @@ from clover.utils.baseline_utils import (
     is_stochastic_ddpm_transition,
     ppo_update,
     predict_noise_chunked,
+    standard_eval_prompts,
 )
 from main import build_default_argv
 
@@ -80,6 +83,24 @@ class TrainingStabilityTests(unittest.TestCase):
         self.assertIn('"timestep_kl"', source)
         self.assertIn('"parameter_update_norm_mean"', source)
         self.assertIn("predict_noise_chunked", source)
+
+    def test_each_baseline_uses_an_epoch_specific_rollout_seed(self):
+        for module in (ddpo, dpok, b2diffurl, md3po):
+            source = inspect.getsource(module.train)
+            self.assertIn("generator = set_seed(config.seed + epoch, device)", source)
+
+    def test_standard_eval_prompts_do_not_reset_training_rng(self):
+        config = SimpleNamespace(eval_prompts=tuple(f"prompt {index}" for index in range(20)))
+        random.seed(987)
+        expected = [random.random() for _ in range(3)]
+
+        random.seed(987)
+        first = random.random()
+        prompts = standard_eval_prompts(config)
+        remaining = [random.random() for _ in range(2)]
+
+        self.assertEqual([first, *remaining], expected)
+        self.assertEqual(prompts, standard_eval_prompts(config))
 
     def test_stronger_defaults_are_consistent(self):
         for config_type in (DDPOConfig, DPOKConfig, B2DiffuRLConfig, MD3POConfig):

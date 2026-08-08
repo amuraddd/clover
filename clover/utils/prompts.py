@@ -341,20 +341,54 @@ generalize across all three semantic families.
 For targeted evaluation, use individual template train/eval splits to isolate
 performance by semantic category.
 """
-random.seed(123)
+def get_prompts(seed=123, save=True):
+    import os
+    import random
+    import pandas as pd
+    from pathlib import Path
+    
+    prompt_rng = random.Random(seed)
+    prompt_path = Path("outputs")
+    
+    # Combined B2 template sets for baselines that want all templates
+    B2_FULL_TRAIN_PROMPTS = (
+        *TEMPLATE_1_TRAIN_PROMPTS,
+        *TEMPLATE_2_TRAIN_PROMPTS,
+        *TEMPLATE_3_TRAIN_PROMPTS,
+    )  # 150 train prompts total (90 + 30 + 30)
+    
+    B2_FULL_TRAIN_PROMPTS = tuple(prompt_rng.sample(B2_FULL_TRAIN_PROMPTS, len(B2_FULL_TRAIN_PROMPTS)))  # Shuffle for training
 
-# Combined B2 template sets for baselines that want all templates
-B2_FULL_TRAIN_PROMPTS = (
-    *TEMPLATE_1_TRAIN_PROMPTS,
-    *TEMPLATE_2_TRAIN_PROMPTS,
-    *TEMPLATE_3_TRAIN_PROMPTS,
-)  # 150 train prompts total (90 + 30 + 30)
-B2_FULL_TRAIN_PROMPTS = tuple(random.sample(B2_FULL_TRAIN_PROMPTS, len(B2_FULL_TRAIN_PROMPTS)))  # Shuffle for training
 
-
-B2_FULL_EVAL_PROMPTS = (
-    *TEMPLATE_1_EVAL_PROMPTS,
-    *TEMPLATE_2_EVAL_PROMPTS,
-    *TEMPLATE_3_EVAL_PROMPTS,
-)  # 65 eval prompts total (45 + 10 + 10)
-B2_FULL_EVAL_PROMPTS = tuple(random.sample(B2_FULL_EVAL_PROMPTS, len(B2_FULL_EVAL_PROMPTS)))  # Shuffle for evaluation
+    B2_FULL_EVAL_PROMPTS = (
+        *TEMPLATE_1_EVAL_PROMPTS,
+        *TEMPLATE_2_EVAL_PROMPTS,
+        *TEMPLATE_3_EVAL_PROMPTS,
+    )  # 65 eval prompts total (45 + 10 + 10)
+    B2_FULL_EVAL_PROMPTS = tuple(prompt_rng.sample(B2_FULL_EVAL_PROMPTS, len(B2_FULL_EVAL_PROMPTS)))  # Shuffle for evaluation
+    
+    prompt_df = pd.DataFrame()
+    template_prompt_pairs = list()
+    for template_name, split, prompts in [
+        ("1", "train", TEMPLATE_1_TRAIN_PROMPTS),
+        ("2", "train", TEMPLATE_2_TRAIN_PROMPTS),
+        ("3", "train", TEMPLATE_3_TRAIN_PROMPTS),
+        ("1", "eval", TEMPLATE_1_EVAL_PROMPTS),
+        ("2", "eval", TEMPLATE_2_EVAL_PROMPTS),
+        ("3", "eval", TEMPLATE_3_EVAL_PROMPTS),
+    ]:
+        for prompt in prompts:
+            template_prompt_pairs.append(
+                {
+                "template": template_name,
+                "split": split,
+                "prompt": prompt
+                }
+            )
+    prompt_df = pd.DataFrame(template_prompt_pairs)
+    del template_prompt_pairs
+    
+    if save:
+        prompt_df.to_csv(prompt_path / "prompt_df.csv", index=False)
+    
+    return B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS

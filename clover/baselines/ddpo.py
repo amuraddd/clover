@@ -25,7 +25,7 @@ from clover.baselines.common import (
     save_trajectory_data,
     save_training_data,
 )
-from clover.utils.prompts import DEFAULT_EVAL_PROMPTS, DEFAULT_TRAIN_PROMPTS, B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS
+
 from clover.utils.baseline_utils import (
     decode_latents,
     ddpm_step_with_log_prob,
@@ -44,7 +44,9 @@ from clover.utils.baseline_utils import (
     trainable_parameters,
     unet_config,
 )
+from clover.utils.prompts import get_prompts
 
+B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS = get_prompts(seed=123, save=False)
 
 @dataclass
 class DDPOConfig:
@@ -178,6 +180,7 @@ def train(config: DDPOConfig) -> list[dict[str, float]]:
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(pipe, optimizer, output_dir, device, generator)
     for epoch in trange(last_epoch + 1, config.train_epochs + 1):
+        generator = set_seed(config.seed + epoch, device)
         rollout = collect_rollouts(
             pipe, config.rollouts_per_epoch, config, device, dtype, generator, reward_fn, vae_scale_factor
         )

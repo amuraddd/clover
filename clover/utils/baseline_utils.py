@@ -916,11 +916,10 @@ def standard_eval_prompts(config: Any, limit: int = 10) -> list[str]:
     Returns:
         List of evaluation prompts, up to limit
     """
-    import random
-    random.seed(123)
+    eval_rng = random.Random(123)
     # Prefer explicit eval_prompts when available
     if hasattr(config, "eval_prompts") and config.eval_prompts:
-        eval_prompts = random.sample(list(config.eval_prompts), k=limit)
+        eval_prompts = eval_rng.sample(list(config.eval_prompts), k=limit)
         return eval_prompts
     
     # Fallback to legacy behavior for backward compatibility

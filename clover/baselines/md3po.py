@@ -45,12 +45,14 @@ from clover.utils.baseline_utils import (
     trainable_parameters,
     unet_config,
 )
+from clover.utils.diversity_score import rollout_fid_scores
 from clover.utils.rewards_utils import (
-    clip_image_embeddings,
     clip_prompt_embeddings,
     load_clip_encoder,
 )
-from clover.utils.prompts import B2_FULL_EVAL_PROMPTS, B2_FULL_TRAIN_PROMPTS
+from clover.utils.prompts import get_prompts
+
+B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS = get_prompts(seed=123, save=True)
 
 
 @dataclass
@@ -249,9 +251,10 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
     """Combine a reference rollout with samples from the latest saved rollout.
 
     Every saved sample from the immediately preceding iteration is compared
-    with every current sample using CLIP prompt and image similarities. A saved
-    sample is retained when at least one current sample has sufficiently similar
-    prompt semantics and sufficiently diverse image semantics.
+    with every current sample using CLIP prompt similarity and normalized
+    Inception-feature FID. A saved sample is retained when at least one current
+    sample has sufficiently similar prompt semantics and an FID below the
+    configured threshold.
 
     Args:
         reference_rollout: Current iteration's pre-replay rollout in live or
@@ -259,8 +262,8 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
         trajectories: Optional mapping from integer-like rollout numbers to
             saved rollout dictionaries. When omitted, trajectories are loaded
             from ``clover/data/md3po/trajectories.pt``.
-        diversity_threshold: Maximum CLIP image cosine similarity for a saved
-            sample/current sample pair to count as visually diverse.
+        diversity_threshold: Maximum normalized singleton-FID for a saved
+            sample/current sample pair to qualify for replay.
         prompt_similarity_threshold: Minimum cosine similarity between aligned
             prompt embeddings for a saved sample to be retained.
 
@@ -384,7 +387,7 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
     reference = canonicalize(reference_rollout)
     validate(reference)
 
-    clip_model, clip_preprocess, clip_tokenizer, clip_device = load_clip_encoder()
+    clip_model, _, clip_tokenizer, clip_device = load_clip_encoder()
 
     def encode_prompts(prompts):
         """Encode prompt strings as normalized CLIP text embeddings.
@@ -404,13 +407,6 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
         )
 
     reference_prompt_encodings = encode_prompts(reference["prompts"])
-    reference_image_encodings = clip_image_embeddings(
-        reference["images"],
-        model=clip_model,
-        preprocess=clip_preprocess,
-        device=clip_device,
-        batch_size=4,
-    )
 
     accepted = [reference]
     if not isinstance(trajectories, dict):
@@ -435,19 +431,16 @@ def md3po_combined_rollouts(reference_rollout, trajectories=None, diversity_thre
         if not torch.equal(reference["timesteps"], rollout["timesteps"]):
             return training_format(reference)
         previous_prompt_encodings = encode_prompts(rollout["prompts"])
-        previous_image_encodings = clip_image_embeddings(
+        prompt_scores = previous_prompt_encodings @ reference_prompt_encodings.T
+        prompt_matches = prompt_scores >= prompt_similarity_threshold
+        fid_scores = rollout_fid_scores(
+            reference["images"],
             rollout["images"],
-            model=clip_model,
-            preprocess=clip_preprocess,
+            comparison_mask=prompt_matches,
             device=clip_device,
             batch_size=4,
         )
-        prompt_scores = previous_prompt_encodings @ reference_prompt_encodings.T
-        image_scores = previous_image_encodings @ reference_image_encodings.T
-        qualifying_pairs = (prompt_scores >= prompt_similarity_threshold) & (
-            image_scores <= diversity_threshold
-        )
-        keep = qualifying_pairs.any(dim=1)
+        keep = fid_scores <= diversity_threshold
         if keep.any():
             accepted.append(select_batch(rollout, keep))
 
@@ -500,6 +493,7 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(pipe, optimizer, output_dir, device, generator)
     for epoch in trange(last_epoch + 1, config.train_epochs + 1):
+        generator = set_seed(config.seed + epoch, device)
         reference_rollout = collect_rollouts(
             pipe, config.rollouts_per_epoch, config, device, dtype, generator, reward_fn, vae_scale_factor
         )

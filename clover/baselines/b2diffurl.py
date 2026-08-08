@@ -25,7 +25,7 @@ from clover.baselines.common import (
     save_trajectory_data,
     save_training_data,
 )
-from clover.utils.prompts import B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS
+
 from clover.utils.baseline_utils import (
     backward_progressive_interval_length,
     decode_latents,
@@ -47,7 +47,9 @@ from clover.utils.baseline_utils import (
     trainable_parameters,
     unet_config,
 )
+from clover.utils.prompts import get_prompts
 
+B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS = get_prompts(seed=123, save=False)
 
 @dataclass
 class B2DiffuRLConfig:
@@ -217,6 +219,7 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(pipe, optimizer, output_dir, device, generator)
     for epoch in trange(last_epoch + 1, config.train_epochs + 1):
+        generator = set_seed(config.seed + epoch, device)
         interval_steps = backward_progressive_interval_length(
             epoch, config.train_epochs, config.num_inference_steps, config.initial_interval_steps
         )

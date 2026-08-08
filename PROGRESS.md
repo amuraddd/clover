@@ -476,3 +476,22 @@ else:
 - Registered `--rollout-chunk-size` in the shared dataclass-aware parser and added it to the generated arguments in `main.py`.
 - Added functional regression coverage verifying a five-sample input with chunk size two creates CFG UNet batches `(4, 4, 2)`, preserves output order and gradients, and parses for all baseline configurations; all six focused tests and compilation checks pass.
 - Did not launch a GPU experiment.
+
+## 2026-08-08 — Isolated fixed evaluation prompt sampling
+
+- Changed `standard_eval_prompts()` to use a private deterministic `random.Random(123)` instance instead of reseeding Python’s global random generator.
+- Preserved reproducible fixed evaluation prompt selection without restarting the random sequence used to sample training prompts after evaluation epochs.
+- Added regression coverage verifying evaluation prompt selection is deterministic and leaves the global training RNG state unchanged.
+
+## 2026-08-08 — Added Inception-based diversity metrics
+
+- Added `clover/utils/diversity_score.py` with normalized singleton-FID rollout scores, Inception Score, and dataset-level FID functions for PIL and tensor image batches.
+- Replaced MD3PO’s CLIP image-similarity replay criterion with prompt-filtered, min-max-normalized Inception-feature FID scores using current rollout images as ground truth.
+- Registered SciPy directly for the FID covariance square root and added CPU-only regression tests using injected lightweight models.
+
+
+## 2026-08-08 — Added epoch-specific rollout seeds
+
+- Updated DDPO, DPOK, B2-DiffuRL, and MD3PO to recreate the rollout generator at the start of every training epoch with `config.seed + epoch`.
+- This makes each epoch’s latent-noise stream distinct while retaining reproducibility for a given base seed and epoch number, including resumed runs.
+- Added regression coverage ensuring every baseline applies the epoch-specific seed policy.
