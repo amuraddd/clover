@@ -69,6 +69,7 @@ class B2DiffuRLConfig:
     guidance_scale: float = 7.5
     eta: float = 1.0
     min_log_prob_std: float = 1e-4
+    likelihood_scale: float = 1.0
     rollouts_per_epoch: int = 256
     branch_size: int = 3
     rollout_chunk_size: int = 32
@@ -84,7 +85,7 @@ class B2DiffuRLConfig:
     lora_alpha: int = 16
     lora_dropout: float = 0.0
     lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
-    clip_range: float = 0.1
+    clip_range: float = 1e-4
     target_kl: float = 0.1
     min_reward_gap: float = 0.0
     max_grad_norm: float = 1.0
@@ -141,6 +142,7 @@ def collect_branch_rollouts(
             latents,
             generator,
             eta=config.eta,
+            likelihood_scale=config.likelihood_scale,
         )
     branch_prompts = [prompt for prompt in root_prompts for _ in range(config.branch_size)]
     branch_embeds = encode_prompts(pipe, branch_prompts, config.negative_prompt, device, dtype)
@@ -164,7 +166,8 @@ def collect_branch_rollouts(
             config.rollout_chunk_size,
         )
         next_latents, log_prob = ddpm_step_with_log_prob(
-            pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta
+            pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta,
+            likelihood_scale=config.likelihood_scale,
         )
         if trainable_transition:
             actions.append(next_latents.detach().float().cpu())

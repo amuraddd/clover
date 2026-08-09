@@ -13,16 +13,17 @@
 #SBATCH --partition=general
 
 # module load python3
-
-HF_HOME="/aiau010_scratch/azm0269/hub"
-env_dir=/aiau010_scratch/azm0269/
+export TORCH_HOME=/aiau010_scratch/azm0269/clover/.cache/torch
+echo $TORCH_HOME
+export HF_HOME="/aiau010_scratch/azm0269/hub"
+export env_dir=/aiau010_scratch/azm0269/
 cd $env_dir
 source /aiau010_scratch/azm0269/clover/.venv/bin/activate
-workdir=/aiau010_scratch/azm0269/clover
+export workdir=/aiau010_scratch/azm0269/clover
 cd $workdir
 source .env
-HF_HOME="/aiau010_scratch/azm0269/hub"
-TMPDIR="/aiau010_scratch/azm0269/tmp"
+export HF_HOME="/aiau010_scratch/azm0269/hub"
+export TMPDIR="/aiau010_scratch/azm0269/tmp"
 # CUDA_VISIBLE_DEVICES=6,7
 # TOKENIZERS_PARALLELISM=true
 

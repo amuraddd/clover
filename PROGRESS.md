@@ -495,3 +495,25 @@ else:
 - Updated DDPO, DPOK, B2-DiffuRL, and MD3PO to recreate the rollout generator at the start of every training epoch with `config.seed + epoch`.
 - This makes each epoch’s latent-noise stream distinct while retaining reproducibility for a given base seed and epoch number, including resumed runs.
 - Added regression coverage ensuring every baseline applies the epoch-specific seed policy.
+
+## 2026-08-08 — Verified cached Inception model on CPU
+
+- Confirmed the project-local Inception-v3 checkpoint has the expected `0cc3c7bd` SHA-256 prefix.
+- Ran CPU-only smoke tests for normalized rollout FID and Inception Score with CUDA hidden; both completed successfully without attempting a download.
+- No GPU experiment was launched.
+
+
+## 2026-08-09 — Added configurable PPO likelihood scaling and diverse MD3PO replay
+
+- Added a shared positive `likelihood_scale` for diffusion transition log-probabilities and wired it consistently through rollout collection and policy updates for DDPO, MD3PO, B2-DiffuRL, and DPOK.
+- Enabled DDPO likelihood scaling at `1000.0`; retained backward-compatible `1.0` defaults for the other baselines and registered the `--likelihood-scale` CLI override. PPO KL and clip-fraction metrics use the resulting scaled likelihood ratios.
+- Reversed MD3PO replay selection to retain prompt-compatible samples whose normalized singleton FID is greater than the diversity threshold.
+- Added regression coverage for scaling, validation, defaults, and the MD3PO predicate. All 13 focused CPU tests and project-Python compilation checks pass; no GPU experiment was launched.
+
+
+## 2026-08-09 — Matched DDPO paper PPO clipping defaults
+
+- Changed the PPO clip range from `0.1` to the DDPO reference implementation value `1e-4` for DDPO, MD3PO, B2-DiffuRL, and the DPOK CLI-compatibility field.
+- Updated the shared generated experiment arguments so `sbatch run_experiments.sh` launches all baselines with the same `1e-4` clip range.
+- Restored DDPO to the paper-compatible unscaled mean transition likelihood (`likelihood_scale=1.0`); retained current optimizer batching and global advantage normalization for the next diagnostic run.
+- Verified all 13 focused CPU tests, generated argument parsing for every baseline, compilation, and scoped whitespace checks pass. No GPU experiment was launched.

@@ -77,6 +77,7 @@ def parse_config(
         "dpok_epochs": int,
         "lora_alpha": int,
         "min_log_prob_std": float,
+        "likelihood_scale": float,
         "rollout_chunk_size": int,
     }
     for field_name, value_type in optional_arguments.items():

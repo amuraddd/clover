@@ -77,6 +77,7 @@ class DPOKConfig:
     guidance_scale: float = 7.5
     eta: float = 1.0
     min_log_prob_std: float = 1e-4
+    likelihood_scale: float = 1.0
     rollout_chunk_size: int = 32
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
@@ -92,7 +93,7 @@ class DPOKConfig:
     lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
     reward_weight: float = 1.0
     kl_weight: float = 0.01
-    clip_range: float = 0.1  # CLI compatibility placeholder; unused by DPOK.
+    clip_range: float = 1e-4  # CLI compatibility placeholder; unused by DPOK.
     target_kl: float = 0.1
     normalize_rewards: bool = True
     max_grad_norm: float = 1.0
@@ -145,7 +146,8 @@ def collect_rollouts(
             config.rollout_chunk_size,
         )
         next_latents, log_prob = ddpm_step_with_log_prob(
-            pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta
+            pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta,
+            likelihood_scale=config.likelihood_scale,
         )
         if trainable_transition:
             actions.append(next_latents.detach().float().cpu())
@@ -237,6 +239,7 @@ def dpok_update(
                         state,
                         prev_sample=action,
                         eta=config.eta,
+                        likelihood_scale=config.likelihood_scale,
                     )
                     current_mean, current_std = ddpm_mean_std(
                         pipe.scheduler, noise_pred, timestep, state, eta=config.eta

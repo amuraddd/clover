@@ -66,6 +66,7 @@ class DDPOConfig:
     guidance_scale: float = 7.5
     eta: float = 1.0
     min_log_prob_std: float = 1e-4
+    likelihood_scale: float = 1.0
     rollout_chunk_size: int = 32
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
@@ -79,7 +80,7 @@ class DDPOConfig:
     lora_alpha: int = 16
     lora_dropout: float = 0.0
     lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
-    clip_range: float = 0.1
+    clip_range: float = 1e-4
     target_kl: float = 0.1
     max_grad_norm: float = 1.0
     mixed_precision: bool = True
@@ -131,7 +132,8 @@ def collect_rollouts(
             config.rollout_chunk_size,
         )
         next_latents, log_prob = ddpm_step_with_log_prob(
-            pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta
+            pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta,
+            likelihood_scale=config.likelihood_scale,
         )
         if trainable_transition:
             actions.append(next_latents.detach().float().cpu())

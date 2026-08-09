@@ -19,6 +19,7 @@ from clover.utils.baseline_utils import (
     ppo_update,
     predict_noise_chunked,
     standard_eval_prompts,
+    transition_log_prob,
 )
 from main import build_default_argv
 
@@ -55,6 +56,16 @@ class TrainingStabilityTests(unittest.TestCase):
         torch.testing.assert_close(next_sample, mean)
         torch.testing.assert_close(log_prob, torch.zeros(2))
 
+    def test_likelihood_scale_scales_transition_log_prob(self):
+        mean = torch.zeros(2, 4, 2, 2)
+        std = torch.ones(())
+        sample = torch.ones_like(mean)
+        unscaled = transition_log_prob(mean, std, sample)
+        scaled = transition_log_prob(mean, std, sample, likelihood_scale=1000.0)
+        torch.testing.assert_close(scaled, unscaled * 1000.0)
+        with self.assertRaisesRegex(ValueError, "likelihood_scale must be positive"):
+            transition_log_prob(mean, std, sample, likelihood_scale=0.0)
+
     def test_chunked_cfg_preserves_order_and_bounds_unet_batch(self):
         class RecordingUnet(torch.nn.Module):
             def __init__(self):
@@ -84,6 +95,11 @@ class TrainingStabilityTests(unittest.TestCase):
         self.assertIn('"parameter_update_norm_mean"', source)
         self.assertIn("predict_noise_chunked", source)
 
+    def test_md3po_replays_samples_above_diversity_threshold(self):
+        source = inspect.getsource(md3po.md3po_combined_rollouts)
+        self.assertIn("keep = fid_scores > diversity_threshold", source)
+        self.assertNotIn("keep = fid_scores <= diversity_threshold", source)
+
     def test_each_baseline_uses_an_epoch_specific_rollout_seed(self):
         for module in (ddpo, dpok, b2diffurl, md3po):
             source = inspect.getsource(module.train)
@@ -112,6 +128,10 @@ class TrainingStabilityTests(unittest.TestCase):
             self.assertEqual(config.max_grad_norm, 1.0)
             self.assertEqual(config.min_log_prob_std, 1e-4)
             self.assertEqual(config.rollout_chunk_size, 32)
+            self.assertGreater(config.likelihood_scale, 0)
+        self.assertEqual(DDPOConfig().likelihood_scale, 1.0)
+        for config_type in (DDPOConfig, DPOKConfig, B2DiffuRLConfig, MD3POConfig):
+            self.assertEqual(config_type().clip_range, 1e-4)
 
     def test_generated_arguments_parse_for_every_baseline(self):
         cases = (

@@ -402,7 +402,15 @@ def ddpm_mean_std(
     return mean, std
 
 
-def transition_log_prob(mean: Tensor, std: Tensor, prev_sample: Tensor) -> Tensor:
+def transition_log_prob(
+    mean: Tensor,
+    std: Tensor,
+    prev_sample: Tensor,
+    likelihood_scale: float = 1.0,
+) -> Tensor:
+    """Return a scaled mean log-likelihood for one diffusion transition."""
+    if likelihood_scale <= 0:
+        raise ValueError("likelihood_scale must be positive")
     prev_sample = prev_sample.float()
     mean = mean.float()
     std = std.float()
@@ -411,7 +419,7 @@ def transition_log_prob(mean: Tensor, std: Tensor, prev_sample: Tensor) -> Tenso
     log_prob = -0.5 * ((prev_sample - mean) / std).pow(2) - torch.log(std) - 0.5 * math.log(2 * math.pi)
     if not torch.isfinite(log_prob).all():
         raise FloatingPointError("Non-finite transition log-prob; reduce LR/clip range or disable mixed precision.")
-    return log_prob.flatten(1).mean(dim=1)
+    return log_prob.flatten(1).mean(dim=1) * likelihood_scale
 
 
 def ddpm_step_with_log_prob(
@@ -422,6 +430,7 @@ def ddpm_step_with_log_prob(
     generator: torch.Generator | None = None,
     prev_sample: Tensor | None = None,
     eta: float = 1.0,
+    likelihood_scale: float = 1.0,
 ) -> tuple[Tensor, Tensor]:
     mean, std = ddpm_mean_std(scheduler, model_output, timestep, sample, eta=eta)
     deterministic = bool((std <= 0).all().item())
@@ -432,7 +441,7 @@ def ddpm_step_with_log_prob(
             return prev_sample, torch.zeros(sample.shape[0], device=sample.device, dtype=torch.float32)
     elif deterministic:
         raise ValueError("Cannot evaluate a log-probability for a deterministic DDPM transition.")
-    log_prob = transition_log_prob(mean, std, prev_sample)
+    log_prob = transition_log_prob(mean, std, prev_sample, likelihood_scale=likelihood_scale)
     return prev_sample, log_prob
 
 
@@ -652,6 +661,7 @@ def ppo_update(
                         state,
                         prev_sample=action,
                         eta=config.eta,
+                        likelihood_scale=getattr(config, "likelihood_scale", 1.0),
                     )
 
                     old = old_log_probs[mb_idx, step_idx].to(device=device, dtype=log_prob.dtype)

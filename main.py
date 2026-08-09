@@ -63,7 +63,7 @@ DEFAULT_BASELINE_ARGS = {
     "adam_epsilon": 1e-8,
     "eta": 1.0,
     "max_grad_norm": 1.0,
-    "clip_range": 0.1,
+    "clip_range": 1e-4,
     "target_kl": 0.1,
     "reward_type": "clip"
 }
