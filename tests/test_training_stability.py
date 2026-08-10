@@ -13,6 +13,7 @@ from clover.baselines.dpok import DPOKConfig
 from clover.baselines.md3po import MD3POConfig
 from clover.baselines.common import parse_config
 from clover.utils.baseline_utils import (
+    approximate_kl_from_log_ratio,
     ddpm_mean_std,
     ddpm_step_with_log_prob,
     is_stochastic_ddpm_transition,
@@ -87,9 +88,23 @@ class TrainingStabilityTests(unittest.TestCase):
         prediction.sum().backward()
         torch.testing.assert_close(latents.grad, torch.ones_like(latents))
 
+    def test_approximate_kl_is_stable_for_tiny_log_ratios(self):
+        log_ratio = torch.tensor([1e-5, -1e-5], dtype=torch.float32)
+        approximate_kl = approximate_kl_from_log_ratio(log_ratio)
+
+        self.assertEqual(approximate_kl.dtype, torch.float64)
+        self.assertGreater(float(approximate_kl), 0.0)
+        torch.testing.assert_close(
+            approximate_kl,
+            torch.tensor(5e-11, dtype=torch.float64),
+            rtol=1e-5,
+            atol=1e-15,
+        )
+
     def test_ppo_uses_unclamped_log_ratio(self):
         source = inspect.getsource(ppo_update)
         self.assertIn("ratio = torch.exp(log_ratio)", source)
+        self.assertIn("approximate_kl_from_log_ratio(log_ratio)", source)
         self.assertNotIn("bounded_log_ratio", source)
         self.assertIn('"timestep_kl"', source)
         self.assertIn('"parameter_update_norm_mean"', source)

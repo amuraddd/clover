@@ -517,3 +517,30 @@ else:
 - Updated the shared generated experiment arguments so `sbatch run_experiments.sh` launches all baselines with the same `1e-4` clip range.
 - Restored DDPO to the paper-compatible unscaled mean transition likelihood (`likelihood_scale=1.0`); retained current optimizer batching and global advantage normalization for the next diagnostic run.
 - Verified all 13 focused CPU tests, generated argument parsing for every baseline, compilation, and scoped whitespace checks pass. No GPU experiment was launched.
+
+## 2026-08-10 — Analyzed DDPO and MD3PO training histories
+
+- Analyzed 21 DDPO epochs and 17 MD3PO epochs using reward trends, prompt-category rewards, PPO diagnostics, gradient norms, and parameter-update norms.
+- Found no statistically persuasive continued reward improvement: DDPO’s reward slope is small relative to epoch noise, while MD3PO’s current-policy reward is essentially flat.
+- Observed that MD3PO’s combined reward can be distorted by variable replay composition and should not be used alone as evidence of policy improvement.
+- No GPU experiment was launched and no training code was changed.
+
+## 2026-08-10 — Diagnosed likelihood-ratio and KL behavior
+
+- Traced transition log-probabilities and the shared PPO update used by DDPO, MD3PO, and B2-DiffuRL, and reviewed the saved DDPO/MD3PO run configurations.
+- Identified cancellation-prone float32 approximate-KL logging, very small mean-reduced log-ratios, a mismatched KL stopping threshold, and off-policy replay concerns specific to MD3PO.
+- Recommended stable KL diagnostics, calibrated likelihood aggregation and clipping, explicit behavior-policy handling for replay, and a short diagnostic ablation before full retraining.
+- No GPU experiment was launched and no training code was changed.
+
+## 2026-08-10 — Stabilized PPO approximate-KL computation
+
+- Replaced the cancellation-prone float32 `exp(log_ratio) - 1 - log_ratio` PPO KL estimator with float64 `expm1(log_ratio) - log_ratio` in the shared update used by DDPO, MD3PO, and B2-DiffuRL.
+- Added regression coverage for positive and negative log-ratios of magnitude `1e-5` and verified the shared PPO path calls the stable estimator.
+- All 11 focused CPU stability tests, compilation checks, and scoped whitespace checks pass. No GPU experiment was launched.
+
+## 2026-08-10 — Reanalyzed post-fix DDPO and MD3PO KL
+
+- Reanalyzed the restarted two-epoch DDPO and MD3PO histories after the stable approximate-KL change.
+- Confirmed the estimator now produces nonnegative, internally consistent KL values; the remaining small DDPO KL reflects genuinely tiny policy ratios rather than float32 cancellation.
+- Found that KL and clipping are concentrated almost entirely at timestep 21, while MD3PO replay introduces a rare large negative log-ratio tail and substantially higher timestep-21 KL.
+- No GPU experiment was launched and no training code was changed.

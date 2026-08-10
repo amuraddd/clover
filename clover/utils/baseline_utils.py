@@ -445,6 +445,12 @@ def ddpm_step_with_log_prob(
     return prev_sample, log_prob
 
 
+def approximate_kl_from_log_ratio(log_ratio: Tensor) -> Tensor:
+    """Estimate reverse KL stably from policy log-probability ratios."""
+    log_ratio_64 = log_ratio.double()
+    return (torch.expm1(log_ratio_64) - log_ratio_64).mean()
+
+
 def gaussian_kl(mean: Tensor, std: Tensor, ref_mean: Tensor, ref_std: Tensor) -> Tensor:
     mean = mean.float()
     std = std.float().clamp_min(1e-6)
@@ -684,7 +690,7 @@ def ppo_update(
                     step_loss.backward()
 
                     with torch.no_grad():
-                        approx_kl = ((ratio - 1) - log_ratio).mean()
+                        approx_kl = approximate_kl_from_log_ratio(log_ratio)
                         clip_frac = ((ratio - 1).abs() > config.clip_range).float().mean()
                         log_ratio_values.append(log_ratio.detach().float().cpu().flatten())
                     minibatch_kls.append(float(approx_kl.detach().cpu()))
