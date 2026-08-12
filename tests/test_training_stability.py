@@ -17,6 +17,7 @@ from clover.utils.baseline_utils import (
     ddpm_mean_std,
     ddpm_step_with_log_prob,
     is_stochastic_ddpm_transition,
+    load_training_checkpoint,
     ppo_update,
     predict_noise_chunked,
     standard_eval_prompts,
@@ -119,6 +120,11 @@ class TrainingStabilityTests(unittest.TestCase):
         for module in (ddpo, dpok, b2diffurl, md3po):
             source = inspect.getsource(module.train)
             self.assertIn("generator = set_seed(config.seed + epoch, device)", source)
+
+    def test_checkpoint_is_loaded_on_cpu_for_rng_state_restoration(self):
+        source = inspect.getsource(load_training_checkpoint)
+        self.assertIn('map_location="cpu"', source)
+        self.assertNotIn("map_location=device", source)
 
     def test_standard_eval_prompts_do_not_reset_training_rng(self):
         config = SimpleNamespace(eval_prompts=tuple(f"prompt {index}" for index in range(20)))

@@ -102,7 +102,10 @@ def load_training_checkpoint(
     if not checkpoint_path.is_file():
         return 0, []
 
-    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    # RNG states must remain CPU ByteTensors while they are restored. Loading the
+    # whole checkpoint directly onto CUDA turns them into CUDA tensors, which
+    # torch.cuda.set_rng_state_all rejects.
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     set_peft_model_state_dict(unwrap_unet(pipe.unet), checkpoint["lora_state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
     random.setstate(checkpoint["python_rng_state"])

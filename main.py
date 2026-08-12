@@ -58,7 +58,7 @@ DEFAULT_BASELINE_ARGS = {
     "ppo_epochs": 2,
     "lora_alpha": 16,
     "min_log_prob_std": 1e-4,
-    "rollout_chunk_size": 64,
+    "rollout_chunk_size": 32,
     "guidance_scale": 5.0,
     "adam_epsilon": 1e-8,
     "eta": 1.0,

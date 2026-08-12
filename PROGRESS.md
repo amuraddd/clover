@@ -544,3 +544,9 @@ else:
 - Confirmed the estimator now produces nonnegative, internally consistent KL values; the remaining small DDPO KL reflects genuinely tiny policy ratios rather than float32 cancellation.
 - Found that KL and clipping are concentrated almost entirely at timestep 21, while MD3PO replay introduces a rare large negative log-ratio tail and substantially higher timestep-21 KL.
 - No GPU experiment was launched and no training code was changed.
+
+## 2026-08-11 — Fixed checkpoint resume RNG restoration
+
+- Changed the shared checkpoint loader used by DDPO, MD3PO, DPOK, and B2-DiffuRL to load checkpoint tensors on CPU before restoring model, optimizer, and RNG state.
+- This preserves saved CUDA RNG states as CPU ByteTensors and prevents `torch.cuda.set_rng_state_all` from failing during resume.
+- Retained the existing per-baseline atomic `outputs/{baseline}/checkpoint/checkpoint.pt` behavior, which resumes from the most recently saved checkpoint.
