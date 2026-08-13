@@ -3,6 +3,14 @@ description: Progress log for Clover baseline implementation and experiment supp
 ms.date: 2026-08-03
 ---
 
+## 2026-08-12 — Added resumable MD3PO learning-rate scheduling
+
+- Added a `StepLR` scheduler to MD3PO that reduces the learning rate by a factor of 10 after every 10 completed training epochs.
+- Extended the shared checkpoint helpers with optional scheduler state persistence while preserving compatibility with baselines and older checkpoints that do not contain scheduler state.
+- MD3PO now restores the scheduler together with its model and optimizer and logs the learning rate in each epoch's metrics.
+- No GPU experiment was launched.
+
+
 # Clover Project Progress
 
 ## 2026-08-03

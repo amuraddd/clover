@@ -61,6 +61,7 @@ def save_training_checkpoint(
     epoch: int,
     history: list[dict[str, float]],
     generator: torch.Generator,
+    scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
 ) -> Path:
     """Atomically overwrite the resumable checkpoint for one baseline."""
     checkpoint_dir = Path(output_dir) / "checkpoint"
@@ -75,6 +76,7 @@ def save_training_checkpoint(
             for name, tensor in get_peft_model_state_dict(unwrap_unet(pipe.unet)).items()
         },
         "optimizer_state_dict": optimizer.state_dict(),
+        "scheduler_state_dict": scheduler.state_dict() if scheduler is not None else None,
         "python_rng_state": random.getstate(),
         "numpy_rng_state": np.random.get_state(),
         "torch_rng_state": torch.get_rng_state(),
@@ -96,6 +98,7 @@ def load_training_checkpoint(
     output_dir: Path | str,
     device: torch.device,
     generator: torch.Generator,
+    scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
 ) -> tuple[int, list[dict[str, float]]]:
     """Restore a baseline checkpoint and return its last epoch and history."""
     checkpoint_path = Path(output_dir) / "checkpoint" / "checkpoint.pt"
@@ -108,6 +111,9 @@ def load_training_checkpoint(
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     set_peft_model_state_dict(unwrap_unet(pipe.unet), checkpoint["lora_state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    scheduler_state = checkpoint.get("scheduler_state_dict")
+    if scheduler is not None and scheduler_state is not None:
+        scheduler.load_state_dict(scheduler_state)
     random.setstate(checkpoint["python_rng_state"])
     np.random.set_state(checkpoint["numpy_rng_state"])
     torch.set_rng_state(checkpoint["torch_rng_state"].cpu())

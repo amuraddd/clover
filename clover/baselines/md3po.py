@@ -492,8 +492,11 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         betas=(config.adam_beta1, config.adam_beta2),
         eps=config.adam_epsilon,
     )
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
-    last_epoch, history = load_training_checkpoint(pipe, optimizer, output_dir, device, generator)
+    last_epoch, history = load_training_checkpoint(
+        pipe, optimizer, output_dir, device, generator, scheduler=scheduler
+    )
     for epoch in trange(last_epoch + 1, config.train_epochs + 1):
         generator = set_seed(config.seed + epoch, device)
         reference_rollout = collect_rollouts(
@@ -520,6 +523,8 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
             replay_samples=int(replay_rewards.numel()),
         )
         metrics["epoch"] = epoch
+        metrics["learning_rate"] = optimizer.param_groups[0]["lr"]
+        scheduler.step()
         history.append(metrics)
         save_json(output_dir / "history.json", history)
         
@@ -539,7 +544,9 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         if epoch % config.log_every == 0:
             print(metrics)
         if epoch % config.save_every == 0:
-            save_training_checkpoint(pipe, optimizer, output_dir, epoch, history, generator)
+            save_training_checkpoint(
+                pipe, optimizer, output_dir, epoch, history, generator, scheduler=scheduler
+            )
         del reference_rollout, combined_rollout
         gc.collect()
         if device.type == "cuda":
