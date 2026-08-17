@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Sequence
 
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn.functional as F
 from PIL import Image
@@ -12,6 +14,7 @@ from scipy.linalg import sqrtm
 from torch import Tensor, nn
 
 ImageBatch = Sequence[Image.Image] | Tensor
+SUCCESSIVE_EPOCH_COLUMNS = ["Epoch", "Baseline", "prompt", "FID Score", "Inception Score"]
 
 
 def _device(device: torch.device | str | None) -> torch.device:
@@ -160,14 +163,90 @@ def frechet_inception_distance(
     generated = _inception_outputs(
         generated_images, device=device, batch_size=batch_size, features=True, model=feature_model
     ).numpy().astype(np.float64)
-    if len(real) < 2 or len(generated) < 2:
-        raise ValueError("FID requires at least two images in each set")
     real_mean, generated_mean = real.mean(0), generated.mean(0)
-    real_cov = np.cov(real, rowvar=False)
-    generated_cov = np.cov(generated, rowvar=False)
-    covariance_mean = sqrtm(real_cov @ generated_cov)
+    # A singleton distribution has zero covariance. This supports manifests
+    # containing one generated image per prompt and epoch.
+    real_cov = np.zeros((real.shape[1], real.shape[1])) if len(real) == 1 else np.cov(real, rowvar=False)
+    generated_cov = (
+        np.zeros((generated.shape[1], generated.shape[1]))
+        if len(generated) == 1
+        else np.cov(generated, rowvar=False)
+    )
+    covariance_product = real_cov @ generated_cov
+    covariance_mean = (
+        np.zeros_like(covariance_product)
+        if not np.any(covariance_product)
+        else sqrtm(covariance_product)
+    )
     if np.iscomplexobj(covariance_mean):
         covariance_mean = covariance_mean.real
     difference = real_mean - generated_mean
     score = difference @ difference + np.trace(real_cov + generated_cov - 2 * covariance_mean)
     return float(max(score, 0.0))
+
+
+def successive_epoch_inception_metrics(
+    dataframe: pd.DataFrame,
+    *,
+    image_root: str | Path | None = None,
+    device: torch.device | str | None = None,
+    batch_size: int = 32,
+    inception_splits: int = 10,
+) -> pd.DataFrame:
+    """Compare image groups at each pair of successive epochs.
+
+    The dataframe must be filtered to one baseline and contain all prompts,
+    with ``epoch``, ``image``, ``baseline``, and ``prompt`` columns. FID
+    compares all unique images from the previous epoch with all unique images
+    from the current epoch. Inception Score describes the current epoch image
+    set because it is a one-set metric. ``Epoch`` is labeled
+    ``current-previous``.
+    """
+    required = {"epoch", "image", "baseline", "prompt"}
+    missing = required.difference(dataframe.columns)
+    if missing:
+        raise ValueError(f"dataframe is missing required columns: {sorted(missing)}")
+    if dataframe.empty:
+        return pd.DataFrame(columns=SUCCESSIVE_EPOCH_COLUMNS)
+    if dataframe["baseline"].nunique(dropna=False) != 1:
+        raise ValueError("dataframe must contain exactly one baseline")
+    if inception_splits <= 0:
+        raise ValueError("inception_splits must be positive")
+
+    root = Path(image_root) if image_root is not None else Path.cwd()
+
+    def load_images(frame: pd.DataFrame) -> list[Image.Image]:
+        images = []
+        for image_path in frame["image"].drop_duplicates():
+            path = Path(image_path)
+            if not path.is_absolute():
+                path = root / path
+            with Image.open(path) as image:
+                images.append(image.convert("RGB").copy())
+        return images
+
+    baseline = dataframe["baseline"].iloc[0]
+    epochs = sorted(dataframe["epoch"].unique())
+    rows = []
+    for previous_epoch, current_epoch in zip(epochs, epochs[1:]):
+        previous_images = load_images(dataframe[dataframe["epoch"] == previous_epoch])
+        current_images = load_images(dataframe[dataframe["epoch"] == current_epoch])
+        fid = frechet_inception_distance(
+            previous_images, current_images, device=device, batch_size=batch_size
+        )
+        score, _ = inception_score(
+            current_images,
+            splits=min(inception_splits, len(current_images)),
+            device=device,
+            batch_size=batch_size,
+        )
+        rows.append(
+            {
+                "Epoch": f"{current_epoch}-{previous_epoch}",
+                "Baseline": baseline,
+                "prompt": "all prompts",
+                "FID Score": fid,
+                "Inception Score": score,
+            }
+        )
+    return pd.DataFrame(rows, columns=SUCCESSIVE_EPOCH_COLUMNS)

@@ -10,6 +10,23 @@ ms.date: 2026-08-03
 - MD3PO now restores the scheduler together with its model and optimizer and logs the learning rate in each epoch's metrics.
 - No GPU experiment was launched.
 
+## 2026-08-17 — Added checkpoint diversity-sampling utility
+
+- Added a utility that sequentially loads each requested baseline checkpoint, reads held-out evaluation prompts from prompts.py, and samples a configurable number of reproducibly seeded PIL images per prompt.
+- The returned dataframe contains seed, prompt, image, and baseline; only one model is retained on the selected device at a time.
+- Added focused mocked sampling and input-validation coverage. No GPU experiment was launched.
+
+## 2026-08-17 — Added within-prompt checkpoint FID aggregation
+
+- Added grouped prompt/baseline scoring for checkpoint samples using mean pairwise singleton FID, computed efficiently from one Inception feature pass per group.
+- The result contains prompt, FID score, and baseline columns, with validation for missing columns, non-PIL images, and undersized groups.
+- Added focused numerical regression coverage. No GPU experiment was launched.
+
+## 2026-08-17 — Suppressed checkpoint sampler Hugging Face output
+
+- Disabled routine Hugging Face, Transformers, and Diffusers logs and progress bars during checkpoint evaluation while preserving exceptions.
+- Added coverage that sampler-level and pipeline-level progress suppression is enabled. No GPU experiment was launched.
+
 
 # Clover Project Progress
 
@@ -558,3 +575,20 @@ else:
 - Changed the shared checkpoint loader used by DDPO, MD3PO, DPOK, and B2-DiffuRL to load checkpoint tensors on CPU before restoring model, optimizer, and RNG state.
 - This preserves saved CUDA RNG states as CPU ByteTensors and prevents `torch.cuda.set_rng_state_all` from failing during resume.
 - Retained the existing per-baseline atomic `outputs/{baseline}/checkpoint/checkpoint.pt` behavior, which resumes from the most recently saved checkpoint.
+
+## 2026-08-17 — Added successive-epoch image diversity evaluation
+
+- Added a dataframe helper that calculates FID between successive epoch image groups and Inception Score over each pair's combined images, returning comparison labels such as `4-2` in the requested structured schema.
+- Extended dataset-level FID to handle one-image epoch groups as zero-covariance empirical distributions, matching the evaluation notebook's one-image-per-prompt-per-epoch manifest.
+- Added focused coverage for singleton FID and successive-epoch dataframe construction. No GPU experiment was launched.
+
+## 2026-08-17 — Aggregated epoch image metrics across prompts
+
+- Updated successive-epoch evaluation to use all prompt images at each epoch for a single baseline instead of requiring a single-prompt dataframe.
+- FID now compares the complete previous/current epoch sets, while Inception Score measures the complete current-epoch set; duplicate image paths within an epoch are ignored.
+- Added focused multi-prompt aggregation coverage. No GPU experiment was launched.
+
+## 2026-08-17 — Added baseline diversity-score plots
+
+- Added separate FID and Inception Score line plots to `image_evals.ipynb`, using numeric epoch values on the x-axis and one legend entry per baseline.
+- No GPU experiment was launched.

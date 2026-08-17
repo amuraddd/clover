@@ -1,12 +1,18 @@
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
+import pandas as pd
 import torch
+from PIL import Image
 from torch import nn
 
 from clover.utils.diversity_score import (
     frechet_inception_distance,
     inception_score,
     rollout_fid_scores,
+    successive_epoch_inception_metrics,
 )
 
 
@@ -53,6 +59,66 @@ class DiversityScoreTests(unittest.TestCase):
             self.images, self.images.clone(), device="cpu", feature_model=MeanFeatureModel()
         )
         self.assertAlmostEqual(score, 0.0, places=6)
+
+    def test_fid_supports_singleton_epoch_groups(self):
+        score = frechet_inception_distance(
+            self.images[:1], self.images[1:2], device="cpu", feature_model=MeanFeatureModel()
+        )
+        self.assertGreater(score, 0.0)
+
+    def test_successive_epoch_metrics_returns_requested_schema(self):
+        with TemporaryDirectory() as directory:
+            paths = []
+            for epoch in (2, 4, 6):
+                path = Path(directory) / f"epoch_{epoch}.png"
+                Image.new("RGB", (4, 4), color=(epoch, epoch, epoch)).save(path)
+                paths.append(path.name)
+            dataframe = pd.DataFrame(
+                {
+                    "epoch": [2, 4, 6],
+                    "image": paths,
+                    "baseline": ["example"] * 3,
+                    "prompt": ["prompt one", "prompt two", "prompt one"],
+                }
+            )
+            with (
+                patch("clover.utils.diversity_score.frechet_inception_distance", return_value=3.5),
+                patch("clover.utils.diversity_score.inception_score", return_value=(1.25, 0.0)),
+            ):
+                result = successive_epoch_inception_metrics(dataframe, image_root=directory)
+
+        self.assertEqual(
+            result.columns.tolist(),
+            ["Epoch", "Baseline", "prompt", "FID Score", "Inception Score"],
+        )
+        self.assertEqual(result["Epoch"].tolist(), ["4-2", "6-4"])
+        self.assertEqual(result["FID Score"].tolist(), [3.5, 3.5])
+        self.assertEqual(result["prompt"].tolist(), ["all prompts", "all prompts"])
+
+    def test_successive_epoch_metrics_scores_all_prompts_at_each_epoch(self):
+        dataframe = pd.DataFrame(
+            {
+                "epoch": [2, 2, 4, 4],
+                "image": ["a.png", "b.png", "c.png", "d.png"],
+                "baseline": ["example"] * 4,
+                "prompt": ["prompt one", "prompt two"] * 2,
+            }
+        )
+        opened = []
+
+        def fake_open(path):
+            opened.append(Path(path).name)
+            return Image.new("RGB", (4, 4))
+
+        with (
+            patch("clover.utils.diversity_score.Image.open", side_effect=fake_open),
+            patch("clover.utils.diversity_score.frechet_inception_distance", return_value=3.5),
+            patch("clover.utils.diversity_score.inception_score", return_value=(1.25, 0.0)) as score,
+        ):
+            successive_epoch_inception_metrics(dataframe)
+
+        self.assertEqual(opened, ["a.png", "b.png", "c.png", "d.png"])
+        self.assertEqual(len(score.call_args.args[0]), 2)
 
 
 if __name__ == "__main__":

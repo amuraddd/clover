@@ -94,7 +94,7 @@ class DPOKConfig:
     reward_weight: float = 1.0
     kl_weight: float = 0.01
     clip_range: float = 1e-4  # CLI compatibility placeholder; unused by DPOK.
-    target_kl: float = 0.1
+    target_kl: float = 0.15
     normalize_rewards: bool = True
     max_grad_norm: float = 1.0
     mixed_precision: bool = True

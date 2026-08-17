@@ -68,7 +68,7 @@ def parse_config(
     parser.add_argument("--eta", type=float)
     parser.add_argument("--max-grad-norm", type=float)
     parser.add_argument("--clip-range", type=float)
-    parser.add_argument("--target-kl", type=float)
+    # parser.add_argument("--target-kl", type=float)
     parser.add_argument("--minibatch-size", type=int)
     parser.add_argument("--reward-type", type=str)
     config_fields = {field.name for field in fields(config_type)}
