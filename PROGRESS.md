@@ -592,3 +592,65 @@ else:
 
 - Added separate FID and Inception Score line plots to `image_evals.ipynb`, using numeric epoch values on the x-axis and one legend entry per baseline.
 - No GPU experiment was launched.
+
+## 2026-08-22 — Implemented MD3PO-SAC baseline
+
+- Added `clover/baselines/md3po_sac.py` using MD3PO's rollout collection, prompt-aware diversity filtering, latest-trajectory replay, artifact persistence, evaluation, and checkpointing pattern.
+- Replaced the PPO optimization step with an off-policy maximum-entropy diffusion actor update using normalized terminal returns as Monte Carlo soft-Q estimates and stored behavior log probabilities for bounded importance correction.
+- Added configurable `sac_epochs`, `reward_scale`, and `importance_ratio_clip` parameters and CLI parsing support.
+- Added focused regression coverage for SAC selection, entropy regularization, off-policy likelihood use, and MD3PO-equivalent filtering. CPU compilation and import/CLI smoke tests pass; the existing stability suite retains one unrelated pre-existing default-value failure (`DPOKConfig.max_grad_norm` is 0.1 while its test expects 1.0). No GPU experiment was launched.
+
+## 2026-08-22 — Documented the MD3PO-SAC objective
+
+- Expanded `sac_update()` documentation with the normalized Monte Carlo soft-Q estimate, bounded off-policy importance ratio, entropy score-function gradient, and the exact transition-level surrogate loss implemented by the baseline.
+- Clarified how this update differs from PPO and documented its arguments and returned metrics.
+
+## 2026-08-22 — Replaced SAC entropy coefficient with reward scaling
+
+- Replaced the configurable `entropy_regularizer` with the SAC-style positive `reward_scale`; normalized Monte Carlo returns are scaled while policy entropy retains unit weight.
+- Documented that maximizing `reward_scale * E[Q] + H(pi)` corresponds to an effective entropy temperature of `1 / reward_scale`, so lower reward scales favor higher entropy.
+- Updated CLI parsing, metrics, mathematical documentation, and focused regression coverage accordingly.
+
+## 2026-08-22 — Registered and streamlined MD3PO-SAC
+
+- Removed unused `prompt` and PPO-only `ppo_epochs`, `clip_range`, and `target_kl` fields from `MD3POSACConfig`.
+- Made shared CLI construction field-aware and added MD3PO-SAC-specific generated arguments for SAC epochs, reward scale, and importance-ratio clipping.
+- Registered `md3po_sac` in `main.py` and changed the runner to schedule baselines serially on one GPU, consistent with the project's single-GPU usage requirement.
+
+## 2026-08-24 — Annotated MD3PO-SAC loss computations
+
+- Added inline mathematical descriptions for the reward/policy loss, entropy loss, and trajectory-normalized combined loss in `sac_update()`.
+- No GPU experiment was launched.
+
+## 2026-08-24 — Documented the MD3PO-SAC formulation
+
+- Added `clover/baselines/md3po_sac_readme.md` with the diffusion-policy formulation, exact stop-gradient reward and entropy surrogate, reward-scale interpretation, off-policy correction, implementation scope, artifacts, and references.
+- Clarified that the baseline is SAC-inspired rather than canonical SAC and that the current source default is `reward_scale = 5.0`.
+- No GPU experiment was launched.
+
+## 2026-08-24 — Added matched multi-seed baseline execution
+
+- Updated `main.py` to enumerate every enabled baseline over matched seeds `[123, 456, 789]`.
+- Added seed-specific output and data directories so checkpoints, evaluation results, training histories, and MD3PO replay trajectories cannot overlap between seeds.
+- Logged the seed in every baseline's per-epoch metrics and in the aggregate execution results.
+- Added focused argument-generation coverage. No GPU experiment was launched.
+
+## 2026-08-24 — Enabled bounded three-GPU experiment scheduling
+
+- Updated `main.py` to consume one to three scheduler-visible GPUs and run baseline/seed jobs concurrently with exactly one GPU assigned to each process.
+- Capped concurrency at three GPUs even if more devices are visible, while retaining single-GPU behavior for smaller allocations.
+- Updated `run_experiments.sh` to request three GPUs. No GPU experiment was launched.
+
+## 2026-08-25 — Parallelized MD3PO-SAC across two GPUs
+
+- Changed the launcher to expose both Slurm-assigned GPUs to one MD3PO-SAC process and pass logical device IDs `0,1`, allowing the existing UNet `DataParallel` path to split rollout and SAC-update inference across both cards.
+- Required exactly two visible GPUs for this experiment, retained memory-bounded batches of 32, and requested two GPUs in the Slurm step.
+- Kept MD3PO-SAC in explicitly requested FP32 mode via `--no-mixed-precision`, while using two GPUs and memory-bounded batches of 32 to control the classifier-free-guidance activation peak.
+- Enabled expandable CUDA allocator segments to reduce fragmentation.
+- Added focused launcher/configuration coverage; focused tests, Python compilation, shell syntax, and diff checks pass. The full stability suite retains one unrelated pre-existing `DPOKConfig.max_grad_norm` expectation failure. No GPU experiment was launched.
+
+## 2026-08-25 — Fixed DataParallel evaluation compatibility
+
+- Updated shared evaluation image generation to temporarily replace a `DataParallel` UNet with its underlying module, allowing Diffusers to access `unet.config` during pipeline evaluation.
+- Guaranteed restoration of both the original wrapper and training state with `finally`, including when evaluation raises an exception.
+- Added focused CPU regression coverage. No GPU experiment was launched.

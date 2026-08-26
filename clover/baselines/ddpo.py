@@ -193,6 +193,7 @@ def train(config: DDPOConfig) -> list[dict[str, float]]:
         # apply PPO update to the model using the collected rollouts and save the metrics to history
         metrics = ppo_update(pipe, rollout, optimizer, config, device, dtype)
         metrics["epoch"] = epoch
+        metrics["seed"] = config.seed
         history.append(metrics)
         save_json(output_dir / "history.json", history)
         
@@ -212,7 +213,7 @@ def train(config: DDPOConfig) -> list[dict[str, float]]:
             evaluate(pipe, config, device, epoch=epoch)
     
     # Save final training data
-    save_training_data("ddpo", history)
+    save_training_data(f"ddpo/seed_{config.seed}", history)
     
     final_dir = output_dir / "lora_final"
     save_lora_weights(pipe, final_dir)

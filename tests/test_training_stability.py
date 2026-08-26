@@ -2,16 +2,18 @@ import inspect
 import random
 import unittest
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import torch
 from diffusers import DDPMScheduler
 
-from clover.baselines import b2diffurl, ddpo, dpok, md3po
+from clover.baselines import b2diffurl, ddpo, dpok, md3po, md3po_sac
 from clover.baselines.b2diffurl import B2DiffuRLConfig
 from clover.baselines.ddpo import DDPOConfig
 from clover.baselines.dpok import DPOKConfig
 from clover.baselines.md3po import MD3POConfig
-from clover.baselines.common import parse_config
+from clover.baselines.md3po_sac import MD3POSACConfig, sac_update
+from clover.baselines.common import generate_eval_images, parse_config
 from clover.utils.baseline_utils import (
     approximate_kl_from_log_ratio,
     ddpm_mean_std,
@@ -23,7 +25,7 @@ from clover.utils.baseline_utils import (
     standard_eval_prompts,
     transition_log_prob,
 )
-from main import build_default_argv
+from main import allocated_gpu_ids, build_default_argv
 
 
 class TrainingStabilityTests(unittest.TestCase):
@@ -57,6 +59,34 @@ class TrainingStabilityTests(unittest.TestCase):
         )
         torch.testing.assert_close(next_sample, mean)
         torch.testing.assert_close(log_prob, torch.zeros(2))
+
+    def test_evaluation_temporarily_unwraps_data_parallel_unet(self):
+        base_unet = torch.nn.Linear(2, 2)
+        wrapped_unet = torch.nn.DataParallel(base_unet)
+
+        class FakePipeline:
+            def __init__(self):
+                self.unet = wrapped_unet
+
+            def __call__(self, *args, **kwargs):
+                self.seen_unet = self.unet
+                return SimpleNamespace(images=["image"])
+
+        pipe = FakePipeline()
+        config = SimpleNamespace(
+            negative_prompt="",
+            height=8,
+            width=8,
+            num_inference_steps=1,
+            guidance_scale=1.0,
+        )
+
+        images = generate_eval_images(pipe, ["prompt"], config, torch.device("cpu"))
+
+        self.assertEqual(images, ["image"])
+        self.assertIs(pipe.seen_unet, base_unet)
+        self.assertIs(pipe.unet, wrapped_unet)
+        self.assertTrue(pipe.unet.training)
 
     def test_likelihood_scale_scales_transition_log_prob(self):
         mean = torch.zeros(2, 4, 2, 2)
@@ -116,8 +146,24 @@ class TrainingStabilityTests(unittest.TestCase):
         self.assertIn("keep = fid_scores > diversity_threshold", source)
         self.assertNotIn("keep = fid_scores <= diversity_threshold", source)
 
+    def test_md3po_sac_uses_reward_scaled_maximum_entropy_update(self):
+        config = MD3POSACConfig()
+        source = inspect.getsource(sac_update)
+        train_source = inspect.getsource(md3po_sac.train)
+        self.assertGreater(config.reward_scale, 0)
+        self.assertIn("reward_scale", source)
+        self.assertIn("old_log_probs", source)
+        self.assertIn("importance_ratio_clip", source)
+        self.assertIn("metrics = sac_update", train_source)
+        self.assertNotIn("metrics = ppo_update", train_source)
+
+    def test_md3po_sac_keeps_md3po_trajectory_filtering(self):
+        source = inspect.getsource(md3po_sac.md3po_combined_rollouts)
+        self.assertIn("keep = fid_scores > diversity_threshold", source)
+        self.assertIn("clover/data/md3po_sac/trajectories.pt", source)
+
     def test_each_baseline_uses_an_epoch_specific_rollout_seed(self):
-        for module in (ddpo, dpok, b2diffurl, md3po):
+        for module in (ddpo, dpok, b2diffurl, md3po, md3po_sac):
             source = inspect.getsource(module.train)
             self.assertIn("generator = set_seed(config.seed + epoch, device)", source)
 
@@ -157,6 +203,7 @@ class TrainingStabilityTests(unittest.TestCase):
     def test_generated_arguments_parse_for_every_baseline(self):
         cases = (
             ("clover.baselines.md3po", MD3POConfig, "ppo_epochs"),
+            ("clover.baselines.md3po_sac", MD3POSACConfig, "sac_epochs"),
             ("clover.baselines.ddpo", DDPOConfig, "ppo_epochs"),
             ("clover.baselines.dpok", DPOKConfig, "dpok_epochs"),
             ("clover.baselines.b2diffurl", B2DiffuRLConfig, "ppo_epochs"),
@@ -169,6 +216,51 @@ class TrainingStabilityTests(unittest.TestCase):
             self.assertEqual(config.min_log_prob_std, 1e-4)
             self.assertEqual(config.rollout_chunk_size, 32)
             self.assertEqual(config.reward_type, "clip")
+
+    def test_main_registers_md3po_sac_with_only_sac_arguments(self):
+        self.assertIn(("md3po_sac", "clover.baselines.md3po_sac"), __import__("main").BASELINES)
+        arguments = build_default_argv("clover.baselines.md3po_sac")
+        self.assertIn("--sac-epochs", arguments)
+        self.assertIn("--reward-scale", arguments)
+        self.assertIn("--importance-ratio-clip", arguments)
+        self.assertIn("--no-mixed-precision", arguments)
+        self.assertNotIn("--ppo-epochs", arguments)
+        self.assertNotIn("--clip-range", arguments)
+
+    def test_main_caps_scheduler_visible_gpus_at_two(self):
+        with patch.dict(
+            "os.environ", {"CUDA_VISIBLE_DEVICES": "4,5,6,7"}, clear=False
+        ):
+            self.assertEqual(allocated_gpu_ids(), ("4", "5"))
+
+        with patch.dict("os.environ", {"CUDA_VISIBLE_DEVICES": "2"}, clear=False):
+            with self.assertRaisesRegex(RuntimeError, "requires two GPUs"):
+                allocated_gpu_ids()
+
+    def test_main_builds_seed_specific_arguments_and_output_directory(self):
+        arguments = build_default_argv("clover.baselines.md3po_sac", seed=456)
+        seed_index = arguments.index("--seed")
+        output_index = arguments.index("--output-dir")
+        self.assertEqual(arguments[seed_index + 1], "456")
+        self.assertEqual(
+            arguments[output_index + 1], "outputs/md3po_sac/seed_456"
+        )
+
+    def test_main_builds_two_logical_gpu_ids_for_data_parallel(self):
+        arguments = build_default_argv(
+            "clover.baselines.md3po_sac", seed=123, gpu_ids=[0, 1]
+        )
+        gpu_index = arguments.index("--gpu-ids")
+        self.assertEqual(arguments[gpu_index + 1 : gpu_index + 3], ["0", "1"])
+        config = parse_config(MD3POSACConfig, "md3po_sac", arguments[1:])
+        self.assertTrue(config.use_data_parallel)
+        self.assertFalse(config.mixed_precision)
+        self.assertEqual(config.gpu_ids, [0, 1])
+
+    def test_md3po_sac_config_excludes_ppo_only_parameters(self):
+        config = MD3POSACConfig()
+        for field_name in ("prompt", "ppo_epochs", "clip_range", "target_kl"):
+            self.assertFalse(hasattr(config, field_name))
 
     def test_main_uses_dpok_specific_update_epoch_flag(self):
         dpok_args = build_default_argv("clover.baselines.dpok")

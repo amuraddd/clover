@@ -84,7 +84,7 @@ class DPOKConfig:
     dpok_epochs: int = 2
     minibatch_size: int = 64
     learning_rate: float = 1e-5
-    adam_beta1: float = 0.9
+    adam_beta1: float = 0.01
     adam_beta2: float = 0.999
     adam_epsilon: float = 1e-4
     lora_rank: int = 16
@@ -96,7 +96,7 @@ class DPOKConfig:
     clip_range: float = 1e-4  # CLI compatibility placeholder; unused by DPOK.
     target_kl: float = 0.15
     normalize_rewards: bool = True
-    max_grad_norm: float = 1.0
+    max_grad_norm: float = 0.1
     mixed_precision: bool = True
     gradient_checkpointing: bool = True
     log_every: int = 1
@@ -364,6 +364,7 @@ def train(config: DPOKConfig) -> list[dict[str, float]]:
         
         metrics = dpok_update(pipe, reference_pipe, rollout, optimizer, config, device, dtype)
         metrics["epoch"] = epoch
+        metrics["seed"] = config.seed
         history.append(metrics)
         save_json(output_dir / "history.json", history)
         
@@ -382,7 +383,7 @@ def train(config: DPOKConfig) -> list[dict[str, float]]:
             evaluate(pipe, config, device, epoch=epoch)
     
     # Save final training data
-    save_training_data("dpok", history)
+    save_training_data(f"dpok/seed_{config.seed}", history)
     
     final_dir = output_dir / "lora_final"
     save_lora_weights(pipe, final_dir)

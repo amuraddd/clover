@@ -1,7 +1,7 @@
-"""MD3PO: max diversity denoising diffusion policy optimization.
+"""MD3PO-SAC: max diversity denoising diffusion policy optimization.
 
 Converted from ``clover/exp/ddpo.ipynb``. Run with
-``python -m clover.baselines.md3po``.
+``python -m clover.baselines.md3po_sac``.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ from clover.utils.baseline_utils import (
     encode_prompts,
     load_training_checkpoint,
     load_lora_pipeline,
-    ppo_update,
+    ddpm_step_with_log_prob, encode_prompts, normalize_advantages, predict_noise_chunked,
     predict_noise_chunked,
     resolve_gpu_ids,
     sample_prompt_batch,
@@ -56,13 +56,12 @@ B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS = get_prompts(seed=123, save=True)
 
 
 @dataclass
-class MD3POConfig:
+class MD3POSACConfig:
     model_id: str = "runwayml/stable-diffusion-v1-5"
-    output_dir: str = "outputs/md3po"
+    output_dir: str = "outputs/md3po_sac"
     seed: int = 17
     gpu_ids: list[int] = field(default_factory=lambda: [0])
-    use_data_parallel: bool = False
-    prompt: str = "a colorful clover field at sunrise, high detail"
+    use_data_parallel: bool = True
     negative_prompt: str = "blurry, low quality, distorted"
     train_prompts: tuple[str, ...] = B2_FULL_TRAIN_PROMPTS
     eval_prompts: tuple[str, ...] = B2_FULL_EVAL_PROMPTS
@@ -74,11 +73,13 @@ class MD3POConfig:
     eta: float = 1.0
     min_log_prob_std: float = 1e-4
     likelihood_scale: float = 1.0
-    rollout_chunk_size: int = 32
+    rollout_chunk_size: int = 64
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
-    ppo_epochs: int = 2
-    minibatch_size: int = 64
+    sac_epochs: int = 2
+    reward_scale: float = 20.0
+    importance_ratio_clip: float = 1.0
+    minibatch_size: int = 32
     learning_rate: float = 3e-4
     adam_beta1: float = 0.9
     adam_beta2: float = 0.999
@@ -87,8 +88,6 @@ class MD3POConfig:
     lora_alpha: int = 16
     lora_dropout: float = 0.0
     lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
-    clip_range: float = 1e-4
-    target_kl: float = 0.1
     max_grad_norm: float = 1.0
     mixed_precision: bool = True
     gradient_checkpointing: bool = True
@@ -101,7 +100,7 @@ class MD3POConfig:
 def collect_rollouts(
     pipe: Any,
     batch_size: int,
-    config: MD3POConfig,
+    config: MD3POSACConfig,
     device: torch.device,
     dtype: torch.dtype,
     generator: torch.Generator,
@@ -266,7 +265,7 @@ def md3po_combined_rollouts(
             saved trajectory field format.
         trajectories: Optional mapping from integer-like rollout numbers to
             saved rollout dictionaries. When omitted, trajectories are loaded
-            from ``trajectory_path`` or the default MD3PO trajectory file.
+            from ``trajectory_path`` or the default MD3PO-SAC trajectory file.
         trajectory_path: Optional seed-specific replay file used when
             ``trajectories`` is omitted.
         diversity_threshold: Minimum normalized singleton-FID for a saved
@@ -287,7 +286,7 @@ def md3po_combined_rollouts(
     """
     if trajectories is None:
         try:
-            trajectory_path = trajectory_path or "clover/data/md3po/trajectories.pt"
+            trajectory_path = trajectory_path or "clover/data/md3po_sac/trajectories.pt"
             trajectories = torch.load(trajectory_path, map_location="cpu", weights_only=True)
         except FileNotFoundError:
             return reference_rollout
@@ -468,11 +467,158 @@ def md3po_combined_rollouts(
             combined[field] = [item for value in values for item in value]
     return training_format(combined)
 
-def train(config: MD3POConfig) -> list[dict[str, float]]:
+
+def sac_update(pipe, rollout, optimizer, config, device, dtype):
+    """Apply an off-policy maximum-entropy actor update to the diffusion UNet.
+
+    Each denoising transition is an action sampled from the conditional policy
+    ``pi_theta(a_t | s_t, prompt)``. Since the image reward is terminal, its
+    normalized return is used as a Monte Carlo Q estimate and multiplied by the
+    SAC reward scale ``beta = reward_scale``::
+
+        Q_hat_i = (R_i - mean(R)) / (std(R) + 1e-8)
+        Q_scaled_i = beta * Q_hat_i
+
+    This follows the reward-scaling formulation used in SAC: the entropy term
+    has fixed unit weight, while ``beta`` controls reward relative to entropy.
+    Maximizing ``beta * E[Q] + H(pi)`` is equivalent, up to division by beta,
+    to maximizing ``E[Q] + alpha * H(pi)`` with ``alpha = 1 / beta``. Therefore
+    a smaller reward scale produces a higher effective temperature and favors
+    more entropy; a larger reward scale emphasizes terminal image reward.
+
+    MD3PO filtering can include transitions from an earlier behavior policy
+    ``mu``. The update corrects those samples with a bounded importance ratio::
+
+        rho_i,t = min(exp(log pi_theta(a_i,t | s_i,t)
+                          - log mu(a_i,t | s_i,t)), rho_max)
+
+    The implementation detaches ``rho_i,t`` and every coefficient multiplying
+    the current log probability. Each transition minimizes::
+
+        L_i,t(theta) = -rho_i,t * [Q_scaled_i
+                         - (log pi_theta(a_i,t | s_i,t) + 1)]
+                         * log pi_theta(a_i,t | s_i,t)
+
+    The unit-weight entropy term follows from the score-function identity::
+
+        grad H(pi) = -E_pi[(log pi + 1) * grad log pi]
+
+    The minibatch loss is divided by the number of denoising transitions before
+    backpropagation. Unlike PPO, there is no clipped policy objective or KL
+    early stopping; clipping applies only to the off-policy importance weight.
+
+    Args:
+        pipe: Diffusion pipeline whose trainable LoRA UNet is the actor.
+        rollout: Current and filtered replay trajectories containing states,
+            actions, rewards, behavior log probabilities, timesteps, and prompts.
+        optimizer: Optimizer over trainable diffusion-model parameters.
+        config: SAC reward-scaling, sampling, and gradient configuration.
+        device: Device used to recompute transition likelihoods.
+        dtype: Floating-point dtype used for model inputs.
+
+    Returns:
+        Aggregate policy loss, entropy, importance-ratio, reward, gradient, and
+        skipped-update metrics for the completed SAC update.
+    """
+    if config.reward_scale <= 0:
+        raise ValueError("reward_scale must be positive")
+    if config.importance_ratio_clip <= 0:
+        raise ValueError("importance_ratio_clip must be positive")
+
+    states = rollout["states"]
+    actions = rollout["actions"]
+    old_log_probs = rollout["old_log_probs"]
+    timesteps = rollout["timesteps"].tolist()
+    prompts = rollout["prompts"]
+    rewards = rollout["rewards"]
+    batch_size = old_log_probs.shape[0]
+    if batch_size == 0:
+        return {
+            "loss": float("nan"), "policy_loss": float("nan"),
+            "entropy": float("nan"), "importance_ratio": float("nan"),
+            "reward_mean": float("nan"), "reward_std": float("nan"),
+            "soft_q_mean": float("nan"), "skipped_updates": 0,
+            "selected_samples": 0,
+        }
+
+    soft_q = config.reward_scale * normalize_advantages(rewards)
+    trajectory_len = old_log_probs.shape[1]
+    indices = torch.arange(batch_size)
+    losses, policy_losses, entropies, importance_ratios, grad_norms = [], [], [], [], []
+    skipped_updates = 0
+    pipe.unet.train()
+
+    for _ in range(config.sac_epochs):
+        permutation = indices[torch.randperm(batch_size)]
+        for start in range(0, batch_size, config.minibatch_size):
+            mb_idx = permutation[start:start + config.minibatch_size]
+            mb_prompts = [prompts[index] for index in mb_idx.tolist()]
+            prompt_embeds = encode_prompts(pipe, mb_prompts, config.negative_prompt, device, dtype)
+            optimizer.zero_grad(set_to_none=True)
+            try:
+                for step_idx, timestep in enumerate(timesteps):
+                    state = states[mb_idx, step_idx].to(device=device, dtype=dtype)
+                    action = actions[mb_idx, step_idx].to(device=device, dtype=dtype)
+                    timestep_tensor = torch.tensor(timestep, device=device, dtype=torch.long)
+                    noise_pred = predict_noise_chunked(
+                        pipe, state, timestep_tensor, prompt_embeds,
+                        config.guidance_scale, config.rollout_chunk_size,
+                    )
+                    _, log_prob = ddpm_step_with_log_prob(
+                        pipe.scheduler, noise_pred, timestep, state,
+                        prev_sample=action, eta=config.eta,
+                        likelihood_scale=config.likelihood_scale,
+                    )
+                    old = old_log_probs[mb_idx, step_idx].to(device=device, dtype=log_prob.dtype)
+                    ratio = torch.exp(log_prob.detach() - old).clamp(max=config.importance_ratio_clip)
+                    q_value = soft_q[mb_idx, step_idx].to(device=device, dtype=log_prob.dtype)
+                    entropy_advantage = -(log_prob.detach() + 1.0)
+                    # Reward term: L_Q = -E[rho_t * Q_scaled * log pi_theta(a_t | s_t)].
+                    policy_loss = -(ratio * q_value.detach() * log_prob).mean()
+                    # Entropy term: L_H = -E[rho_t * (-(log pi_theta + 1)) * log pi_theta].
+                    entropy_loss = -(ratio * entropy_advantage * log_prob).mean()
+                    # Per-transition objective: L_t = (L_Q + L_H) / T.
+                    step_loss = (policy_loss + entropy_loss) / trajectory_len
+                    if not torch.isfinite(step_loss):
+                        raise FloatingPointError("non-finite SAC loss")
+                    step_loss.backward()
+                    losses.append(float((step_loss * trajectory_len).detach().cpu()))
+                    policy_losses.append(float(policy_loss.detach().cpu()))
+                    entropies.append(float((-log_prob).mean().detach().cpu()))
+                    importance_ratios.append(float(ratio.mean().detach().cpu()))
+                grad_norm = torch.nn.utils.clip_grad_norm_(
+                    trainable_parameters(pipe.unet), config.max_grad_norm
+                )
+                if not torch.isfinite(grad_norm):
+                    raise FloatingPointError("non-finite SAC gradients")
+                grad_norms.append(float(grad_norm.detach().cpu()))
+                optimizer.step()
+            except FloatingPointError as error:
+                optimizer.zero_grad(set_to_none=True)
+                skipped_updates += 1
+                print(f"Skipped SAC minibatch: {error}")
+            if device.type == "cuda":
+                torch.cuda.empty_cache()
+
+    reward_values = rewards.float()
+    metric_mean = lambda values: float(np.mean(values)) if values else float("nan")
+    return {
+        "loss": metric_mean(losses), "policy_loss": metric_mean(policy_losses),
+        "entropy": metric_mean(entropies),
+        "reward_scale": float(config.reward_scale),
+        "importance_ratio": metric_mean(importance_ratios),
+        "reward_mean": float(reward_values.mean()),
+        "reward_std": float(reward_values.std(unbiased=False)),
+        "soft_q_mean": float(soft_q.float().mean()),
+        "grad_norm_mean": metric_mean(grad_norms),
+        "skipped_updates": skipped_updates, "selected_samples": batch_size,
+    }
+
+def train(config: MD3POSACConfig) -> list[dict[str, float]]:
     """Train an MD3PO LoRA policy and persist its experiment artifacts.
 
     Each iteration collects a reference rollout, augments it with qualifying
-    samples from only the preceding saved rollout, performs a PPO update, and
+    samples from only the preceding saved rollout, performs a SAC update, and
     saves only the uncombined reference rollout for the next iteration.
 
     Args:
@@ -485,7 +631,11 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
     output_dir = prepare_output(config)
     gpu_ids = resolve_gpu_ids(config)
     device = torch.device(f"cuda:{gpu_ids[0]}" if gpu_ids else "cpu")
-    dtype = torch.float32 if device.type == "cuda" and config.mixed_precision else torch.float16
+    dtype = (
+        torch.float16
+        if device.type == "cuda" and config.mixed_precision
+        else torch.float32
+    )
     generator = set_seed(config.seed, device)
     print(device, dtype, f"gpu_ids={gpu_ids}")
     reward_fn = make_reward_fn(device, config.reward_type)
@@ -508,15 +658,15 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         reference_rollout = collect_rollouts(
             pipe, config.rollouts_per_epoch, config, device, dtype, generator, reward_fn, vae_scale_factor
         )
-        
-        data_name = f"md3po/seed_{config.seed}"
+
+        data_name = f"md3po_sac/seed_{config.seed}"
         combined_rollout = md3po_combined_rollouts(
             reference_rollout, diversity_threshold=0.5,
             trajectory_path=f"clover/data/{data_name}/trajectories.pt",
         )
-        
-        # apply PPO update to the model using the collected rollouts and save the metrics to history
-        metrics = ppo_update(pipe, combined_rollout, optimizer, config, device, dtype)
+
+        # apply SAC update to the model using the collected rollouts and save the metrics to history
+        metrics = sac_update(pipe, combined_rollout, optimizer, config, device, dtype)
         reference_count = int(reference_rollout["rewards"].shape[0])
         combined_rewards = combined_rollout["rewards"][:, 0].float()
         current_rewards = combined_rewards[:reference_count]
@@ -538,20 +688,20 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         scheduler.step()
         history.append(metrics)
         save_json(output_dir / "history.json", history)
-        
+
         # Persist only the current iteration's pre-replay reference rollout.
         save_trajectory_data(data_name, epoch, reference_rollout, keep_latest_only=True)
-        
+
         # Save evaluation metrics from the current epoch training
         save_evaluation_metrics(
-            "md3po",
+            "md3po_sac",
             epoch,
             metrics,
             reference_rollout.get("images"),
             reference_rollout.get("prompts"),
             output_dir,
         )
-        
+
         if epoch % config.log_every == 0:
             print(metrics)
         if epoch % config.save_every == 0:
@@ -562,13 +712,13 @@ def train(config: MD3POConfig) -> list[dict[str, float]]:
         gc.collect()
         if device.type == "cuda":
             torch.cuda.empty_cache()
-    
+
         if config.evaluate_every > 0 and epoch % config.evaluate_every == 0:
             evaluate(pipe, config, device, epoch=epoch)
-    
+
     # Save final training data
-    save_training_data(f"md3po/seed_{config.seed}", history)
-    
+    save_training_data(f"md3po_sac/seed_{config.seed}", history)
+
     final_dir = output_dir / "lora_final"
     save_lora_weights(pipe, final_dir)
     save_json(output_dir / "config.json", asdict(config))
@@ -583,7 +733,7 @@ def main() -> None:
     Returns:
         None.
     """
-    train(parse_config(MD3POConfig, __doc__ or "Train MD3PO"))
+    train(parse_config(MD3POSACConfig, __doc__ or "Train MD3PO-SAC"))
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@
 #SBATCH --output=output.txt
 #SBATCH --error=error.txt
 #SBATCH --time=2-24:00:00
-#SBATCH --nodelist=aiau011
+#SBATCH --nodelist=aiau001
 #SBATCH --gres=gpu:2
 #SBATCH --partition=general
 
@@ -24,11 +24,12 @@ cd $workdir
 source .env
 export HF_HOME="/aiau010_scratch/azm0269/hub"
 export TMPDIR="/aiau010_scratch/azm0269/tmp"
-# CUDA_VISIBLE_DEVICES=6,7
 # TOKENIZERS_PARALLELISM=true
 
+# Reduce allocator fragmentation during long rollout/update cycles.
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
 # for baseline
-nohup srun .venv/bin/python -m main > experiment.log 2>&1
-wait
+srun --ntasks=1 --gres=gpu:2 .venv/bin/python -m main > experiment.log 2>&1
 
 deactivate

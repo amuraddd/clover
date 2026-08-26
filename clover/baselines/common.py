@@ -60,20 +60,23 @@ def parse_config(
     parser.add_argument("--seed", type=int)
     parser.add_argument("--train-epochs", type=int)
     parser.add_argument("--rollouts-per-epoch", type=int)
-    parser.add_argument("--learning-rate", type=float)
+    # parser.add_argument("--learning-rate", type=float)
     parser.add_argument("--save-every", type=int)
     parser.add_argument("--num-inference-steps", type=int)
     parser.add_argument("--guidance-scale", type=float)
     parser.add_argument("--adam-epsilon", type=float)
     parser.add_argument("--eta", type=float)
-    parser.add_argument("--max-grad-norm", type=float)
-    parser.add_argument("--clip-range", type=float)
+    # parser.add_argument("--max-grad-norm", type=float)
     # parser.add_argument("--target-kl", type=float)
     parser.add_argument("--minibatch-size", type=int)
     parser.add_argument("--reward-type", type=str)
     config_fields = {field.name for field in fields(config_type)}
     optional_arguments = {
         "ppo_epochs": int,
+        "clip_range": float,
+        "sac_epochs": int,
+        "reward_scale": float,
+        "importance_ratio_clip": float,
         "dpok_epochs": int,
         "lora_alpha": int,
         "min_log_prob_std": float,
@@ -140,19 +143,32 @@ def generate_eval_images(
     device: torch.device,
     seed: int = 123,
 ) -> list[Image.Image]:
-    pipe.unet.eval()
+    parallel_unet = pipe.unet
+    was_training = parallel_unet.training
+    evaluation_unet = (
+        parallel_unet.module
+        if isinstance(parallel_unet, torch.nn.DataParallel)
+        else parallel_unet
+    )
+    # Diffusers accesses attributes such as ``unet.config`` directly during a
+    # pipeline call. DataParallel does not proxy those attributes, so evaluate
+    # with the underlying UNet and restore the training wrapper afterwards.
+    pipe.unet = evaluation_unet
+    evaluation_unet.eval()
     generator = torch.Generator(device=device).manual_seed(seed)
-    images = pipe(
-        prompts,
-        negative_prompt=[config.negative_prompt] * len(prompts),
-        height=config.height,
-        width=config.width,
-        num_inference_steps=config.num_inference_steps,
-        guidance_scale=config.guidance_scale,
-        generator=generator,
-    ).images
-    pipe.unet.train()
-    return images
+    try:
+        return pipe(
+            prompts,
+            negative_prompt=[config.negative_prompt] * len(prompts),
+            height=config.height,
+            width=config.width,
+            num_inference_steps=config.num_inference_steps,
+            guidance_scale=config.guidance_scale,
+            generator=generator,
+        ).images
+    finally:
+        evaluation_unet.train(was_training)
+        pipe.unet = parallel_unet
 
 
 def evaluate(pipe: Any, config: Any, device: torch.device, epoch: int | None = None) -> None:

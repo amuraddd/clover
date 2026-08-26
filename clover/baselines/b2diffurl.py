@@ -257,6 +257,7 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
             mean_pair_gap=float((reward_pairs[:, 0] - reward_pairs[:, 1]).mean())
             if reward_pairs.numel()
             else float("nan"),
+            seed=config.seed,
             epoch=epoch,
             interval_steps=interval_steps,
             branch_start_idx=rollout["branch_start_idx"],
@@ -279,7 +280,7 @@ def train(config: B2DiffuRLConfig) -> list[dict[str, float]]:
             evaluate(pipe, config, device, epoch=epoch)
     
     # Save final training data
-    save_training_data("b2diffurl", history)
+    save_training_data(f"b2diffurl/seed_{config.seed}", history)
     
     final_dir = output_dir / "lora_final"
     save_lora_weights(pipe, final_dir)
