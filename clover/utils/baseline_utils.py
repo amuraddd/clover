@@ -154,6 +154,14 @@ def load_lora_pipeline(
         target_modules=list(config.lora_target_modules),
     )
     pipe.unet.add_adapter(lora_config)
+    if dtype == torch.float16:
+        # Keep the frozen diffusion model in FP16 for memory efficiency, but
+        # optimize the small LoRA adapter in FP32. In particular, Adam eps=1e-8
+        # underflows in FP16 and can turn an otherwise finite update into NaN.
+        for parameter in pipe.unet.parameters():
+            if parameter.requires_grad:
+                parameter.data = parameter.data.float()
+        print("Trainable LoRA parameters kept in FP32 for optimizer stability")
     pipe.unet.train()
 
     if config.gradient_checkpointing and hasattr(pipe.unet, "enable_gradient_checkpointing"):

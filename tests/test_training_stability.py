@@ -162,6 +162,19 @@ class TrainingStabilityTests(unittest.TestCase):
         self.assertIn("keep = fid_scores > diversity_threshold", source)
         self.assertIn("clover/data/md3po_sac/trajectories.pt", source)
 
+    def test_md3po_sac_prompt_filtering_is_opt_in(self):
+        signature = inspect.signature(md3po_sac.md3po_combined_rollouts)
+        self.assertIs(signature.parameters["prompt_similarity_threshold"].default, False)
+        source = inspect.getsource(md3po_sac.md3po_combined_rollouts)
+        self.assertIn("if prompt_similarity_threshold is not False:", source)
+        self.assertIn("comparison_mask=comparison_mask", source)
+        self.assertIn("required_trajectory_epoch", source)
+
+    def test_md3po_sac_train_requires_previous_epoch_replay(self):
+        source = inspect.getsource(md3po_sac.train)
+        self.assertIn("required_trajectory_epoch=epoch - 1 if epoch > 1 else None", source)
+        self.assertIn("replay_source_epoch=epoch - 1 if epoch > 1 else None", source)
+
     def test_each_baseline_uses_an_epoch_specific_rollout_seed(self):
         for module in (ddpo, dpok, b2diffurl, md3po, md3po_sac):
             source = inspect.getsource(module.train)
@@ -223,7 +236,7 @@ class TrainingStabilityTests(unittest.TestCase):
         self.assertIn("--sac-epochs", arguments)
         self.assertIn("--reward-scale", arguments)
         self.assertIn("--importance-ratio-clip", arguments)
-        self.assertIn("--no-mixed-precision", arguments)
+        self.assertNotIn("--no-mixed-precision", arguments)
         self.assertNotIn("--ppo-epochs", arguments)
         self.assertNotIn("--clip-range", arguments)
 
@@ -234,8 +247,7 @@ class TrainingStabilityTests(unittest.TestCase):
             self.assertEqual(allocated_gpu_ids(), ("4", "5"))
 
         with patch.dict("os.environ", {"CUDA_VISIBLE_DEVICES": "2"}, clear=False):
-            with self.assertRaisesRegex(RuntimeError, "requires two GPUs"):
-                allocated_gpu_ids()
+            self.assertEqual(allocated_gpu_ids(), ("2",))
 
     def test_main_builds_seed_specific_arguments_and_output_directory(self):
         arguments = build_default_argv("clover.baselines.md3po_sac", seed=456)
@@ -254,8 +266,16 @@ class TrainingStabilityTests(unittest.TestCase):
         self.assertEqual(arguments[gpu_index + 1 : gpu_index + 3], ["0", "1"])
         config = parse_config(MD3POSACConfig, "md3po_sac", arguments[1:])
         self.assertTrue(config.use_data_parallel)
-        self.assertFalse(config.mixed_precision)
+        self.assertTrue(config.mixed_precision)
         self.assertEqual(config.gpu_ids, [0, 1])
+
+    def test_main_builds_single_gpu_fallback(self):
+        arguments = build_default_argv(
+            "clover.baselines.md3po_sac", seed=123, gpu_ids=[0]
+        )
+        config = parse_config(MD3POSACConfig, "md3po_sac", arguments[1:])
+        self.assertTrue(config.use_data_parallel)
+        self.assertEqual(config.gpu_ids, [0])
 
     def test_md3po_sac_config_excludes_ppo_only_parameters(self):
         config = MD3POSACConfig()

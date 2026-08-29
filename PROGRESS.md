@@ -654,3 +654,53 @@ else:
 - Updated shared evaluation image generation to temporarily replace a `DataParallel` UNet with its underlying module, allowing Diffusers to access `unet.config` during pipeline evaluation.
 - Guaranteed restoration of both the original wrapper and training state with `finally`, including when evaluation raises an exception.
 - Added focused CPU regression coverage. No GPU experiment was launched.
+
+## 2026-08-25 — Added adaptive MD3PO-SAC GPU selection
+
+- Allowed MD3PO-SAC to run on one visible GPU without failing, while continuing to wrap the UNet with `DataParallel` whenever two GPUs are allocated.
+- Kept the batch script's default at two GPUs and removed the Slurm step's hard-coded GPU count, allowing a one-GPU submission override to propagate to the training process.
+- Added focused coverage for both one- and two-GPU argument generation. No GPU experiment was launched.
+
+## 2026-08-26 — Stabilized memory-efficient FP16 MD3PO-SAC execution
+
+- Enabled FP16 for the frozen diffusion model to reduce GPU memory while retaining FP32 only for the small trainable LoRA adapter.
+- Keeping LoRA weights and Adam state in FP32 prevents `adam_epsilon=1e-8` from underflowing during optimizer updates, which was the likely source of non-finite UNet predictions in the following rollout.
+- Updated focused launcher expectations for hybrid-precision execution. No GPU experiment was launched.
+
+## 2026-08-26 — Made MD3PO-SAC replay selection diversity-only by default
+
+- Disabled prompt-similarity filtering by default in `md3po_combined_rollouts()` and avoided loading or encoding with CLIP unless a prompt threshold is explicitly supplied.
+- Compared every image in the latest saved rollout against every image in the current rollout and retained saved samples solely when their normalized FID score exceeds `diversity_threshold`.
+- Added focused regression coverage. No GPU experiment was launched.
+
+## 2026-08-26 — Enforced previous-epoch MD3PO-SAC replay
+
+- Required each MD3PO-SAC epoch after the first to load the saved trajectory for exactly `epoch - 1`; missing or mismatched replay data now raises a clear error instead of silently using only current samples.
+- Logged `replay_source_epoch` alongside `replay_samples` so training history directly identifies the rollout source; zero replay samples still means no previous-epoch sample passed `diversity_threshold`.
+- Added focused regression coverage. No GPU experiment was launched.
+
+## 2026-08-27 — Added selected-prompt Inception Score matrix
+
+- Extended `clover/exp/figures.ipynb` with a 2×3 image grid whose rows are epochs 5 and 9 and whose columns are the three consistently ordered prompts, followed by a 3×3 cross-epoch Inception Score matrix using `clover.utils.diversity_score.inception_score`.
+- Used one split per image pair, normalized the full matrix by the sum of its diagonal so the diagonal entries sum to 1, and kept diagonal cells as same-prompt cross-epoch comparisons. Added a labeled heatmap and saved the structured normalized matrix to `outputs/md3po_sac/evals/selected_prompt_inception_score_matrix.csv` when the notebook cell runs.
+- No GPU experiment was launched.
+
+## 2026-08-28 — Added discounted terminal rewards to EMO
+
+- Added `gamma` to `EMOConfig` and shared CLI parsing with a default value of `0.99`.
+- Replaced terminal-reward replication with a reverse discounted backup, preserving the full terminal reward at the final denoising step.
+- Registered EMO in `main.py` with its SAC-specific arguments and explicit gamma launcher argument.
+- CPU-only syntax, config parsing, and launcher argument checks pass. No GPU experiment was launched.
+
+## 2026-08-28 — Derived EMO discount from the denoising horizon
+
+- Changed EMO gamma to `1 - (1 / H)`, where `H` is `num_inference_steps`.
+- Gamma is computed automatically when the config is created, and non-positive horizons are rejected.
+- Removed the redundant gamma launcher/CLI override. CPU-only focused checks pass; no GPU experiment was launched.
+
+## 2026-08-28 — Added exact-prompt diversity replay selection to EMO
+
+- Removed CLIP prompt encoding and cosine-similarity filtering from `emo_combined_rollouts()`.
+- Added an exact-prompt selection mask that removes saved samples without a corresponding current prompt before image scoring.
+- Used `rollout_fid_scores()` with a same-prompt comparison mask and retained saved images only when their normalized Inception distance exceeds `diversity_threshold`.
+- CPU-only syntax and mocked replay-selection checks pass. No GPU experiment was launched.

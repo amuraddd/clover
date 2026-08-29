@@ -1,7 +1,7 @@
-"""MD3PO-SAC: max diversity denoising diffusion policy optimization.
+"""EMO: max diversity denoising diffusion policy optimization.
 
 Converted from ``clover/exp/ddpo.ipynb``. Run with
-``python -m clover.baselines.md3po_sac``.
+``python -m clover.baselines.emo``.
 """
 
 from __future__ import annotations
@@ -46,19 +46,15 @@ from clover.utils.baseline_utils import (
     unet_config,
 )
 from clover.utils.diversity_score import rollout_fid_scores
-from clover.utils.rewards_utils import (
-    clip_prompt_embeddings,
-    load_clip_encoder,
-)
 from clover.utils.prompts import get_prompts
 
 B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS = get_prompts(seed=123, save=True)
 
 
 @dataclass
-class MD3POSACConfig:
+class EMOConfig:
     model_id: str = "runwayml/stable-diffusion-v1-5"
-    output_dir: str = "outputs/md3po_sac"
+    output_dir: str = "outputs/emo"
     seed: int = 17
     gpu_ids: list[int] = field(default_factory=lambda: [0])
     use_data_parallel: bool = True
@@ -77,6 +73,7 @@ class MD3POSACConfig:
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
     sac_epochs: int = 2
+    gamma: float = field(init=False)
     reward_scale: float = 20.0
     importance_ratio_clip: float = 1.0
     minibatch_size: int = 16
@@ -95,12 +92,17 @@ class MD3POSACConfig:
     save_every: int = 5
     evaluate_every: int = 2
 
+    def __post_init__(self) -> None:
+        if self.num_inference_steps <= 0:
+            raise ValueError("num_inference_steps must be positive")
+        self.gamma = 1.0 - (1.0 / self.num_inference_steps)
+
 
 @torch.no_grad()
 def collect_rollouts(
     pipe: Any,
     batch_size: int,
-    config: MD3POSACConfig,
+    config: EMOConfig,
     device: torch.device,
     dtype: torch.dtype,
     generator: torch.Generator,
@@ -116,7 +118,7 @@ def collect_rollouts(
     Args:
         pipe: Diffusion pipeline containing the UNet, scheduler, and VAE.
         batch_size: Number of trajectories to sample.
-        config: MD3PO sampling and training configuration.
+        config: EMO sampling and training configuration.
         device: Device on which diffusion sampling is performed.
         dtype: Floating-point dtype used by the diffusion model.
         generator: Seeded PyTorch generator used for stochastic sampling.
@@ -180,7 +182,12 @@ def collect_rollouts(
     pipe.unet.train()
     if terminal_rewards is None:
         raise RuntimeError("terminal rewards were not computed")
-    rewards = terminal_rewards[:, None].expand(-1, len(timesteps)).clone()
+    rewards = torch.zeros(
+        (terminal_rewards.shape[0], len(timesteps)), dtype=terminal_rewards.dtype
+    )
+    rewards[:, -1] = terminal_rewards
+    for t in reversed(range(rewards.shape[1] - 1)):
+        rewards[:, t] += config.gamma * rewards[:, t + 1]
 
     return {
         "prompts": prompts,
@@ -192,81 +199,24 @@ def collect_rollouts(
         "images": images,
     }
 
-
-def calculate_ssim(image_a, image_b):
-    """Calculate grayscale structural similarity between two color images.
-
-    Args:
-        image_a: First OpenCV-compatible image array.
-        image_b: Second OpenCV-compatible image array with the same shape as
-            ``image_a``.
-
-    Returns:
-        The scalar structural similarity index produced by scikit-image.
-    """
-    gray_a = cv2.cvtColor(image_a, cv2.COLOR_BGR2GRAY)
-    gray_b = cv2.cvtColor(image_b, cv2.COLOR_BGR2GRAY)
-    score, _ = ssim(gray_a, gray_b, full=True)
-    return score
-
-
-def _to_rgba_uint8(frame_chw):
-    """Convert one tensor or array frame to an HWC ``uint8`` RGBA array.
-
-    Channel-first inputs are transposed, grayscale and RGB inputs receive the
-    required channel expansion, and floating-point values are min-max scaled
-    to the range 0–255.
-
-    Args:
-        frame_chw: Tensor or NumPy-compatible array representing one image,
-            normally in channel-first layout.
-
-    Returns:
-        A NumPy ``uint8`` array in height-width-channel RGBA layout.
-    """
-    frame = frame_chw.detach().cpu().numpy() if hasattr(frame_chw, "detach") else np.asarray(frame_chw)
-
-    if frame.ndim == 3 and frame.shape[0] in (1, 3, 4):
-        frame = np.transpose(frame, (1, 2, 0))
-
-    if frame.ndim == 3 and frame.shape[2] == 1:
-        frame = np.repeat(frame, 4, axis=2)
-    elif frame.ndim == 3 and frame.shape[2] == 3:
-        alpha = np.ones((frame.shape[0], frame.shape[1], 1), dtype=frame.dtype)
-        frame = np.concatenate([frame, alpha], axis=2)
-
-    if np.issubdtype(frame.dtype, np.floating):
-        fmin, fmax = float(frame.min()), float(frame.max())
-        if fmax > fmin:
-            frame = (frame - fmin) / (fmax - fmin)
-        else:
-            frame = np.zeros_like(frame)
-        frame = (frame * 255).astype(np.uint8)
-    elif frame.dtype != np.uint8:
-        frame = np.clip(frame, 0, 255).astype(np.uint8)
-
-    return frame
-
-
-def md3po_combined_rollouts(
+def emo_combined_rollouts(
     reference_rollout, trajectories=None, diversity_threshold=0.35,
-    prompt_similarity_threshold=0.9, trajectory_path=None,
+    trajectory_path=None,
     required_trajectory_epoch=None,
 ):
     """Combine a reference rollout with samples from the latest saved rollout.
 
-    Every saved sample from the immediately preceding iteration is compared
-    with every current sample using normalized Inception-feature FID. A saved
-    sample is retained solely when its minimum distance from the current
-    rollout exceeds the configured diversity threshold. Prompt similarity can
-    optionally restrict the image pairs included in that distance calculation.
+    Saved samples are first selected by exact prompt matches with the current
+    rollout. Each selected saved image is then compared with every current image
+    having the same prompt using singleton Inception distance, and is retained
+    only when its minimum same-prompt distance exceeds the diversity threshold.
 
     Args:
         reference_rollout: Current iteration's pre-replay rollout in live or
             saved trajectory field format.
         trajectories: Optional mapping from integer-like rollout numbers to
             saved rollout dictionaries. When omitted, trajectories are loaded
-            from ``trajectory_path`` or the default MD3PO-SAC trajectory file.
+            from ``trajectory_path`` or the default EMO trajectory file.
         trajectory_path: Optional seed-specific replay file used when
             ``trajectories`` is omitted.
         required_trajectory_epoch: Exact saved epoch to combine. When set, a
@@ -274,9 +224,6 @@ def md3po_combined_rollouts(
             silently training on only the current rollout.
         diversity_threshold: Minimum normalized singleton-FID for a saved
             sample/current sample pair to qualify for replay.
-        prompt_similarity_threshold: Optional minimum cosine similarity between
-            prompt embeddings for an image pair to be included in the FID
-            comparison. Disabled by default; pass a float to enable it.
 
     Returns:
         A live-training rollout containing every reference sample followed by
@@ -291,7 +238,7 @@ def md3po_combined_rollouts(
     """
     if trajectories is None:
         try:
-            trajectory_path = trajectory_path or "clover/data/md3po_sac/trajectories.pt"
+            trajectory_path = trajectory_path or "clover/data/emo/trajectories.pt"
             trajectories = torch.load(trajectory_path, map_location="cpu", weights_only=True)
         except FileNotFoundError:
             if required_trajectory_epoch is not None:
@@ -404,24 +351,9 @@ def md3po_combined_rollouts(
     reference = canonicalize(reference_rollout)
     validate(reference)
 
-    comparison_mask = None
-    comparison_device = None
-    encode_prompts = None
-    reference_prompt_encodings = None
-    if prompt_similarity_threshold is not False:
-        clip_model, _, clip_tokenizer, comparison_device = load_clip_encoder()
-
-        def encode_prompts(prompts):
-            """Encode prompt strings as normalized CLIP text embeddings."""
-            return clip_prompt_embeddings(
-                prompts,
-                model=clip_model,
-                tokenizer=clip_tokenizer,
-                device=comparison_device,
-                batch_size=4,
-            )
-
-        reference_prompt_encodings = encode_prompts(reference["prompts"])
+    reference_indices_by_prompt = {}
+    for index, prompt in enumerate(reference["prompts"]):
+        reference_indices_by_prompt.setdefault(prompt, []).append(index)
 
     accepted = [reference]
     if not isinstance(trajectories, dict):
@@ -465,20 +397,28 @@ def md3po_combined_rollouts(
                     f"Replay epoch {required_trajectory_epoch} has a different timestep schedule"
                 )
             return training_format(reference)
-        if encode_prompts is not None and reference_prompt_encodings is not None:
-            previous_prompt_encodings = encode_prompts(rollout["prompts"])
-            prompt_scores = previous_prompt_encodings @ reference_prompt_encodings.T
-            comparison_mask = prompt_scores >= prompt_similarity_threshold
-        fid_scores = rollout_fid_scores(
-            reference["images"],
-            rollout["images"],
-            comparison_mask=comparison_mask,
-            device=comparison_device,
-            batch_size=4,
+        prompt_mask = torch.tensor(
+            [prompt in reference_indices_by_prompt for prompt in rollout["prompts"]],
+            dtype=torch.bool,
         )
-        keep = fid_scores > diversity_threshold
-        if keep.any():
-            accepted.append(select_batch(rollout, keep))
+        if prompt_mask.any():
+            prompt_matched_rollout = select_batch(rollout, prompt_mask)
+            comparison_mask = torch.tensor(
+                [
+                    [saved_prompt == current_prompt for current_prompt in reference["prompts"]]
+                    for saved_prompt in prompt_matched_rollout["prompts"]
+                ],
+                dtype=torch.bool,
+            )
+            fid_scores = rollout_fid_scores(
+                reference["images"],
+                prompt_matched_rollout["images"],
+                comparison_mask=comparison_mask,
+                batch_size=4,
+            )
+            keep = fid_scores > diversity_threshold
+            if keep.any():
+                accepted.append(select_batch(prompt_matched_rollout, keep))
 
     if len(accepted) == 1:
         return training_format(reference)
@@ -515,7 +455,7 @@ def sac_update(pipe, rollout, optimizer, config, device, dtype):
     a smaller reward scale produces a higher effective temperature and favors
     more entropy; a larger reward scale emphasizes terminal image reward.
 
-    MD3PO filtering can include transitions from an earlier behavior policy
+    EMO filtering can include transitions from an earlier behavior policy
     ``mu``. The update corrects those samples with a bounded importance ratio::
 
         rho_i,t = min(exp(log pi_theta(a_i,t | s_i,t)
@@ -643,15 +583,15 @@ def sac_update(pipe, rollout, optimizer, config, device, dtype):
         "skipped_updates": skipped_updates, "selected_samples": batch_size,
     }
 
-def train(config: MD3POSACConfig) -> list[dict[str, float]]:
-    """Train an MD3PO LoRA policy and persist its experiment artifacts.
+def train(config: EMOConfig) -> list[dict[str, float]]:
+    """Train an EMO LoRA policy and persist its experiment artifacts.
 
     Each iteration collects a reference rollout, augments it with qualifying
     samples from only the preceding saved rollout, performs a SAC update, and
     saves only the uncombined reference rollout for the next iteration.
 
     Args:
-        config: Complete MD3PO model, sampling, optimization, evaluation, and
+        config: Complete EMO model, sampling, optimization, evaluation, and
             output configuration.
 
     Returns:
@@ -688,9 +628,9 @@ def train(config: MD3POSACConfig) -> list[dict[str, float]]:
             pipe, config.rollouts_per_epoch, config, device, dtype, generator, reward_fn, vae_scale_factor
         )
 
-        data_name = f"md3po_sac/seed_{config.seed}"
-        combined_rollout = md3po_combined_rollouts(
-            reference_rollout, diversity_threshold=0.5,
+        data_name = f"emo/seed_{config.seed}"
+        combined_rollout = emo_combined_rollouts(
+            reference_rollout, diversity_threshold=0.3,
             trajectory_path=f"clover/data/{data_name}/trajectories.pt",
             required_trajectory_epoch=epoch - 1 if epoch > 1 else None,
         )
@@ -725,7 +665,7 @@ def train(config: MD3POSACConfig) -> list[dict[str, float]]:
 
         # Save evaluation metrics from the current epoch training
         save_evaluation_metrics(
-            "md3po_sac",
+            "emo",
             epoch,
             metrics,
             reference_rollout.get("images"),
@@ -748,7 +688,7 @@ def train(config: MD3POSACConfig) -> list[dict[str, float]]:
             evaluate(pipe, config, device, epoch=epoch)
 
     # Save final training data
-    save_training_data(f"md3po_sac/seed_{config.seed}", history)
+    save_training_data(f"emo/seed_{config.seed}", history)
 
     final_dir = output_dir / "lora_final"
     save_lora_weights(pipe, final_dir)
@@ -759,12 +699,12 @@ def train(config: MD3POSACConfig) -> list[dict[str, float]]:
 
 
 def main() -> None:
-    """Parse command-line configuration and run MD3PO training.
+    """Parse command-line configuration and run EMO training.
 
     Returns:
         None.
     """
-    train(parse_config(MD3POSACConfig, __doc__ or "Train MD3PO-SAC"))
+    train(parse_config(EMOConfig, __doc__ or "Train EMO"))
 
 
 if __name__ == "__main__":

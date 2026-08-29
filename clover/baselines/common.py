@@ -60,7 +60,7 @@ def parse_config(
     parser.add_argument("--seed", type=int)
     parser.add_argument("--train-epochs", type=int)
     parser.add_argument("--rollouts-per-epoch", type=int)
-    # parser.add_argument("--learning-rate", type=float)
+    parser.add_argument("--learning-rate", type=float)
     parser.add_argument("--save-every", type=int)
     parser.add_argument("--num-inference-steps", type=int)
     parser.add_argument("--guidance-scale", type=float)

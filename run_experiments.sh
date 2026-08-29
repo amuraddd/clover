@@ -7,7 +7,7 @@
 #SBATCH -D /aiau010_scratch/azm0269/clover
 #SBATCH --output=output.txt
 #SBATCH --error=error.txt
-#SBATCH --time=2-24:00:00
+#SBATCH --time=3-24:00:00
 #SBATCH --nodelist=aiau001
 #SBATCH --gres=gpu:2
 #SBATCH --partition=general
@@ -30,6 +30,6 @@ export TMPDIR="/aiau010_scratch/azm0269/tmp"
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 # for baseline
-srun --ntasks=1 --gres=gpu:2 .venv/bin/python -m main > experiment.log 2>&1
+srun --ntasks=1 .venv/bin/python -m main > experiment.log 2>&1
 
 deactivate

@@ -7,6 +7,7 @@ Available baselines:
     - b2diffurl: B2-DiffuRL with backward-progressive, branch-based sampling
     - ddpo: Denoising Diffusion Policy Optimization
     - dpok: Diffusion Policy Optimization with online KL regularization
+    - emo: Entropy-maximizing optimization with diversity replay
     - md3po_sac: MD3PO with a reward-scaled maximum-entropy actor update
 """
 
@@ -26,13 +27,14 @@ BASELINES = [
     # ("dpok", "clover.baselines.dpok"),
     # ("b2diffurl", "clover.baselines.b2diffurl"),
     # ("md3po", "clover.baselines.md3po"),
-    ("md3po_sac", "clover.baselines.md3po_sac"),
+    # ("md3po_sac", "clover.baselines.md3po_sac"),
+    ("emo", "clover.baselines.emo"),
     # ("ddpo", "clover.baselines.ddpo"),
 ]
 
-DEFAULT_GPU_IDS = ("0", "1")
-MAX_ALLOCATED_GPUS = 2
-EXPERIMENT_SEEDS = [123] #, 456, 789
+DEFAULT_GPU_IDS = ("0","1") #"1"
+MAX_ALLOCATED_GPUS = 3
+EXPERIMENT_SEEDS = [123] #123, 456, 789
 
 
 def allocated_gpu_ids() -> tuple[str, ...]:
@@ -43,23 +45,23 @@ def allocated_gpu_ids() -> tuple[str, ...]:
         if visible_devices
         else DEFAULT_GPU_IDS
     )
-    if len(gpu_ids) < 2:
+    if not gpu_ids:
         raise RuntimeError(
-            "MD3PO-SAC requires two GPUs; request two GPUs in the Slurm "
-            "allocation or expose two devices through CUDA_VISIBLE_DEVICES."
+            "MD3PO-SAC requires at least one GPU; request a GPU in the Slurm "
+            "allocation or expose a device through CUDA_VISIBLE_DEVICES."
         )
     return gpu_ids[:MAX_ALLOCATED_GPUS]
 
 DEFAULT_BASELINE_ARGS = {
     "train_epochs": 50,
     "rollouts_per_epoch": 256,
-    # "learning_rate": 3e-4,
-    "gpu_ids": [0, 1],
+    "learning_rate": 1e-5,
+    "gpu_ids": [0],
     "save_every": 5,
     "num_inference_steps": 50,
     "minibatch_size": 32,
     "ppo_epochs": 2,
-    "sac_epochs": 2,
+    "sac_epochs": 4,
     "reward_scale": 20.0,
     "importance_ratio_clip": 1.0,
     "lora_alpha": 16,
@@ -72,7 +74,9 @@ DEFAULT_BASELINE_ARGS = {
     "clip_range": 1e-4,
     # "target_kl": 0.13,
     "reward_type": "clip",
-    "md3po_sac_mixed_precision": False,
+    # The frozen diffusion model runs in FP16 to reduce memory; the loader keeps
+    # only trainable LoRA parameters in FP32 so Adam updates remain stable.
+    "md3po_sac_mixed_precision": True,
 }
 
 
@@ -91,14 +95,15 @@ def build_default_argv(
     argv.extend(["--output-dir", output_dir])
     argv.extend(["--train-epochs", str(DEFAULT_BASELINE_ARGS["train_epochs"])])
     argv.extend(["--rollouts-per-epoch", str(DEFAULT_BASELINE_ARGS["rollouts_per_epoch"])])
-    # argv.extend(["--learning-rate", str(DEFAULT_BASELINE_ARGS["learning_rate"])])
+    argv.extend(["--minibatch-size", str(DEFAULT_BASELINE_ARGS["minibatch_size"])])
+    argv.extend(["--learning-rate", str(DEFAULT_BASELINE_ARGS["learning_rate"])])
     argv.extend(["--save-every", str(DEFAULT_BASELINE_ARGS["save_every"])])
     argv.extend(["--num-inference-steps", str(DEFAULT_BASELINE_ARGS["num_inference_steps"])])
     argv.extend(["--guidance-scale", str(DEFAULT_BASELINE_ARGS["guidance_scale"])])
     argv.extend(["--adam-epsilon", str(DEFAULT_BASELINE_ARGS["adam_epsilon"])])
     argv.extend(["--eta", str(DEFAULT_BASELINE_ARGS["eta"])])
     # argv.extend(["--max-grad-norm", str(DEFAULT_BASELINE_ARGS["max_grad_norm"])])
-    if script_name.endswith("md3po_sac"):
+    if script_name.endswith(("md3po_sac", "emo")):
         argv.extend(["--sac-epochs", str(DEFAULT_BASELINE_ARGS["sac_epochs"])])
         argv.extend(["--reward-scale", str(DEFAULT_BASELINE_ARGS["reward_scale"])])
         argv.extend([
@@ -133,7 +138,7 @@ def build_default_argv(
 
 
 def main() -> list[dict[str, object]]:
-    """Run enabled jobs on both allocated GPUs using one process per job."""
+    """Run enabled jobs on one or two allocated GPUs using one process per job."""
     print("=" * 80)
     print("Running Clover baseline/seed jobs on up to two GPUs")
     print("=" * 80)

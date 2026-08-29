@@ -1,13 +1,13 @@
 {
   "baseline": "total",
-  "execution_time": 7561.526332855225,
+  "execution_time": 277.8165092468262,
   "runs": [
     {
       "baseline": "md3po_sac",
-      "execution_time": 7561.526032209396,
+      "execution_time": 277.81619787216187,
       "gpu_ids": [
-        "1",
-        "2"
+        "4",
+        "5"
       ],
       "output_dir": "outputs/md3po_sac/seed_123",
       "returncode": 1,
