@@ -1,15 +1,15 @@
 {
   "baseline": "total",
-  "execution_time": 277.8165092468262,
+  "execution_time": 5014.354221820831,
   "runs": [
     {
-      "baseline": "md3po_sac",
-      "execution_time": 277.81619787216187,
+      "baseline": "emo_v2",
+      "execution_time": 5014.353925704956,
       "gpu_ids": [
         "4",
         "5"
       ],
-      "output_dir": "outputs/md3po_sac/seed_123",
+      "output_dir": "outputs/emo_v2/seed_123",
       "returncode": 1,
       "seed": 123
     }

@@ -8,6 +8,7 @@ Available baselines:
     - ddpo: Denoising Diffusion Policy Optimization
     - dpok: Diffusion Policy Optimization with online KL regularization
     - emo: Entropy-maximizing optimization with diversity replay
+    - emo_v2: Second-generation entropy-maximizing optimization baseline
     - md3po_sac: MD3PO with a reward-scaled maximum-entropy actor update
 """
 
@@ -28,7 +29,8 @@ BASELINES = [
     # ("b2diffurl", "clover.baselines.b2diffurl"),
     # ("md3po", "clover.baselines.md3po"),
     # ("md3po_sac", "clover.baselines.md3po_sac"),
-    ("emo", "clover.baselines.emo"),
+    # ("emo", "clover.baselines.emo"),
+    ("emo_v2", "clover.baselines.emo_v2"),
     # ("ddpo", "clover.baselines.ddpo"),
 ]
 
@@ -55,7 +57,7 @@ def allocated_gpu_ids() -> tuple[str, ...]:
 DEFAULT_BASELINE_ARGS = {
     "train_epochs": 50,
     "rollouts_per_epoch": 256,
-    "learning_rate": 1e-5,
+    "learning_rate": 1e-4,
     "gpu_ids": [0],
     "save_every": 5,
     "num_inference_steps": 50,
@@ -103,7 +105,7 @@ def build_default_argv(
     argv.extend(["--adam-epsilon", str(DEFAULT_BASELINE_ARGS["adam_epsilon"])])
     argv.extend(["--eta", str(DEFAULT_BASELINE_ARGS["eta"])])
     # argv.extend(["--max-grad-norm", str(DEFAULT_BASELINE_ARGS["max_grad_norm"])])
-    if script_name.endswith(("md3po_sac", "emo")):
+    if script_name.endswith(("md3po_sac", "emo", "emo_v2")):
         argv.extend(["--sac-epochs", str(DEFAULT_BASELINE_ARGS["sac_epochs"])])
         argv.extend(["--reward-scale", str(DEFAULT_BASELINE_ARGS["reward_scale"])])
         argv.extend([

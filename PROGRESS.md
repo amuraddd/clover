@@ -1,3 +1,37 @@
+## 2026-08-29 — Registered EMO-v2 in the unified launcher
+
+- Added `emo_v2` to the enabled baselines in `main.py` and documented it in the available-baselines list.
+- Routed EMO-v2 through the shared SAC argument set used by EMO and MD3PO-SAC.
+- CPU-only syntax and launcher argument checks pass. No GPU experiment was launched.
+
+## 2026-08-29 — Isolated EMO-v2 learned-range evaluation
+
+- Reconstructed the EMO-v2 scheduler with runtime and config `variance_type="learned_range"`, fixing Diffusers' eight-channel split during evaluation.
+- Replaced shared pipeline evaluation for EMO-v2 with a local sampler that applies classifier-free guidance only to noise and carries learned-range variance separately.
+- CPU scheduler-mode, output-shape, and guidance checks pass; shared baseline code was not modified and no GPU experiment was launched.
+
+## 2026-08-29 — Fixed EMO-v2 terminal scheduler compatibility
+
+- Added fallbacks for DDPMScheduler versions without `final_alpha_cumprod` and return the deterministic terminal transition before learned-range variance evaluation.
+- CPU checks cover every inference timestep with the installed scheduler and confirm finite positive stochastic variances and a zero terminal log probability. No GPU experiment was launched.
+
+## 2026-08-29 — Used Softplus for EMO-v2 learned-range output
+
+- Replaced the direct `tanh` output with a Softplus-derived positive interpolation scale mapped into the `[-1, 1]` interval required by `learned_range`.
+- Preserved the initial learned-range prediction of `-0.9`; CPU range, initialization, likelihood, entropy, and gradient checks pass. No GPU experiment was launched.
+
+## 2026-08-29 — Fixed EMO-v2 learned-range variance
+
+- Changed the variance head to emit bounded `[-1, 1]` predictions and converted them to transition variance by interpolating between posterior and current-beta log variance.
+- Updated the EMO-v2 transition likelihood, analytic entropy, and scheduler validation to use `learned_range` consistently.
+- CPU tests match Diffusers at both learned-range endpoints and confirm finite log probabilities, entropy, and variance-head gradients. No GPU experiment was launched.
+
+## 2026-08-29 — Made EMO-v2 learned variance self-contained
+
+- Kept Beta as `reward_scale` and implemented the maximum-entropy objective as `beta * reward + entropy`, without a separate entropy coefficient.
+- Added an EMO-v2-only positive learned-variance output head, transition likelihood, entropy calculation, and classifier-free-guidance handling; shared baseline utilities were not changed.
+- Added separate checkpoint and final-weight persistence for the variance head. Focused CPU shape, positivity, log-probability, entropy, and gradient checks pass; no GPU experiment was launched.
+
 ---
 description: Progress log for Clover baseline implementation and experiment support work
 ms.date: 2026-08-03
