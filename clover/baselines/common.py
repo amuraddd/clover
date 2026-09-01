@@ -82,6 +82,10 @@ def parse_config(
         "min_log_prob_std": float,
         "likelihood_scale": float,
         "rollout_chunk_size": int,
+        "sqdf_alpha": float,
+        "sqdf_gamma": float,
+        "sqdf_step_min": int,
+        "sqdf_step_max": int,
     }
     for field_name, value_type in optional_arguments.items():
         if field_name in config_fields:

@@ -41,7 +41,6 @@ from clover.utils.baseline_utils import (
     encode_prompts,
     load_training_checkpoint,
     load_lora_pipeline,
-    normalize_advantages,
     resolve_gpu_ids,
     sample_prompt_batch,
     save_image_grid_outputs,
@@ -82,7 +81,9 @@ class EMOV2V2Config:
     train_epochs: int = 10
     sac_epochs: int = 2
     gamma: float = field(init=False)
-    reward_scale: float = 20.0
+    # Initial reward weight relative to the unit-weight entropy objective. The
+    # training loop doubles this value every ten completed epochs.
+    reward_scale: float = 10.0
     importance_ratio_clip: float = 1.0
     minibatch_size: int = 16
     learning_rate: float = 3e-4
@@ -105,6 +106,70 @@ class EMOV2V2Config:
             raise ValueError("num_inference_steps must be positive")
         self.gamma = 1.0 - (1.0 / self.num_inference_steps)
 
+
+def normalize_rewards_per_timestep(rewards: Tensor, eps: float = 1e-8) -> Tensor:
+    """Normalize each denoising timestep across rollout samples.
+
+    Discounted diffusion returns have a different natural scale at every
+    timestep. Normalizing the whole [batch, timestep] tensor together would
+    therefore compare early discounted returns with later, less-discounted
+    returns. That creates a timestep-dependent bias: early actions tend to get
+    negative advantages and late actions positive advantages regardless of the
+    relative quality of their generated images. Computing statistics over the
+    batch dimension independently for every timestep preserves the ranking of
+    samples at that timestep and removes this artificial temporal signal.
+    """
+    if rewards.ndim != 2:
+        raise ValueError(
+            "EMO-v2 rewards must have shape [batch, timestep], "
+            f"got {tuple(rewards.shape)}"
+        )
+    centered = rewards - rewards.mean(dim=0, keepdim=True)
+    scale = rewards.std(dim=0, unbiased=False, keepdim=True)
+    return centered / (scale + eps)
+
+
+def reward_scale_for_epoch(initial_scale: float, epoch: int) -> float:
+    """Double the reward-vs-entropy weight after every ten epochs."""
+    if initial_scale <= 0:
+        raise ValueError("initial reward scale must be positive")
+    if epoch < 1:
+        raise ValueError("epoch must be at least 1")
+    return float(initial_scale * (2 ** ((epoch - 1) // 10)))
+
+
+def learning_rate_for_epoch(initial_learning_rate: float, epoch: int) -> float:
+    """Reduce the learning rate by ten after every ten epochs."""
+    if initial_learning_rate <= 0:
+        raise ValueError("initial learning rate must be positive")
+    if epoch < 1:
+        raise ValueError("epoch must be at least 1")
+    return float(initial_learning_rate * (0.1 ** ((epoch - 1) // 10)))
+
+
+def capped_log_probability_ratio(
+    new_log_prob: Tensor,
+    old_log_prob: Tensor,
+    max_ratio: float = 1.0,
+    eps: float = 1e-8,
+) -> Tensor:
+    """Return new_log_prob / old_log_prob with an upper cap.
+
+    A nearly zero old log probability makes the requested quotient undefined,
+    so those entries receive the neutral importance weight one.
+    """
+    if max_ratio <= 0:
+        raise ValueError("max_ratio must be positive")
+    if new_log_prob.shape != old_log_prob.shape:
+        raise ValueError("new and old log probabilities must have matching shapes")
+    safe_old = torch.where(
+        old_log_prob.abs() < eps,
+        torch.ones_like(old_log_prob),
+        old_log_prob,
+    )
+    ratio = new_log_prob.detach() / safe_old
+    ratio = torch.where(old_log_prob.abs() < eps, torch.ones_like(ratio), ratio)
+    return ratio.clamp(max=max_ratio)
 
 class EMOV2OutputHead(torch.nn.Module):
     """Keep SD 1.5 noise prediction frozen and add a trainable variance head."""
@@ -464,8 +529,10 @@ def emo_v2_combined_rollouts(
 
     Saved samples are first selected by exact prompt matches with the current
     rollout. Each selected saved image is then compared with every current image
-    having the same prompt using singleton Inception distance, and is retained
-    only when its minimum same-prompt distance exceeds the diversity threshold.
+    having the same prompt using singleton Inception distance. A replay sample
+    is retained only when its distance exceeds the diversity threshold and its
+    terminal reward is greater than or equal to the mean terminal reward of the
+    current-batch samples with that exact prompt.
 
     Args:
         reference_rollout: Current iteration's pre-replay rollout in live or
@@ -611,6 +678,23 @@ def emo_v2_combined_rollouts(
     for index, prompt in enumerate(reference["prompts"]):
         reference_indices_by_prompt.setdefault(prompt, []).append(index)
 
+    reference_rewards = reference["rewards"]
+    if not torch.is_tensor(reference_rewards) or reference_rewards.ndim < 1:
+        raise ValueError("Reference rewards must be a batched tensor")
+    if reference_rewards.shape[0] != len(reference["prompts"]):
+        raise ValueError("Reference rewards must have one row per prompt")
+    reference_terminal_rewards = (
+        reference_rewards
+        if reference_rewards.ndim == 1
+        else reference_rewards[:, -1]
+    ).float()
+    reference_reward_mean_by_prompt = {
+        prompt: reference_terminal_rewards[
+            torch.tensor(indices, device=reference_terminal_rewards.device)
+        ].mean()
+        for prompt, indices in reference_indices_by_prompt.items()
+    }
+
     accepted = [reference]
     if not isinstance(trajectories, dict):
         raise TypeError("trajectories must be a dict keyed by rollout number")
@@ -672,7 +756,26 @@ def emo_v2_combined_rollouts(
                 comparison_mask=comparison_mask,
                 batch_size=4,
             )
-            keep = fid_scores > diversity_threshold
+            replay_rewards = prompt_matched_rollout["rewards"]
+            if not torch.is_tensor(replay_rewards) or replay_rewards.ndim < 1:
+                raise ValueError("Replay rewards must be a batched tensor")
+            replay_terminal_rewards = (
+                replay_rewards
+                if replay_rewards.ndim == 1
+                else replay_rewards[:, -1]
+            ).float()
+            reward_thresholds = torch.stack(
+                [
+                    reference_reward_mean_by_prompt[prompt]
+                    for prompt in prompt_matched_rollout["prompts"]
+                ]
+            ).to(
+                device=replay_terminal_rewards.device,
+                dtype=replay_terminal_rewards.dtype,
+            )
+            reward_keep = replay_terminal_rewards >= reward_thresholds
+            diversity_keep = fid_scores > diversity_threshold
+            keep = diversity_keep & reward_keep.to(device=fid_scores.device)
             if keep.any():
                 accepted.append(select_batch(prompt_matched_rollout, keep))
 
@@ -764,8 +867,12 @@ def _learned_range_ddpm_entropy(scheduler, model_output, sample, timestep):
     return entropy
 
 
-def sac_update(pipe, rollout, optimizer, config, device, dtype):
-    if config.reward_scale <= 0:
+def sac_update(
+    pipe, rollout, optimizer, config, device, dtype,
+    reward_scale: float | None = None,
+):
+    beta = config.reward_scale if reward_scale is None else reward_scale
+    if beta <= 0:
         raise ValueError("reward_scale must be positive")
 
     if config.importance_ratio_clip <= 0:
@@ -802,13 +909,10 @@ def sac_update(pipe, rollout, optimizer, config, device, dtype):
         }
 
     # Beta scales reward relative to the unit-weight entropy term: beta * R + H.
-    beta = config.reward_scale
-
-    # Q / advantage-like signal
-    soft_q = (
-        beta
-        * normalize_advantages(rewards)
-    )
+    # Normalize over samples separately at each denoising timestep. See
+    # normalize_rewards_per_timestep() for why global trajectory normalization
+    # introduces an artificial temporal advantage signal.
+    soft_q = beta * normalize_rewards_per_timestep(rewards)
 
     trajectory_len = old_log_probs.shape[1]
     indices = torch.arange(batch_size)
@@ -934,13 +1038,12 @@ def sac_update(pipe, rollout, optimizer, config, device, dtype):
                         )
 
                     # -----------------------------------------------------
-                    # Importance sampling ratio
+                    # Requested capped log-probability quotient
                     #
-                    # rho = pi_theta(a|s) / pi_old(a|s)
+                    # rho = log pi_theta(a|s) / log pi_old(a|s)
                     #
-                    # We detach rho because it is the score-function
-                    # importance weight, not another differentiable
-                    # part of the surrogate objective.
+                    # Detach rho so it remains a fixed score-function weight
+                    # rather than another differentiable surrogate term.
                     # -----------------------------------------------------
                     old = old_log_probs[
                         mb_idx,
@@ -950,12 +1053,9 @@ def sac_update(pipe, rollout, optimizer, config, device, dtype):
                         dtype=log_prob.dtype,
                     )
 
-                    ratio = torch.exp(
-                        log_prob.detach() - old
-                    )
-
-                    ratio = ratio.clamp(
-                        max=config.importance_ratio_clip
+                    ratio = capped_log_probability_ratio(
+                        log_prob, old,
+                        max_ratio=config.importance_ratio_clip,
                     )
 
                     # -----------------------------------------------------
@@ -1122,7 +1222,7 @@ def sac_update(pipe, rollout, optimizer, config, device, dtype):
         "entropy": metric_mean(entropies),
         "entropy_bonus": metric_mean(entropy_bonuses),
         "beta": float(beta),
-        "reward_scale": float(config.reward_scale),
+        "reward_scale": float(beta),
         "importance_ratio": metric_mean(
             importance_ratios
         ),
@@ -1144,7 +1244,10 @@ def sac_update(pipe, rollout, optimizer, config, device, dtype):
         "selected_samples": batch_size,
     }
     
-def train(config: EMOV2V2Config) -> list[dict[str, float]]:
+def train(
+    config: EMOV2V2Config,
+    baseline_name: str = "emo_v2",
+) -> list[dict[str, float]]:
     """Train an EMOV2-V2 LoRA policy and persist its experiment artifacts.
 
     Each iteration collects a reference rollout, augments it with qualifying
@@ -1187,19 +1290,30 @@ def train(config: EMOV2V2Config) -> list[dict[str, float]]:
         betas=(config.adam_beta1, config.adam_beta2),
         eps=config.adam_epsilon,
     )
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=10)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(
         pipe, optimizer, output_dir, device, generator, scheduler=scheduler
     )
     _load_variance_head(pipe, output_dir / "checkpoint" / "variance_head.pt")
     for epoch in trange(last_epoch + 1, config.train_epochs + 1):
+        # Derive both schedules from the absolute epoch so resumed runs use the
+        # same values even when loading a checkpoint created before the schedule
+        # was introduced.
+        scheduled_learning_rate = learning_rate_for_epoch(
+            config.learning_rate, epoch
+        )
+        for parameter_group in optimizer.param_groups:
+            parameter_group["lr"] = scheduled_learning_rate
+        scheduled_reward_scale = reward_scale_for_epoch(
+            config.reward_scale, epoch
+        )
         generator = set_seed(config.seed + epoch, device)
         reference_rollout = collect_rollouts(
             pipe, config.rollouts_per_epoch, config, device, dtype, generator, reward_fn, vae_scale_factor
         )
 
-        data_name = f"emo_v2/seed_{config.seed}"
+        data_name = f"{baseline_name}/seed_{config.seed}"
         combined_rollout = emo_v2_combined_rollouts(
             reference_rollout, diversity_threshold=0.3,
             trajectory_path=f"clover/data/{data_name}/trajectories.pt",
@@ -1207,7 +1321,10 @@ def train(config: EMOV2V2Config) -> list[dict[str, float]]:
         )
 
         # apply SAC update to the model using the collected rollouts and save the metrics to history
-        metrics = sac_update(pipe, combined_rollout, optimizer, config, device, dtype)
+        metrics = sac_update(
+            pipe, combined_rollout, optimizer, config, device, dtype,
+            reward_scale=scheduled_reward_scale,
+        )
         reference_count = int(reference_rollout["rewards"].shape[0])
         combined_rewards = combined_rollout["rewards"][:, 0].float()
         current_rewards = combined_rewards[:reference_count]
@@ -1236,7 +1353,7 @@ def train(config: EMOV2V2Config) -> list[dict[str, float]]:
 
         # Save evaluation metrics from the current epoch training
         save_evaluation_metrics(
-            "emo_v2",
+            baseline_name,
             epoch,
             metrics,
             reference_rollout.get("images"),
@@ -1260,7 +1377,7 @@ def train(config: EMOV2V2Config) -> list[dict[str, float]]:
             _evaluate_emo_v2(pipe, config, device, dtype, epoch=epoch)
 
     # Save final training data
-    save_training_data(f"emo_v2/seed_{config.seed}", history)
+    save_training_data(f"{baseline_name}/seed_{config.seed}", history)
 
     final_dir = output_dir / "lora_final"
     save_lora_weights(pipe, final_dir)

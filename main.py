@@ -10,6 +10,8 @@ Available baselines:
     - emo: Entropy-maximizing optimization with diversity replay
     - emo_v2: Second-generation entropy-maximizing optimization baseline
     - md3po_sac: MD3PO with a reward-scaled maximum-entropy actor update
+    - emo_v3: Scheduled third-generation entropy-maximizing optimization baseline
+    - sqdf: Soft Q-based diffusion fine-tuning for text-to-image alignment
 """
 
 import os
@@ -30,8 +32,10 @@ BASELINES = [
     # ("md3po", "clover.baselines.md3po"),
     # ("md3po_sac", "clover.baselines.md3po_sac"),
     # ("emo", "clover.baselines.emo"),
-    ("emo_v2", "clover.baselines.emo_v2"),
+    # ("emo_v2", "clover.baselines.emo_v2"),
+    ("emo_v3", "clover.baselines.emo_v3"),
     # ("ddpo", "clover.baselines.ddpo"),
+    # ("sqdf", "clover.baselines.sqdf"),
 ]
 
 DEFAULT_GPU_IDS = ("0","1") #"1"
@@ -64,6 +68,7 @@ DEFAULT_BASELINE_ARGS = {
     "minibatch_size": 32,
     "ppo_epochs": 2,
     "sac_epochs": 4,
+    "emo_reward_scale": 10.0,
     "reward_scale": 20.0,
     "importance_ratio_clip": 1.0,
     "lora_alpha": 16,
@@ -105,14 +110,19 @@ def build_default_argv(
     argv.extend(["--adam-epsilon", str(DEFAULT_BASELINE_ARGS["adam_epsilon"])])
     argv.extend(["--eta", str(DEFAULT_BASELINE_ARGS["eta"])])
     # argv.extend(["--max-grad-norm", str(DEFAULT_BASELINE_ARGS["max_grad_norm"])])
-    if script_name.endswith(("md3po_sac", "emo", "emo_v2")):
+    if script_name.endswith(("md3po_sac", "emo", "emo_v2", "emo_v3")):
         argv.extend(["--sac-epochs", str(DEFAULT_BASELINE_ARGS["sac_epochs"])])
-        argv.extend(["--reward-scale", str(DEFAULT_BASELINE_ARGS["reward_scale"])])
+        reward_scale = (
+            DEFAULT_BASELINE_ARGS["emo_reward_scale"]
+            if script_name.endswith(("emo_v2", "emo_v3"))
+            else DEFAULT_BASELINE_ARGS["reward_scale"]
+        )
+        argv.extend(["--reward-scale", str(reward_scale)])
         argv.extend([
             "--importance-ratio-clip",
             str(DEFAULT_BASELINE_ARGS["importance_ratio_clip"]),
         ])
-    else:
+    elif not script_name.endswith("sqdf"):
         argv.extend(["--clip-range", str(DEFAULT_BASELINE_ARGS["clip_range"])])
         epoch_flag = "--dpok-epochs" if script_name.endswith("dpok") else "--ppo-epochs"
         argv.extend([epoch_flag, str(DEFAULT_BASELINE_ARGS["ppo_epochs"])])

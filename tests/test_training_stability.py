@@ -7,12 +7,13 @@ from unittest.mock import patch
 import torch
 from diffusers import DDPMScheduler
 
-from clover.baselines import b2diffurl, ddpo, dpok, md3po, md3po_sac
+from clover.baselines import b2diffurl, ddpo, dpok, md3po, md3po_sac, sqdf
 from clover.baselines.b2diffurl import B2DiffuRLConfig
 from clover.baselines.ddpo import DDPOConfig
 from clover.baselines.dpok import DPOKConfig
 from clover.baselines.md3po import MD3POConfig
 from clover.baselines.md3po_sac import MD3POSACConfig, sac_update
+from clover.baselines.sqdf import SQDFConfig, _ddim_terms
 from clover.baselines.common import generate_eval_images, parse_config
 from clover.utils.baseline_utils import (
     approximate_kl_from_log_ratio,
@@ -229,6 +230,28 @@ class TrainingStabilityTests(unittest.TestCase):
             self.assertEqual(config.min_log_prob_std, 1e-4)
             self.assertEqual(config.rollout_chunk_size, 32)
             self.assertEqual(config.reward_type, "clip")
+
+    def test_sqdf_is_registered_and_accepts_multiple_gpus(self):
+        self.assertIn(("sqdf", "clover.baselines.sqdf"), __import__("main").BASELINES)
+        arguments = build_default_argv("clover.baselines.sqdf", gpu_ids=[0, 1])
+        config = parse_config(SQDFConfig, "sqdf", arguments[1:])
+        self.assertEqual(config.gpu_ids, [0, 1])
+        self.assertTrue(config.use_data_parallel)
+        self.assertNotIn("--ppo-epochs", arguments)
+        self.assertNotIn("--sac-epochs", arguments)
+
+    def test_sqdf_ddim_terms_retain_gradients(self):
+        scheduler = __import__("diffusers").DDIMScheduler(num_train_timesteps=1000)
+        scheduler.set_timesteps(10)
+        sample = torch.randn(2, 4, 2, 2)
+        noise = torch.randn_like(sample, requires_grad=True)
+        mean, std, predicted_x0 = _ddim_terms(
+            scheduler, sample, noise, scheduler.timesteps[:2], eta=1.0
+        )
+        self.assertEqual(mean.shape, sample.shape)
+        self.assertEqual(std.shape, (2, 1, 1, 1))
+        (mean.mean() + predicted_x0.mean()).backward()
+        self.assertIsNotNone(noise.grad)
 
     def test_main_registers_md3po_sac_with_only_sac_arguments(self):
         self.assertIn(("md3po_sac", "clover.baselines.md3po_sac"), __import__("main").BASELINES)

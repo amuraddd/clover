@@ -738,3 +738,26 @@ else:
 - Added an exact-prompt selection mask that removes saved samples without a corresponding current prompt before image scoring.
 - Used `rollout_fid_scores()` with a same-prompt comparison mask and retained saved images only when their normalized Inception distance exceeds `diversity_threshold`.
 - CPU-only syntax and mocked replay-selection checks pass. No GPU experiment was launched.
+
+## 2026-08-31 — Integrated SQDF text-to-image alignment baseline
+
+- Added `clover/baselines/sqdf.py`, adapting the official SQDF T2I algorithm with randomized one-step reparameterized DDIM updates, discounted CLIP alignment rewards, and a frozen-reference KL penalty.
+- Reused Clover's prompt split, Stable Diffusion LoRA loader, checkpointing, reward registry, training history, and evaluation pipeline; the optional consistency-model extension and non-T2I tasks remain out of scope.
+- Added structured per-epoch trajectory JSON under `clover/data/sqdf/trajectories/`, seed-specific training data, and evaluation artifacts under the SQDF output directory.
+- Registered SQDF as the active `main.py` baseline and kept both trainable and reference UNets compatible with one or multiple GPUs through the existing `DataParallel` pattern.
+- Added focused CPU tests for SQDF launcher parsing, multi-GPU configuration, and differentiable DDIM terms. No GPU experiment was launched.
+
+## 2026-08-31 — Added scheduled EMO v3 baseline
+
+- Updated EMO v2 to normalize discounted rewards independently across samples at each denoising timestep, with inline rationale for avoiding temporal normalization bias.
+- Added a reward-scale schedule of 10 for epochs 1–10 that doubles every ten epochs, a learning-rate schedule that decays by 10× on the same boundaries, and the requested capped new/old log-probability quotient.
+- Added clover/baselines/emo_v3.py with independent EMO v3 output, evaluation, and trajectory namespaces while reusing the corrected EMO trainer.
+- Registered EMO v3 as an active main.py baseline and added focused CPU coverage for normalization, schedules, ratio behavior, CLI parsing, and registration.
+- Python compilation, four focused unittests, and scoped diff checks pass. The broader stability suite retains five unrelated pre-existing expectation failures. No GPU experiment was launched.
+
+## 2026-08-31 — Added high-reward gating to EMO replay
+
+- Computed the mean raw terminal reward separately for every exact prompt represented in the current rollout batch.
+- Required each prompt-matched replay sample to exceed the diversity threshold and have reward greater than or equal to its current same-prompt mean before inclusion.
+- Applied the shared replay change to both EMO v2 and EMO v3 and added regression coverage for low-reward rejection, equality acceptance, unmatched-prompt rejection, and diversity rejection.
+- Python compilation and five focused EMO unittests pass. No GPU experiment was launched.
