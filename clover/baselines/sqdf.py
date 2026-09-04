@@ -156,7 +156,7 @@ class DifferentiableCLIPReward(torch.nn.Module):
         model, _, _ = open_clip.create_model_and_transforms(
             "ViT-H-14", pretrained="laion2b_s32b_b79k"
         )
-        self.model = model.to(device).eval().requires_grad_(False)
+        self.model = model.eval().requires_grad_(False)
         self.tokenizer = open_clip.get_tokenizer("ViT-H-14")
         self.register_buffer(
             "mean", torch.tensor((0.48145466, 0.4578275, 0.40821073)).view(1, 3, 1, 1)
@@ -164,6 +164,10 @@ class DifferentiableCLIPReward(torch.nn.Module):
         self.register_buffer(
             "std", torch.tensor((0.26862954, 0.26130258, 0.27577711)).view(1, 3, 1, 1)
         )
+        # Move the complete reward module only after registering normalization
+        # buffers. Moving just the CLIP model leaves these tensors on CPU and
+        # fails when CUDA image tensors are normalized in ``forward``.
+        self.to(device)
 
     def forward(self, images: Tensor, prompts: list[str]) -> Tensor:
         pixels = F.interpolate(images, (224, 224), mode="bicubic", align_corners=False)

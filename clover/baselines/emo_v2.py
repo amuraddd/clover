@@ -85,7 +85,7 @@ class EMOV2V2Config:
     # training loop doubles this value every ten completed epochs.
     reward_scale: float = 10.0
     importance_ratio_clip: float = 1.0
-    minibatch_size: int = 16
+    minibatch_size: int = 32
     learning_rate: float = 3e-4
     adam_beta1: float = 0.9
     adam_beta2: float = 0.999
@@ -1290,21 +1290,18 @@ def train(
         betas=(config.adam_beta1, config.adam_beta2),
         eps=config.adam_epsilon,
     )
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=config.train_epochs, eta_min=1e-6
+    )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(
         pipe, optimizer, output_dir, device, generator, scheduler=scheduler
     )
     _load_variance_head(pipe, output_dir / "checkpoint" / "variance_head.pt")
     for epoch in trange(last_epoch + 1, config.train_epochs + 1):
-        # Derive both schedules from the absolute epoch so resumed runs use the
-        # same values even when loading a checkpoint created before the schedule
+        # Derive the reward scale from the absolute epoch so resumed runs use the
+        # same value even when loading a checkpoint created before the schedule
         # was introduced.
-        scheduled_learning_rate = learning_rate_for_epoch(
-            config.learning_rate, epoch
-        )
-        for parameter_group in optimizer.param_groups:
-            parameter_group["lr"] = scheduled_learning_rate
         scheduled_reward_scale = reward_scale_for_epoch(
             config.reward_scale, epoch
         )

@@ -30,6 +30,6 @@ export TMPDIR="/aiau010_scratch/azm0269/tmp"
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 # for baseline
-srun --ntasks=1 .venv/bin/python -m main > experiment.log 2>&1
+srun --ntasks=1 .venv/bin/python -m main > experiment_1e_5_20.log 2>&1
 
 deactivate

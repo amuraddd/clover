@@ -1,3 +1,13 @@
+## 2026-09-03 — Fixed EMO reward-scale scheduling
+
+- Corrected the EMO v2/v3 reward-scale schedule so epochs 1–10 retain the configured positive initial scale and the scale doubles after each completed ten-epoch interval.
+- Confirmed the schedule boundaries with the focused EMO v3 regression tests. No GPU experiment was launched.
+
+## 2026-09-02 — Enabled cosine learning-rate annealing for EMO v2
+
+- Replaced the active step scheduler with cosine annealing from the configured starting learning rate to a floor of `1e-5` over 50 epochs.
+- Removed the per-epoch manual learning-rate override so the cosine scheduler controls optimizer learning rates correctly, including after checkpoint restoration.
+
 ## 2026-08-29 — Registered EMO-v2 in the unified launcher
 
 - Added `emo_v2` to the enabled baselines in `main.py` and documented it in the available-baselines list.
@@ -761,3 +771,10 @@ else:
 - Required each prompt-matched replay sample to exceed the diversity threshold and have reward greater than or equal to its current same-prompt mean before inclusion.
 - Applied the shared replay change to both EMO v2 and EMO v3 and added regression coverage for low-reward rejection, equality acceptance, unmatched-prompt rejection, and diversity rejection.
 - Python compilation and five focused EMO unittests pass. No GPU experiment was launched.
+
+## 2026-09-01 — Fixed SQDF differentiable reward device placement
+
+- Diagnosed the SQDF experiment failure as CPU-resident CLIP normalization buffers being combined with CUDA image tensors.
+- Moved the complete differentiable CLIP reward module to the selected device after registering its mean and standard-deviation buffers, keeping the frozen model and buffers colocated.
+- Added a regression test that verifies the reward model parameters and normalization buffers all move to the requested device.
+- Python compilation, diff checks, and three focused SQDF unittests pass. The broader training-stability suite retains five unrelated pre-existing expectation failures. No GPU experiment was launched.

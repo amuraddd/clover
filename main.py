@@ -61,19 +61,20 @@ def allocated_gpu_ids() -> tuple[str, ...]:
 DEFAULT_BASELINE_ARGS = {
     "train_epochs": 50,
     "rollouts_per_epoch": 256,
-    "learning_rate": 1e-4,
+    "learning_rate": 1e-5,
     "gpu_ids": [0],
     "save_every": 5,
     "num_inference_steps": 50,
-    "minibatch_size": 32,
+    "minibatch_size": 64,
     "ppo_epochs": 2,
     "sac_epochs": 4,
     "emo_reward_scale": 10.0,
     "reward_scale": 20.0,
     "importance_ratio_clip": 1.0,
     "lora_alpha": 16,
+    "lora_rank": 16,
     "min_log_prob_std": 1e-4,
-    "rollout_chunk_size": 32,
+    "rollout_chunk_size": 64,
     "guidance_scale": 5.0,
     "adam_epsilon": 1e-8,
     "eta": 1.0,
@@ -127,6 +128,7 @@ def build_default_argv(
         epoch_flag = "--dpok-epochs" if script_name.endswith("dpok") else "--ppo-epochs"
         argv.extend([epoch_flag, str(DEFAULT_BASELINE_ARGS["ppo_epochs"])])
     argv.extend(["--lora-alpha", str(DEFAULT_BASELINE_ARGS["lora_alpha"])])
+    argv.extend(["--lora-rank", str(DEFAULT_BASELINE_ARGS["lora_rank"])])
     argv.extend(["--min-log-prob-std", str(DEFAULT_BASELINE_ARGS["min_log_prob_std"])])
     argv.extend(["--rollout-chunk-size", str(DEFAULT_BASELINE_ARGS["rollout_chunk_size"])])
     argv.extend(["--reward-type", str(DEFAULT_BASELINE_ARGS["reward_type"])])

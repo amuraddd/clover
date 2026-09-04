@@ -79,6 +79,7 @@ def parse_config(
         "importance_ratio_clip": float,
         "dpok_epochs": int,
         "lora_alpha": int,
+        "lora_rank": int,
         "min_log_prob_std": float,
         "likelihood_scale": float,
         "rollout_chunk_size": int,
