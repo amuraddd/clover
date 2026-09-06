@@ -778,3 +778,38 @@ else:
 - Moved the complete differentiable CLIP reward module to the selected device after registering its mean and standard-deviation buffers, keeping the frozen model and buffers colocated.
 - Added a regression test that verifies the reward model parameters and normalization buffers all move to the requested device.
 - Python compilation, diff checks, and three focused SQDF unittests pass. The broader training-stability suite retains five unrelated pre-existing expectation failures. No GPU experiment was launched.
+
+## 2026-09-05 — Analyzed EMO v3 performance drop around epoch 18
+
+- Compared seed 123 training metrics, held-out evaluations, run configuration, logs, and shared EMO trainer. Training reward peaks at epoch 18 and falls at 19; post-update evaluation CLIP falls from 0.35114 at epoch 16 to 0.32241 at 18.
+- Identified emerging update instability: pre-clipping gradient norm rises from 0.0561 to 0.2043 to 1.5028 over epochs 17–19, alongside a changing log-probability quotient. Rollout reward is measured before each epoch update.
+- Potential contributors are beta 40, four optimization passes, the capped quotient of log probabilities, and cosine LR decay despite an unused tenfold step-decay helper. These are hypotheses, not experimentally confirmed causes; aggregate metrics do not establish variance collapse or persistent degradation.
+- No training code changed and no experiment launched.
+
+## 2026-09-05 — Prepared EMO v3 restart from completed epoch 15
+
+- Verified checkpoint.pt contains epoch 15 and history through epoch 15; resuming starts at epoch 16. Removed epochs 16–19 from training metrics/history and epochs 16/18 from held-out metrics, plus corresponding image-manifest entries under outputs/emo_v3/seed_123. Existing image files remain available and will be overwritten when regenerated.
+- Set launcher sac_epochs to 2 and synchronized saved run config; shared EMO config already defaults to 2. Preserved intentional cosine learning-rate schedule and existing workspace edits.
+- Changed shared EMO importance weights to exp(new_log_prob - old_log_prob), retaining detached weights and the configured upper cap. Cap is applied in log space in float32 before exponentiation to avoid overflow.
+- Updated ratio regression coverage and launcher expectations; all five EMO v3 CPU tests pass. Verified all retained metric/manifest epochs are <=15. Scoped diff whitespace check passes; repository-wide check reports existing whitespace in experiment_1e_5_20.log. No experiment launched.
+
+## 2026-09-05 — Cleared stale replay for epoch-15 restart
+
+- Confirmed the saved EMO v3 seed 123 replay buffer contained only epoch 19. Deleted the buffer, including the temporary archive, as requested.
+- The strict replay loader would otherwise fail when epoch-15 replay is missing. Updated the shared EMO training loop to use only current rollouts when the replay file is absent on the first resumed epoch; subsequent epochs retain strict previous-epoch validation. Epoch 16 will create fresh replay for epoch 17.
+- All five focused EMO v3 CPU tests pass; verified stale buffer and archive are absent. No training launched.
+
+## 2026-09-05 — Verified EMO log-probability reduction
+
+- Traced the shared EMO policy objective to transition_log_prob: it averages Gaussian log densities across latent dimensions and multiplies by likelihood_scale; the objective then averages across the minibatch.
+- With likelihood_scale=1, exp(new_log_prob-old_log_prob) is the geometric mean of per-dimension density ratios (the Dth root of the joint ratio), before capping, rather than the full joint transition ratio. Clarified this limitation of the prior ratio change. No training code changed.
+
+## 2026-09-05 — Reviewed published off-policy importance-weight caps
+
+- Checked IMPALA (ICML 2018, https://proceedings.mlr.press/v80/espeholt18a/espeholt18a.pdf), Retrace (NeurIPS 2016, https://arxiv.org/pdf/1606.02647), and ACER (ICLR 2017, https://arxiv.org/pdf/1611.01224). IMPALA reports cap 1 best among 1/10/100 in its Section 5.2.2 comparison; Retrace caps trace ratios at 1; ACER uses c=10 in Atari with bias correction.
+- Recommended retaining 1 as a conservative starting point, not a proven optimum for EMO. Published joint-ratio settings do not directly validate the current mean-log-density tempered weighting. Any proposed local sweep is an experiment design, not a published optimum. No training settings changed or experiments launched.
+
+## 2026-09-05 — Changed EMO reward scale to additive increments
+
+- Replaced exponential doubling with initial_scale + 10 * ((epoch - 1) // 10). For initial scale 20, epochs 1–10 use 20, 11–20 use 30, and 21–30 use 40.
+- Updated schedule documentation and boundary assertions. All five focused EMO v3 tests pass. No experiment launched.

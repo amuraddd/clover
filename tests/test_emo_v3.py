@@ -46,21 +46,32 @@ class EMOV3Tests(unittest.TestCase):
         self.assertEqual(reward_scale_for_epoch(10.0, 1), 10.0)
         self.assertEqual(reward_scale_for_epoch(10.0, 10), 10.0)
         self.assertEqual(reward_scale_for_epoch(10.0, 11), 20.0)
-        self.assertEqual(reward_scale_for_epoch(10.0, 21), 40.0)
+        self.assertEqual(reward_scale_for_epoch(10.0, 21), 30.0)
+        self.assertEqual(reward_scale_for_epoch(20.0, 10), 20.0)
+        self.assertEqual(reward_scale_for_epoch(20.0, 11), 30.0)
+        self.assertEqual(reward_scale_for_epoch(20.0, 20), 30.0)
+        self.assertEqual(reward_scale_for_epoch(20.0, 21), 40.0)
 
         self.assertEqual(learning_rate_for_epoch(1e-4, 1), 1e-4)
         self.assertEqual(learning_rate_for_epoch(1e-4, 10), 1e-4)
         self.assertAlmostEqual(learning_rate_for_epoch(1e-4, 11), 1e-5)
         self.assertAlmostEqual(learning_rate_for_epoch(1e-4, 21), 1e-6)
 
-    def test_log_probability_quotient_is_capped_and_handles_zero_old_value(self):
-        new = torch.tensor([-3.0, -2.0, 7.0], requires_grad=True)
-        old = torch.tensor([-2.0, -4.0, 0.0])
+    def test_probability_ratio_is_capped_and_handles_zero_old_value(self):
+        new = torch.tensor([-3.0, -2.0, 0.0, -1.0, 1000.0], requires_grad=True)
+        old = torch.tensor([-2.0, -4.0, 0.0, 0.0, -1000.0], requires_grad=True)
 
         ratio = capped_log_probability_ratio(new, old)
 
-        torch.testing.assert_close(ratio, torch.tensor([1.0, 0.5, 1.0]))
+        torch.testing.assert_close(
+            ratio, torch.tensor([0.36787944, 1.0, 1.0, 0.36787944, 1.0])
+        )
         self.assertFalse(ratio.requires_grad)
+        self.assertTrue(torch.isfinite(ratio).all())
+        torch.testing.assert_close(
+            capped_log_probability_ratio(new, old, max_ratio=2.0),
+            torch.tensor([0.36787944, 2.0, 1.0, 0.36787944, 2.0]),
+        )
 
     def test_replay_requires_diversity_and_same_prompt_current_mean_reward(self):
         def rollout(prompts, terminal_rewards):
@@ -111,12 +122,12 @@ class EMOV3Tests(unittest.TestCase):
         )
         config = parse_config(EMOV3Config, "emo_v3", arguments[1:])
         scale_flag = arguments.index("--reward-scale")
-        self.assertEqual(arguments[scale_flag + 1], "10.0")
+        self.assertEqual(arguments[scale_flag + 1], "20.0")
 
         self.assertEqual(config.output_dir, "outputs/emo_v3/seed_456")
-        self.assertEqual(config.reward_scale, 10.0)
+        self.assertEqual(config.reward_scale, 20.0)
         self.assertEqual(config.gpu_ids, [0])
-        self.assertEqual(config.sac_epochs, 4)
+        self.assertEqual(config.sac_epochs, 2)
 
 
 if __name__ == "__main__":

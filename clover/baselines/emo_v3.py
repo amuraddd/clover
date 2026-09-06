@@ -1,7 +1,7 @@
 """Train the third-generation entropy-maximizing optimization baseline.
 
 EMO v3 uses the corrected per-timestep reward normalization, scheduled
-reward-vs-entropy weight, capped new/old log-probability quotient, and decaying
+reward-vs-entropy weight, capped probability importance ratio, and decaying
 learning rate implemented by clover.baselines.emo_v2. It keeps a separate
 configuration type and artifact namespace so experiments can run and be
 compared independently through main.py or the emo_v3 module entry point.

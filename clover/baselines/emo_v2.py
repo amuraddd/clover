@@ -82,7 +82,7 @@ class EMOV2V2Config:
     sac_epochs: int = 2
     gamma: float = field(init=False)
     # Initial reward weight relative to the unit-weight entropy objective. The
-    # training loop doubles this value every ten completed epochs.
+    # training loop adds 10 to this value every ten completed epochs.
     reward_scale: float = 10.0
     importance_ratio_clip: float = 1.0
     minibatch_size: int = 32
@@ -94,7 +94,7 @@ class EMOV2V2Config:
     lora_alpha: int = 16
     lora_dropout: float = 0.0
     lora_target_modules: tuple[str, ...] = ("to_v", "to_k", "to_q", "to_out.0")
-    max_grad_norm: float = 1.0
+    max_grad_norm: float = 0.1
     mixed_precision: bool = True
     gradient_checkpointing: bool = True
     log_every: int = 1
@@ -130,12 +130,12 @@ def normalize_rewards_per_timestep(rewards: Tensor, eps: float = 1e-8) -> Tensor
 
 
 def reward_scale_for_epoch(initial_scale: float, epoch: int) -> float:
-    """Double the reward-vs-entropy weight after every ten epochs."""
+    """Increase the reward-vs-entropy weight by 10 after every ten epochs."""
     if initial_scale <= 0:
         raise ValueError("initial reward scale must be positive")
     if epoch < 1:
         raise ValueError("epoch must be at least 1")
-    return float(initial_scale * (2 ** ((epoch - 1) // 10)))
+    return float(initial_scale + 10 * ((epoch - 1) // 10))
 
 
 def learning_rate_for_epoch(initial_learning_rate: float, epoch: int) -> float:
@@ -151,25 +151,19 @@ def capped_log_probability_ratio(
     new_log_prob: Tensor,
     old_log_prob: Tensor,
     max_ratio: float = 1.0,
-    eps: float = 1e-8,
 ) -> Tensor:
-    """Return new_log_prob / old_log_prob with an upper cap.
+    """Return exp(new_log_prob - old_log_prob), detached and capped above.
 
-    A nearly zero old log probability makes the requested quotient undefined,
-    so those entries receive the neutral importance weight one.
+    Cap in log space before exponentiating to avoid overflow for large
+    positive log-probability differences.
     """
     if max_ratio <= 0:
         raise ValueError("max_ratio must be positive")
     if new_log_prob.shape != old_log_prob.shape:
         raise ValueError("new and old log probabilities must have matching shapes")
-    safe_old = torch.where(
-        old_log_prob.abs() < eps,
-        torch.ones_like(old_log_prob),
-        old_log_prob,
-    )
-    ratio = new_log_prob.detach() / safe_old
-    ratio = torch.where(old_log_prob.abs() < eps, torch.ones_like(ratio), ratio)
-    return ratio.clamp(max=max_ratio)
+    log_ratio = new_log_prob.detach().float() - old_log_prob.detach().float()
+    return log_ratio.clamp(max=math.log(max_ratio)).exp()
+
 
 class EMOV2OutputHead(torch.nn.Module):
     """Keep SD 1.5 noise prediction frozen and add a trainable variance head."""
@@ -1038,9 +1032,9 @@ def sac_update(
                         )
 
                     # -----------------------------------------------------
-                    # Requested capped log-probability quotient
+                    # Capped probability importance ratio
                     #
-                    # rho = log pi_theta(a|s) / log pi_old(a|s)
+                    # rho = exp(log pi_theta(a|s) - log pi_old(a|s))
                     #
                     # Detach rho so it remains a fixed score-function weight
                     # rather than another differentiable surrogate term.
@@ -1311,11 +1305,18 @@ def train(
         )
 
         data_name = f"{baseline_name}/seed_{config.seed}"
-        combined_rollout = emo_v2_combined_rollouts(
-            reference_rollout, diversity_threshold=0.3,
-            trajectory_path=f"clover/data/{data_name}/trajectories.pt",
-            required_trajectory_epoch=epoch - 1 if epoch > 1 else None,
-        )
+        replay_path = Path(f"clover/data/{data_name}/trajectories.pt")
+        if last_epoch > 0 and epoch == last_epoch + 1 and not replay_path.exists():
+            # A rollback may discard replay newer than the checkpoint. Only
+            # the first resumed epoch may proceed without its replay file.
+            print(f"Resuming epoch {epoch} without replay: {replay_path} is missing")
+            combined_rollout = reference_rollout
+        else:
+            combined_rollout = emo_v2_combined_rollouts(
+                reference_rollout, diversity_threshold=0.3,
+                trajectory_path=str(replay_path),
+                required_trajectory_epoch=epoch - 1 if epoch > 1 else None,
+            )
 
         # apply SAC update to the model using the collected rollouts and save the metrics to history
         metrics = sac_update(
