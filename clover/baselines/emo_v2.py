@@ -23,6 +23,9 @@ from torch.nn import functional as F
 from tqdm.auto import trange
 
 from clover.baselines.common import (
+    discount_rewards,
+    sigmoid_discounting,
+    leave_one_out_advantages,
     make_reward_fn,
     parse_config,
     prepare_output,
@@ -412,12 +415,7 @@ def collect_rollouts(
     pipe.unet.train()
     if terminal_rewards is None:
         raise RuntimeError("terminal rewards were not computed")
-    rewards = torch.zeros(
-        (terminal_rewards.shape[0], len(timesteps)), dtype=terminal_rewards.dtype
-    )
-    rewards[:, -1] = terminal_rewards
-    for t in reversed(range(rewards.shape[1] - 1)):
-        rewards[:, t] += config.gamma * rewards[:, t + 1]
+    rewards = discount_rewards(terminal_rewards, len(timesteps), config.gamma)
 
     return {
         "prompts": prompts,
@@ -864,6 +862,7 @@ def _learned_range_ddpm_entropy(scheduler, model_output, sample, timestep):
 def sac_update(
     pipe, rollout, optimizer, config, device, dtype,
     reward_scale: float | None = None,
+    reference_count: int | None = None,
 ):
     beta = config.reward_scale if reward_scale is None else reward_scale
     if beta <= 0:
@@ -902,11 +901,14 @@ def sac_update(
             "selected_samples": 0,
         }
 
-    # Beta scales reward relative to the unit-weight entropy term: beta * R + H.
-    # Normalize over samples separately at each denoising timestep. See
-    # normalize_rewards_per_timestep() for why global trajectory normalization
-    # introduces an artificial temporal advantage signal.
-    soft_q = beta * normalize_rewards_per_timestep(rewards)
+    # Subtract a same-prompt leave-one-out baseline from raw terminal rewards,
+    # then discount. Do not standardize away the resulting reward differences.
+    # Only fresh rollouts estimate baselines when replay is present.
+    terminal_advantages = leave_one_out_advantages(
+        rewards[:, -1], prompts, reference_count=reference_count,
+    )
+    # soft_q = beta * discount_rewards(terminal_advantages, rewards.shape[1], config.gamma)
+    soft_q = beta * sigmoid_discounting(terminal_advantages, num_steps=rewards.shape[1], k=5)
 
     trajectory_len = old_log_probs.shape[1]
     indices = torch.arange(batch_size)
@@ -1285,7 +1287,7 @@ def train(
         eps=config.adam_epsilon,
     )
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=config.train_epochs, eta_min=1e-6
+        optimizer, T_max=config.train_epochs, eta_min=5e-5
     )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(
@@ -1322,6 +1324,7 @@ def train(
         metrics = sac_update(
             pipe, combined_rollout, optimizer, config, device, dtype,
             reward_scale=scheduled_reward_scale,
+            reference_count=int(reference_rollout["rewards"].shape[0]),
         )
         reference_count = int(reference_rollout["rewards"].shape[0])
         combined_rewards = combined_rollout["rewards"][:, 0].float()

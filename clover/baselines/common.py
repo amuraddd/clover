@@ -24,6 +24,118 @@ from clover.utils.baseline_utils import (
 ConfigT = TypeVar("ConfigT")
 
 
+def discount_rewards(terminal_rewards: Tensor, num_steps: int, gamma: float) -> Tensor:
+    """Expand terminal rewards to discounted returns in sampling order.
+
+    Accepts a floating-point [batch] tensor (raw or already normalized) and
+    returns [batch, num_steps], with column j equal to
+    gamma ** (num_steps - 1 - j) * terminal_rewards. The final retained action
+    receives the undiscounted reward; earlier retained actions receive smaller
+    magnitudes when 0 < gamma < 1. Steps count retained actions, not scheduler
+    timestep labels. Normalization, if desired, is handled by the caller.
+    Input dtype, device, and autograd connectivity are preserved.
+    """
+    if terminal_rewards.ndim != 1 or not terminal_rewards.is_floating_point():
+        raise ValueError("terminal_rewards must be a floating-point [batch] tensor")
+    if isinstance(num_steps, bool) or not isinstance(num_steps, int) or num_steps < 1:
+        raise ValueError("num_steps must be a positive integer")
+    if not math.isfinite(gamma) or not 0 <= gamma <= 1:
+        raise ValueError("gamma must be finite and between 0 and 1")
+    exponents = torch.arange(num_steps - 1, -1, -1, device=terminal_rewards.device)
+    discounts = terminal_rewards.new_tensor(gamma).pow(exponents)
+    return terminal_rewards[:, None] * discounts[None, :]
+
+
+def sigmoid_discounting(terminal_rewards: Tensor, num_steps: int, k: float = 5.0) -> Tensor:
+    """Expand [batch] terminal rewards along an endpoint-normalized sigmoid.
+
+    Returns [batch, num_steps] in sampling order. For multiple steps, weights
+    start at zero and end at one, with sigmoid steepness k and midpoint 0.5.
+    A single step receives the full terminal reward. Normalization is handled
+    by the caller. Like discount_rewards, this returns
+    a new tensor and preserves input dtype, device, and autograd connectivity.
+
+    Example for existing trajectories with rewards shaped [batch, steps]::
+
+        discounted = sigmoid_discounting(rewards[:, -1], rewards.shape[1], k=5.0)
+    """
+    if terminal_rewards.ndim != 1 or not terminal_rewards.is_floating_point():
+        raise ValueError("terminal_rewards must be a floating-point [batch] tensor")
+    if isinstance(num_steps, bool) or not isinstance(num_steps, int) or num_steps < 1:
+        raise ValueError("num_steps must be a positive integer")
+    if not math.isfinite(k) or k <= 0:
+        raise ValueError("k must be finite and positive")
+    if num_steps == 1:
+        return terminal_rewards[:, None].clone()
+
+    # Evaluate weights in at least float32 to avoid half-precision cancellation.
+    weight_dtype = torch.float64 if terminal_rewards.dtype == torch.float64 else torch.float32
+    x = torch.linspace(0.0, 1.0, num_steps, device=terminal_rewards.device, dtype=weight_dtype)
+    if k < 1e-6:
+        weights = x  # Normalized sigmoid's linear limit as k approaches zero.
+    else:
+        # Algebraically equivalent to (sigmoid(k*(x-.5))-sigmoid(-k/2)) /
+        # (sigmoid(k/2)-sigmoid(-k/2)), without subtracting near-equal sigmoids.
+        weights = 0.5 * (1.0 + torch.tanh((x - 0.5) * (k / 2.0)) / math.tanh(k / 4.0))
+    weights = weights.to(dtype=terminal_rewards.dtype)
+    return terminal_rewards[:, None] * weights[None, :]
+
+
+def leave_one_out_advantages(
+    terminal_rewards: Tensor,
+    prompts: list[str] | tuple[str, ...],
+    reference_count: int | None = None,
+) -> Tensor:
+    """Subtract other same-prompt trajectories' mean terminal reward.
+
+    The first reference_count rows are fresh rollouts eligible for baseline
+    estimation; later rows are replay and never contribute to a baseline.
+    None treats all rows as fresh. Exclude the target row when it is fresh;
+    replay targets use all fresh rows sharing their prompt. If no eligible
+    peer exists, use zero. Returns detached advantages with no normalization.
+    """
+    if terminal_rewards.ndim != 1 or not terminal_rewards.is_floating_point():
+        raise ValueError("terminal_rewards must be a floating-point [batch] tensor")
+    count = terminal_rewards.shape[0]
+    if len(prompts) != count:
+        raise ValueError("Expected one prompt per terminal reward")
+    if reference_count is None:
+        reference_count = count
+    if (isinstance(reference_count, bool) or not isinstance(reference_count, int)
+            or not 0 <= reference_count <= count):
+        raise ValueError("reference_count must be between zero and batch size")
+    values = terminal_rewards.detach()
+    if values.dtype in (torch.float16, torch.bfloat16):
+        values = values.float()
+    groups: dict[str, list[int]] = {}
+    for index, prompt in enumerate(prompts[:reference_count]):
+        groups.setdefault(prompt, []).append(index)
+    baselines = torch.zeros_like(values)
+    for index, prompt in enumerate(prompts):
+        peers = [peer for peer in groups.get(prompt, []) if peer != index]
+        if peers:
+            baselines[index] = values[peers].mean()
+    return (values - baselines).to(terminal_rewards.dtype)
+
+
+def normalize_rewards_per_trajectory(rewards: Tensor, eps: float = 1e-8) -> Tensor:
+    """Standardize each [batch, steps] row using only that sample's timesteps.
+
+    Apply after discounting. Constant/single-step rows become zero. Positive
+    terminal reward magnitudes cancel (apart from epsilon effects), while the
+    temporal curve remains centered: early steps may have negative advantages.
+    """
+    if rewards.ndim != 2 or not rewards.is_floating_point() or rewards.shape[1] == 0:
+        raise ValueError("rewards must be a floating-point [batch, nonempty steps] tensor")
+    if not math.isfinite(eps) or eps <= 0:
+        raise ValueError("eps must be finite and positive")
+    # Compute statistics in float32 for half precision, including epsilon.
+    values = rewards.float() if rewards.dtype in (torch.float16, torch.bfloat16) else rewards
+    centered = values - values.mean(dim=1, keepdim=True)
+    scale = values.std(dim=1, unbiased=False, keepdim=True)
+    return (centered / (scale + eps)).to(rewards.dtype)
+
+
 def normalize_rewards(rewards: Tensor, eps: float = 1e-8) -> Tensor:
     """Normalize rewards to have mean 0 and variance 1.
 

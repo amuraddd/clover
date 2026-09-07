@@ -813,3 +813,83 @@ else:
 
 - Replaced exponential doubling with initial_scale + 10 * ((epoch - 1) // 10). For initial scale 20, epochs 1–10 use 20, 11–20 use 30, and 21–30 use 40.
 - Updated schedule documentation and boundary assertions. All five focused EMO v3 tests pass. No experiment launched.
+
+## 2026-09-06 — Added manual debugging notebook
+
+- Created clover/exp/manual.ipynb using main.py argument construction and baseline config/train APIs, with editable small-run defaults, in-kernel debugging guidance, and structured result inspection.
+- Defaults to one GPU, one epoch, four rollouts, and ten diffusion steps; uses a fresh debug seed/output directory and checks Slurm/CUDA availability before training.
+- Validated notebook schema and compiled every code cell. No training or model downloads were launched; runtime GPU execution remains untested.
+
+## 2026-09-06 — Reused launcher arguments in manual notebook
+
+- Removed notebook-specific training, seed, GPU visibility, prompt, evaluation, and output-directory overrides. The notebook now reloads main.py and uses build_default_argv directly for its first enabled baseline and seed.
+- Retained in-kernel training/debugging and result inspection. Validated notebook schema and compiled all code cells; no training launched.
+
+## 2026-09-06 — Diagnosed notebook checkpoint RNG error
+
+- Traced the saved manual.ipynb IndexError to load_training_checkpoint restoring CUDA RNG states with set_rng_state_all; the saved state list indexes beyond the notebook kernel's CUDA default-generator tuple.
+- Checkpoints save random states for all visible GPUs, so resuming with fewer visible GPUs fails even when config.gpu_ids is valid. Exact saved/current GPU counts were not measured in the live kernel. No training code changed or experiment launched.
+
+## 2026-09-06 — Made checkpoint CUDA RNG restoration tolerate GPU count changes
+
+- Limited saved CUDA RNG restoration to currently visible logical GPU indices. Matching counts retain existing behavior; unavailable saved devices are skipped and additional current GPUs retain their initialized RNG states. Checkpoint format is unchanged, including support for older checkpoints without CUDA RNG states.
+- Added six CPU regression tests covering fewer/matching/more GPUs, CPU loading, missing CUDA states, and empty CUDA states while verifying epoch/history, optimizer, scheduler, and generator restoration.
+- All six tests pass; no GPU experiment launched. Existing xFormers binary-version warning appeared during imports. Different GPU counts do not guarantee identical stochastic training sequences.
+
+## 2026-09-06 — Aligned manual notebook environment with batch runs
+
+- Updated notebook setup to read simple export assignments from run_experiments.sh and load .env before launcher/model imports, without executing shell commands or exposing secret values. This restores the batch Torch/Hugging Face caches, TMPDIR, and allocator settings while retaining main.py training arguments.
+- Diagnosed the saved SSL traceback as an Inception weight download: the batch Torch cache already contains the file, and this Python installation's default OpenSSL certificate paths are absent. Added system CA bundle fallback with certificate verification enabled, respecting explicit certificate configuration.
+- Validated notebook schema/code syntax and executed setup only, confirming cache configuration, token presence without printing its value, and a populated CA trust store. No download or training launched. Restart the notebook kernel before rerunning setup.
+
+## 2026-09-06 — Reviewed EMO terminal reward discounting
+
+- Verified emo_v2.py lines 418–420 compute gamma**(K-1-j) times terminal reward across K retained trainable transitions; the backward recurrence is correct for that indexing convention.
+- Identified that retained transitions exclude filtered/deterministic steps, so this is not discounting by every actual denoising step. The terminal reward is assigned to the last retained action.
+- Traced downstream per-timestep batch standardization: positive common discount factors cancel except for epsilon/numerical effects, so current policy updates do not retain the intended relative temporal discount magnitude. Also noted the unguarded last-column assignment for zero retained transitions. No code changed or experiment launched.
+
+## 2026-09-06 — Preserved temporal reward discounting in EMO updates
+
+- Added common.discount_rewards(terminal_rewards, num_steps, gamma), returning discounted terminal returns in retained-action sampling order with input validation and dtype/device/autograd preservation.
+- Imported the helper in emo_v2 for rollout returns and policy advantages. The shared EMO v2/v3 update now normalizes terminal rewards across the current/replay batch before applying discount factors, so earlier action contributions retain smaller magnitudes.
+- Preserved existing trajectory format and its raw terminal-reward last column, including older replay files. Discounting counts retained trainable actions; the final retained action remains undiscounted.
+- Four new discount tests and all five EMO v3 tests pass. Syntax/whitespace checks pass. No GPU training launched; the existing xFormers binary-version warning appeared during imports.
+
+## 2026-09-06 — Added sigmoid reward discounting helper
+
+- Added common.sigmoid_discounting(terminal_rewards, num_steps, k=5.0) with the same batched terminal-reward API as discount_rewards. Uses an endpoint-normalized sigmoid in sampling order, from zero to full terminal reward; a single-step trajectory receives full reward.
+- Implemented an algebraically equivalent tanh form with a small-k linear limit for numerical stability. Preserves dtype/device/autograd without mutating input; existing training continues to use its selected exponential discount helper.
+- All nine discount-helper tests pass, covering the supplied sigmoid formula, steepness, endpoints, gradients, short trajectories, low precision, and invalid inputs. Syntax/whitespace checks pass; no GPU experiment launched.
+
+## 2026-09-06 — Reviewed normalize_advantages normalization scope
+
+- Verified baseline_utils.normalize_advantages uses mean() and std(unbiased=False) without a dimension, sharing one mean/std across every element of its input. A [batch, steps] tensor is globally normalized, not separately by trajectory or timestep; a [batch] terminal-reward tensor is normalized across samples.
+- Checked callers: original EMO and MD3PO-SAC use this helper, while EMO v2/v3 use their separate terminal-reward normalization path. No code changed or training launched.
+
+## 2026-09-06 — Checked mixed replay reward discounting concern
+
+- Verified current EMO v2/v3 update reads only rewards[:, -1:] before normalization, then constructs discounted advantages anew. Earlier discounted replay columns are ignored, so they are not discounted twice; current on-disk collection also produces discounted returns rather than sparse terminal-only rewards.
+- Executed the actual normalization/update expressions on CPU with mixed sparse/current and discounted/replay rewards, confirming identical advantages to an all-terminal-only representation (gamma 0.5, beta 20). No training code changed or GPU experiment launched.
+
+## 2026-09-06 — Normalized discounted rewards independently per trajectory
+
+- Added common.normalize_rewards_per_trajectory using timestep-axis mean/std (dim=1), including finite handling of constant/single-step and half-precision rows.
+- Updated shared EMO v2/v3 policy updates to discount raw terminal rewards first, then normalize each sample's curve independently. No statistics are shared across images/prompts; legacy replay terminal columns remain compatible.
+- Documented that per-row standardization removes positive terminal-reward scale apart from epsilon effects and creates centered temporal advantages, including negative early-step values.
+- All 12 reward-helper tests and five EMO v3 tests pass, along with syntax/whitespace checks. No GPU training launched.
+
+## 2026-09-06 — Applied leave-one-out terminal baselines before discounting
+
+- Added common.leave_one_out_advantages to subtract other same-prompt fresh trajectories' mean terminal reward, excluding self and using zero when no eligible peer exists. Baselines/advantages are detached and no standardization is applied.
+- Updated EMO v2/v3 soft_q to reward_scale * discount_rewards(terminal_advantages, steps, gamma). Training passes the fresh-rollout count so accepted replay samples do not estimate baselines; replay targets use matching fresh rewards. Existing saved raw terminal-reward columns remain compatible.
+- Five leave-one-out regression tests and all five EMO v3 tests pass, with syntax/whitespace checks. Verified fresh trajectories precede replay in combined rollouts. No GPU experiment launched; existing xFormers import warning persists.
+
+## 2026-09-06 — Corrected sigmoid soft-Q trajectory length
+
+- Reviewed the user-added sigmoid_discounting call in emo_v2.py and changed num_steps from config.num_inference_steps to rewards.shape[1], matching retained trainable transitions so the final used weight reaches one. Preserved the commented exponential discount_rewards assignment exactly.
+- Verified the actual soft_q expression with 49, 7, and 1 stored transitions against 50 configured inference steps, including output shape and endpoint weights. All 12 discount-helper tests and syntax/whitespace checks pass. No training launched.
+
+## 2026-09-06 — Reviewed evaluation prompt count
+
+- Traced EMO v2/v3 evaluation cadence to evaluate_every=2 and prompt selection to standard_eval_prompts(config), whose current on-disk default limit is 10, with a fixed local random seed of 123.
+- No five-prompt limit exists in the current EMO evaluation generation path. A live notebook can retain an earlier imported helper despite reloading main.py; current kernel state was not inspected. No code changed or experiment launched.

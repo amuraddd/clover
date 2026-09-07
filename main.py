@@ -61,7 +61,7 @@ def allocated_gpu_ids() -> tuple[str, ...]:
 DEFAULT_BASELINE_ARGS = {
     "train_epochs": 50,
     "rollouts_per_epoch": 256,
-    "learning_rate": 1e-4,
+    "learning_rate": 3e-4,
     "gpu_ids": [0],
     "save_every": 5,
     "num_inference_steps": 50,

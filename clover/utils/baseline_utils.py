@@ -119,7 +119,11 @@ def load_training_checkpoint(
     torch.set_rng_state(checkpoint["torch_rng_state"].cpu())
     cuda_rng_state = checkpoint.get("cuda_rng_state")
     if device.type == "cuda" and cuda_rng_state is not None:
-        torch.cuda.set_rng_state_all(cuda_rng_state)
+        # Older checkpoints contain one state per GPU visible when saved.
+        # Restore by logical device index only where that device still exists.
+        # Additional current GPUs retain their initialized (seeded) RNG state.
+        # Matching GPU counts preserve the original restoration behavior.
+        torch.cuda.set_rng_state_all(cuda_rng_state[:torch.cuda.device_count()])
     generator.set_state(checkpoint["generator_state"].cpu())
     epoch = int(checkpoint["epoch"])
     history = list(checkpoint.get("history", []))
