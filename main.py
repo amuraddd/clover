@@ -11,6 +11,7 @@ Available baselines:
     - emo_v2: Second-generation entropy-maximizing optimization baseline
     - md3po_sac: MD3PO with a reward-scaled maximum-entropy actor update
     - emo_v3: Scheduled third-generation entropy-maximizing optimization baseline
+    - emo_v4: Entropy-maximizing optimization with accumulated trajectory replay
     - sqdf: Soft Q-based diffusion fine-tuning for text-to-image alignment
 """
 
@@ -33,13 +34,14 @@ BASELINES = [
     # ("md3po_sac", "clover.baselines.md3po_sac"),
     # ("emo", "clover.baselines.emo"),
     # ("emo_v2", "clover.baselines.emo_v2"),
-    ("emo_v3", "clover.baselines.emo_v3"),
+    # ("emo_v3", "clover.baselines.emo_v3"),
+    ("emo_v4", "clover.baselines.emo_v4"),
     # ("ddpo", "clover.baselines.ddpo"),
     # ("sqdf", "clover.baselines.sqdf"),
 ]
 
 DEFAULT_GPU_IDS = ("0","1") #"1"
-MAX_ALLOCATED_GPUS = 3
+MAX_ALLOCATED_GPUS = 2
 EXPERIMENT_SEEDS = [123] #123, 456, 789
 
 
@@ -61,7 +63,7 @@ def allocated_gpu_ids() -> tuple[str, ...]:
 DEFAULT_BASELINE_ARGS = {
     "train_epochs": 50,
     "rollouts_per_epoch": 256,
-    "learning_rate": 3e-4,
+    "learning_rate": 1e-4,
     "gpu_ids": [0],
     "save_every": 5,
     "num_inference_steps": 50,
@@ -111,11 +113,11 @@ def build_default_argv(
     argv.extend(["--adam-epsilon", str(DEFAULT_BASELINE_ARGS["adam_epsilon"])])
     argv.extend(["--eta", str(DEFAULT_BASELINE_ARGS["eta"])])
     # argv.extend(["--max-grad-norm", str(DEFAULT_BASELINE_ARGS["max_grad_norm"])])
-    if script_name.endswith(("md3po_sac", "emo", "emo_v2", "emo_v3")):
+    if script_name.endswith(("md3po_sac", "emo", "emo_v2", "emo_v3", "emo_v4")):
         argv.extend(["--sac-epochs", str(DEFAULT_BASELINE_ARGS["sac_epochs"])])
         reward_scale = (
             DEFAULT_BASELINE_ARGS["emo_reward_scale"]
-            if script_name.endswith(("emo_v2", "emo_v3"))
+            if script_name.endswith(("emo_v2", "emo_v3", "emo_v4"))
             else DEFAULT_BASELINE_ARGS["reward_scale"]
         )
         argv.extend(["--reward-scale", str(reward_scale)])

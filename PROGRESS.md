@@ -893,3 +893,34 @@ else:
 
 - Traced EMO v2/v3 evaluation cadence to evaluate_every=2 and prompt selection to standard_eval_prompts(config), whose current on-disk default limit is 10, with a fixed local random seed of 123.
 - No five-prompt limit exists in the current EMO evaluation generation path. A live notebook can retain an earlier imported helper despite reloading main.py; current kernel state was not inspected. No code changed or experiment launched.
+
+## 2026-09-07 — Compared EMO v3 and DDPO training stability
+
+- Reviewed seed_123 histories, saved configurations, current gradient logging code, and matching evaluation epochs. Across epochs 1–37, mean pre-clipping gradient norms are 0.008960 (EMO v3) and 0.0003487 (DDPO), a 25.7x difference; both runs report zero skipped updates.
+- EMO reward weight increases from 20 to 50; gradient norm divided by that weight does not trend upward. Epoch mean norms remain below the saved clipping thresholds, but EMO lacks per-update maxima and parameter-update norms.
+- Over evaluation epochs 2–36, EMO CLIP mean changes from 0.34952 to 0.32906 versus DDPO 0.34287 to 0.34180; successive-evaluation RMS changes are 0.00911 versus 0.00461. This supports more variable/weaker EMO evaluation, without establishing gradient magnitude as its cause. Training reward aggregation differs between baselines, and current source may differ from the code used for these artifacts.
+- No training code changed or experiments launched.
+
+## 2026-09-07 — Recommended targeted EMO v3 stability fixes
+
+- Identified a current configuration mismatch: main.py starts learning_rate at 1e-5, while the active EMO cosine scheduler sets eta_min=5e-5. Its documented formula raises a fresh run toward 5e-5; this does not explain the earlier 3e-4 history. Suggested a constant learning rate for diagnosis or a configurable floor below the initial rate.
+- Recommended separately testing a fixed beta=20 and reduced update reuse (current sac_epochs=4 versus 2 in the reviewed history), then an entropy-coefficient/variance-head learning-rate ablation if head diagnostics support it. These are proposed experiments, not demonstrated fixes.
+- Confirmed EMO adds a trainable variance head, so aggregate gradient norms do not cover the same parameter sets as DDPO. Suggested separate LoRA/head gradient and update norms, per-update maxima/clipping rates, and consistently reduced Gaussian KL diagnostics before tightening gradient clipping.
+- Recommendations only; no training code changed or experiments launched.
+
+## 2026-09-07 — Accumulating EMO v4 replay
+
+- Enabled append-mode trajectory persistence in emo_v4.py, saving only fresh reference samples so replay is not duplicated on each round.
+- Updated emo_v4_combined_rollouts to filter every saved round using the existing exact-prompt matching, diversity threshold, and current per-prompt mean terminal reward filter; combined batches place current samples first. Recorded epochs determine resume eligibility, excluding entries newer than the required previous epoch.
+- Focused CPU checks passed for append persistence, replay from multiple rounds, all three filters, field alignment, recorded epoch handling, future-epoch exclusion, missing required epochs, and empty/rejected replay. Python syntax validation passed. No GPU experiments launched.
+
+## 2026-09-07 — Reviewed EMO v2 reward discounting
+
+- Traced rollout exponential discounting at line 420 to update-time terminal reward extraction at line 910 and sigmoid weighting at line 913. The last stored reward has exponential weight one, so training does not multiply the two discount schedules; it sigmoid-weights leave-one-out terminal advantages.
+- Identified redundant storage of exponential returns for this update path and a logging mismatch: reward_mean/std aggregate stored exponential returns, while current/replay reward metrics use the first discounted column. These metrics do not report raw terminal rewards or the sigmoid-weighted training target. No training code changed or experiments launched.
+
+## 2026-09-07 — Integrated EMO v4 with the baseline launcher
+
+- Added EMO v4 to the active main.py baseline list alongside EMO v3 and documented its accumulated replay behavior. Included it in shared SAC argument and EMO reward-scale selection, retaining seed-specific output/data paths. Updated its CLI description to identify EMO v4.
+- Capped launcher GPU visibility at two to match project instructions; run_experiments.sh already launches main.py and needs no change.
+- Verified real EMO v4 configuration parsing for two seeds and one/two GPUs, SAC/reward defaults, baseline registration, and the two-GPU visibility cap. Syntax checks passed. Existing xFormers binary compatibility warning appeared during import. No experiments submitted.

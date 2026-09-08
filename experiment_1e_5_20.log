@@ -2,11 +2,359 @@
 Running Clover baseline/seed jobs on up to two GPUs
 ================================================================================
 Starting EMO_V3 seed=123 on GPUs 6
-Arguments: --seed 123 --output-dir outputs/emo_v3/seed_123 --train-epochs 50 --rollouts-per-epoch 256 --minibatch-size 64 --learning-rate 0.0003 --save-every 5 --num-inference-steps 50 --guidance-scale 5.0 --adam-epsilon 1e-08 --eta 1.0 --sac-epochs 2 --reward-scale 20.0 --importance-ratio-clip 1.0 --lora-alpha 16 --lora-rank 16 --min-log-prob-std 0.0001 --rollout-chunk-size 64 --reward-type clip --gpu-ids 0
+Arguments: --seed 123 --output-dir outputs/emo_v3/seed_123 --train-epochs 50 --rollouts-per-epoch 256 --minibatch-size 64 --learning-rate 0.0001 --save-every 5 --num-inference-steps 50 --guidance-scale 5.0 --adam-epsilon 1e-08 --eta 1.0 --sac-epochs 2 --reward-scale 20.0 --importance-ratio-clip 1.0 --lora-alpha 16 --lora-rank 16 --min-log-prob-std 0.0001 --rollout-chunk-size 64 --reward-type clip --gpu-ids 0
 cuda:0 torch.float16 gpu_ids=[0]
-Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  17%|█▋        | 1/6 [00:00<00:00,  6.71it/s]Loading pipeline components...:  50%|█████     | 3/6 [00:00<00:00,  5.84it/s]
-Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 4390.04it/s]
-Loading pipeline components...:  67%|██████▋   | 4/6 [00:00<00:00,  6.06it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:00<00:00,  8.36it/s]
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  67%|██████▋   | 4/6 [00:00<00:00,  5.23it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 3581.33it/s]
+Loading pipeline components...:  83%|████████▎ | 5/6 [00:00<00:00,  5.46it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.28it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.64it/s]
 Trainable LoRA parameters kept in FP32 for optimizer stability
 xFormers memory efficient attention enabled
 Training 3,200,260 LoRA parameters
+{'loss': -0.1904629088524843, 'policy_loss': 0.0992759609314594, 'entropy': 0.09118694765730856, 'entropy_bonus': 0.09118694765730856, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999538102016157, 'reward_mean': 0.20847485959529877, 'reward_std': 0.07511556893587112, 'soft_q_mean': 0.5297327041625977, 'grad_norm_mean': 0.007034700538497418, 'skipped_updates': 0, 'selected_samples': 256, 'current_reward_mean': 0.12328113615512848, 'current_reward_std': 0.026388878002762794, 'replay_reward_mean': nan, 'replay_reward_std': nan, 'replay_samples': 0, 'replay_source_epoch': None, 'epoch': 1, 'seed': 123, 'learning_rate': 0.0001}
+{'loss': -0.22197375970569497, 'policy_loss': 0.1307508773189418, 'entropy': 0.09122288229932286, 'entropy_bonus': 0.09122288229932286, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9998951800015508, 'reward_mean': 0.21150945127010345, 'reward_std': 0.07385753095149994, 'soft_q_mean': 0.6948490142822266, 'grad_norm_mean': 0.006089557288214564, 'skipped_updates': 0, 'selected_samples': 318, 'current_reward_mean': 0.12275633960962296, 'current_reward_std': 0.024912917986512184, 'replay_reward_mean': 0.13465207815170288, 'replay_reward_std': 0.02034686505794525, 'replay_samples': 62, 'replay_source_epoch': 1, 'epoch': 2, 'seed': 123, 'learning_rate': 9.991120277927223e-05}
+  0%|          | 0/50 [00:00<?, ?it/s]  2%|▏         | 1/50 [15:52<12:57:50, 952.46s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 34074.26it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 46547.39it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.18933002166259957, 'policy_loss': 0.09806524543899435, 'entropy': 0.09126477612524617, 'entropy_bonus': 0.09126477612524617, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999929078987666, 'reward_mean': 0.20825502276420593, 'reward_std': 0.07249587774276733, 'soft_q_mean': 0.5267102718353271, 'grad_norm_mean': 0.00594365787692368, 'skipped_updates': 0, 'selected_samples': 281, 'current_reward_mean': 0.12266647070646286, 'current_reward_std': 0.02415488474071026, 'replay_reward_mean': 0.12811404466629028, 'replay_reward_std': 0.021105432882905006, 'replay_samples': 25, 'replay_source_epoch': 2, 'epoch': 3, 'seed': 123, 'learning_rate': 9.964516155915151e-05}
+{'loss': -0.19047954459864722, 'policy_loss': 0.09916986151080465, 'entropy': 0.09130968358177616, 'entropy_bonus': 0.09130968358177616, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999922905649458, 'reward_mean': 0.21288400888442993, 'reward_std': 0.07400007545948029, 'soft_q_mean': 0.5668378472328186, 'grad_norm_mean': 0.006140127964317799, 'skipped_updates': 0, 'selected_samples': 280, 'current_reward_mean': 0.12523379921913147, 'current_reward_std': 0.02506735362112522, 'replay_reward_mean': 0.1328716278076172, 'replay_reward_std': 0.013291999697685242, 'replay_samples': 24, 'replay_source_epoch': 3, 'epoch': 4, 'seed': 123, 'learning_rate': 9.920292628279099e-05}
+  4%|▍         | 2/50 [35:16<14:21:24, 1076.76s/it]  6%|▌         | 3/50 [52:36<13:50:24, 1060.10s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 37264.84it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 56064.70it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.20658849841553945, 'policy_loss': 0.11523653662250358, 'entropy': 0.09135196211424713, 'entropy_bonus': 0.09135196211424713, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999922320550801, 'reward_mean': 0.21327337622642517, 'reward_std': 0.07439874857664108, 'soft_q_mean': 0.5880395770072937, 'grad_norm_mean': 0.006218427745625377, 'skipped_updates': 0, 'selected_samples': 283, 'current_reward_mean': 0.12550771236419678, 'current_reward_std': 0.025138238444924355, 'replay_reward_mean': 0.1319120228290558, 'replay_reward_std': 0.01884518377482891, 'replay_samples': 27, 'replay_source_epoch': 4, 'epoch': 5, 'seed': 123, 'learning_rate': 9.85862422507884e-05}
+Saved checkpoint for completed epoch 5 to outputs/emo_v3/seed_123/checkpoint/checkpoint.pt
+{'loss': -0.21048510191125833, 'policy_loss': 0.11908862127694396, 'entropy': 0.09139647999854417, 'entropy_bonus': 0.09139647999854417, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999923107575397, 'reward_mean': 0.211843341588974, 'reward_std': 0.07327355444431305, 'soft_q_mean': 0.628122866153717, 'grad_norm_mean': 0.006373402429744601, 'skipped_updates': 0, 'selected_samples': 279, 'current_reward_mean': 0.12470366060733795, 'current_reward_std': 0.024172276258468628, 'replay_reward_mean': 0.13161097466945648, 'replay_reward_std': 0.019499456509947777, 'replay_samples': 23, 'replay_source_epoch': 5, 'epoch': 6, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+  8%|▊         | 4/50 [1:10:12<13:31:30, 1058.48s/it] 10%|█         | 5/50 [1:27:44<13:12:04, 1056.10s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 37655.99it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 61812.14it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.18309038872355404, 'policy_loss': 0.0916483125763432, 'entropy': 0.09144207595904567, 'entropy_bonus': 0.09144207595904567, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.999992285334334, 'reward_mean': 0.21259164810180664, 'reward_std': 0.07442396134138107, 'soft_q_mean': 0.4872073829174042, 'grad_norm_mean': 0.005596388736739755, 'skipped_updates': 0, 'selected_samples': 294, 'current_reward_mean': 0.12491539120674133, 'current_reward_std': 0.02494586631655693, 'replay_reward_mean': 0.1311064213514328, 'replay_reward_std': 0.023544371128082275, 'replay_samples': 38, 'replay_source_epoch': 6, 'epoch': 7, 'seed': 123, 'learning_rate': 9.683994186497131e-05}
+{'loss': -0.21877726507658252, 'policy_loss': 0.12731240748389794, 'entropy': 0.09146485722300654, 'entropy_bonus': 0.09146485722300654, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999927320042435, 'reward_mean': 0.21012473106384277, 'reward_std': 0.07500462234020233, 'soft_q_mean': 0.6888377666473389, 'grad_norm_mean': 0.006618298217654228, 'skipped_updates': 0, 'selected_samples': 272, 'current_reward_mean': 0.12362819910049438, 'current_reward_std': 0.02618476003408432, 'replay_reward_mean': 0.13431423902511597, 'replay_reward_std': 0.019070599228143692, 'replay_samples': 16, 'replay_source_epoch': 7, 'epoch': 8, 'seed': 123, 'learning_rate': 9.571721736097089e-05}
+ 12%|█▏        | 6/50 [1:45:16<12:53:21, 1054.58s/it] 14%|█▍        | 7/50 [2:03:23<12:43:33, 1065.42s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 33385.60it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 38784.32it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.21140043910649814, 'policy_loss': 0.11990482374284492, 'entropy': 0.09149561533514335, 'entropy_bonus': 0.09149561533514335, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999923894599992, 'reward_mean': 0.2099638134241104, 'reward_std': 0.07401759177446365, 'soft_q_mean': 0.6303521394729614, 'grad_norm_mean': 0.006339904293417931, 'skipped_updates': 0, 'selected_samples': 280, 'current_reward_mean': 0.12399289757013321, 'current_reward_std': 0.025145303457975388, 'replay_reward_mean': 0.1259613037109375, 'replay_reward_std': 0.023855172097682953, 'replay_samples': 24, 'replay_source_epoch': 8, 'epoch': 9, 'seed': 123, 'learning_rate': 9.443380060197386e-05}
+{'loss': -0.18854204583818054, 'policy_loss': 0.09700189302580393, 'entropy': 0.09154015244459923, 'entropy_bonus': 0.09154015244459923, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999920821919733, 'reward_mean': 0.21475477516651154, 'reward_std': 0.07457980513572693, 'soft_q_mean': 0.5196666717529297, 'grad_norm_mean': 0.005634057009592653, 'skipped_updates': 0, 'selected_samples': 288, 'current_reward_mean': 0.12613368034362793, 'current_reward_std': 0.02496316283941269, 'replay_reward_mean': 0.13388319313526154, 'replay_reward_std': 0.01931622251868248, 'replay_samples': 32, 'replay_source_epoch': 9, 'epoch': 10, 'seed': 123, 'learning_rate': 9.299475664759068e-05}
+Saved checkpoint for completed epoch 10 to outputs/emo_v3/seed_123/checkpoint/checkpoint.pt
+ 16%|█▌        | 8/50 [2:20:39<12:19:06, 1055.87s/it] 18%|█▊        | 9/50 [2:37:58<11:57:55, 1050.63s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 31968.57it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 39701.15it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.1970706331106473, 'policy_loss': 0.10547091289071785, 'entropy': 0.09159972038196058, 'entropy_bonus': 0.09159972038196058, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999926709398932, 'reward_mean': 0.21264567971229553, 'reward_std': 0.07326129078865051, 'soft_q_mean': 0.5785648226737976, 'grad_norm_mean': 0.005501262191683054, 'skipped_updates': 0, 'selected_samples': 303, 'current_reward_mean': 0.12481340765953064, 'current_reward_std': 0.024516059085726738, 'replay_reward_mean': 0.13083554804325104, 'replay_reward_std': 0.017789386212825775, 'replay_samples': 47, 'replay_source_epoch': 10, 'epoch': 11, 'seed': 123, 'learning_rate': 9.140576474687264e-05}
+{'loss': -0.20281914610187618, 'policy_loss': 0.11122070149879675, 'entropy': 0.09159844467720511, 'entropy_bonus': 0.09159844467720511, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999934939705596, 'reward_mean': 0.21353483200073242, 'reward_std': 0.0730975791811943, 'soft_q_mean': 0.5905429124832153, 'grad_norm_mean': 0.005746916774660349, 'skipped_updates': 0, 'selected_samples': 305, 'current_reward_mean': 0.1253816932439804, 'current_reward_std': 0.02391813136637211, 'replay_reward_mean': 0.13093172013759613, 'replay_reward_std': 0.01927965320646763, 'replay_samples': 49, 'replay_source_epoch': 11, 'epoch': 12, 'seed': 123, 'learning_rate': 8.967309592491052e-05}
+ 20%|██        | 10/50 [2:55:59<11:46:48, 1060.21s/it] 22%|██▏       | 11/50 [3:14:44<11:41:54, 1079.85s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 26701.65it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 17123.75it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.20564364813534278, 'policy_loss': 0.11400086875453744, 'entropy': 0.09164277890469043, 'entropy_bonus': 0.09164277890469043, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999934651413742, 'reward_mean': 0.20884032547473907, 'reward_std': 0.07371604442596436, 'soft_q_mean': 0.5964816212654114, 'grad_norm_mean': 0.005930938757956028, 'skipped_updates': 0, 'selected_samples': 294, 'current_reward_mean': 0.12216164171695709, 'current_reward_std': 0.024779416620731354, 'replay_reward_mean': 0.13249503076076508, 'replay_reward_std': 0.024614566937088966, 'replay_samples': 38, 'replay_source_epoch': 12, 'epoch': 13, 'seed': 123, 'learning_rate': 8.780358823396352e-05}
+{'loss': -0.19968310054391622, 'policy_loss': 0.10802207013891478, 'entropy': 0.09166103064899846, 'entropy_bonus': 0.09166103064899846, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999933274424806, 'reward_mean': 0.2101481854915619, 'reward_std': 0.07224814593791962, 'soft_q_mean': 0.5513120293617249, 'grad_norm_mean': 0.006140136905014515, 'skipped_updates': 0, 'selected_samples': 274, 'current_reward_mean': 0.12443353235721588, 'current_reward_std': 0.023743348196148872, 'replay_reward_mean': 0.12195423245429993, 'replay_reward_std': 0.014750402420759201, 'replay_samples': 18, 'replay_source_epoch': 13, 'epoch': 14, 'seed': 123, 'learning_rate': 8.5804619766791e-05}
+ 24%|██▍       | 12/50 [3:36:18<12:05:06, 1144.91s/it] 26%|██▌       | 13/50 [3:54:46<11:39:08, 1133.75s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 39213.82it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 46862.38it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.21272532514448525, 'policy_loss': 0.12100525671160038, 'entropy': 0.09172006868472209, 'entropy_bonus': 0.09172006868472209, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999926130382382, 'reward_mean': 0.21114076673984528, 'reward_std': 0.07497236877679825, 'soft_q_mean': 0.6277939081192017, 'grad_norm_mean': 0.006017465563490987, 'skipped_updates': 0, 'selected_samples': 284, 'current_reward_mean': 0.12478718906641006, 'current_reward_std': 0.02585223689675331, 'replay_reward_mean': 0.12550146877765656, 'replay_reward_std': 0.02422109805047512, 'replay_samples': 28, 'replay_source_epoch': 14, 'epoch': 15, 'seed': 123, 'learning_rate': 8.368407953869104e-05}
+Saved checkpoint for completed epoch 15 to outputs/emo_v3/seed_123/checkpoint/checkpoint.pt
+{'loss': -0.2038532871037063, 'policy_loss': 0.1121020334405305, 'entropy': 0.09175125341292242, 'entropy_bonus': 0.09175125341292242, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999913881425144, 'reward_mean': 0.21195441484451294, 'reward_std': 0.07346611469984055, 'soft_q_mean': 0.5576999187469482, 'grad_norm_mean': 0.005799669578361015, 'skipped_updates': 0, 'selected_samples': 323, 'current_reward_mean': 0.12413790822029114, 'current_reward_std': 0.024504974484443665, 'replay_reward_mean': 0.1299271434545517, 'replay_reward_std': 0.021687451750040054, 'replay_samples': 67, 'replay_source_epoch': 15, 'epoch': 16, 'seed': 123, 'learning_rate': 8.145033635316131e-05}
+ 28%|██▊       | 14/50 [4:12:02<11:02:41, 1104.48s/it] 30%|███       | 15/50 [4:30:32<10:45:13, 1106.11s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 36407.29it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 51055.37it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.2053204144759826, 'policy_loss': 0.11353971164350454, 'entropy': 0.09178070231739964, 'entropy_bonus': 0.09178070231739964, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999914402864417, 'reward_mean': 0.20801615715026855, 'reward_std': 0.07300114631652832, 'soft_q_mean': 0.6078513264656067, 'grad_norm_mean': 0.006013908935710788, 'skipped_updates': 0, 'selected_samples': 301, 'current_reward_mean': 0.12213832885026932, 'current_reward_std': 0.025235353037714958, 'replay_reward_mean': 0.12796799838542938, 'replay_reward_std': 0.019010212272405624, 'replay_samples': 45, 'replay_source_epoch': 16, 'epoch': 17, 'seed': 123, 'learning_rate': 7.911220577405486e-05}
+{'loss': -0.1960377639444659, 'policy_loss': 0.10418942958040504, 'entropy': 0.09184833436406084, 'entropy_bonus': 0.09184833436406084, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.999993093159734, 'reward_mean': 0.2117113173007965, 'reward_std': 0.07343393564224243, 'soft_q_mean': 0.5598626136779785, 'grad_norm_mean': 0.005314864218235016, 'skipped_updates': 0, 'selected_samples': 311, 'current_reward_mean': 0.1242823675274849, 'current_reward_std': 0.02402115985751152, 'replay_reward_mean': 0.12944293022155762, 'replay_reward_std': 0.023934153839945793, 'replay_samples': 55, 'replay_source_epoch': 17, 'epoch': 18, 'seed': 123, 'learning_rate': 7.66789153345772e-05}
+ 32%|███▏      | 16/50 [4:52:28<11:02:28, 1169.08s/it] 34%|███▍      | 17/50 [5:10:48<10:31:35, 1148.34s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 49641.08it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 43919.41it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.20338606671335138, 'policy_loss': 0.11149529835912494, 'entropy': 0.09189076797694576, 'entropy_bonus': 0.09189076797694576, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999939945279336, 'reward_mean': 0.20883795619010925, 'reward_std': 0.07267099618911743, 'soft_q_mean': 0.5892266035079956, 'grad_norm_mean': 0.0058626237791031596, 'skipped_updates': 0, 'selected_samples': 294, 'current_reward_mean': 0.1226624995470047, 'current_reward_std': 0.024119369685649872, 'replay_reward_mean': 0.1291099637746811, 'replay_reward_std': 0.022297406569123268, 'replay_samples': 38, 'replay_source_epoch': 18, 'epoch': 19, 'seed': 123, 'learning_rate': 7.416006812042828e-05}
+{'loss': -0.19647662569008464, 'policy_loss': 0.1045672803632535, 'entropy': 0.09190934548268513, 'entropy_bonus': 0.09190934548268513, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999935455468236, 'reward_mean': 0.21207985281944275, 'reward_std': 0.0731532871723175, 'soft_q_mean': 0.5594670176506042, 'grad_norm_mean': 0.005613610241562128, 'skipped_updates': 0, 'selected_samples': 306, 'current_reward_mean': 0.12423283606767654, 'current_reward_std': 0.024058256298303604, 'replay_reward_mean': 0.13145507872104645, 'replay_reward_std': 0.020907104015350342, 'replay_samples': 50, 'replay_source_epoch': 19, 'epoch': 20, 'seed': 123, 'learning_rate': 7.156560487081053e-05}
+Saved checkpoint for completed epoch 20 to outputs/emo_v3/seed_123/checkpoint/checkpoint.pt
+ 36%|███▌      | 18/50 [5:29:56<10:12:21, 1148.18s/it] 38%|███▊      | 19/50 [5:47:50<9:41:46, 1126.03s/it] 
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 52165.49it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 49208.97it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.208161225943465, 'policy_loss': 0.11623155563423523, 'entropy': 0.09192967049549429, 'entropy_bonus': 0.09192967049549429, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999937497839636, 'reward_mean': 0.21427415311336517, 'reward_std': 0.07351336628198624, 'soft_q_mean': 0.635587215423584, 'grad_norm_mean': 0.0057569790165871385, 'skipped_updates': 0, 'selected_samples': 299, 'current_reward_mean': 0.12509891390800476, 'current_reward_std': 0.024089090526103973, 'replay_reward_mean': 0.13630540668964386, 'replay_reward_std': 0.017342284321784973, 'replay_samples': 43, 'replay_source_epoch': 20, 'epoch': 21, 'seed': 123, 'learning_rate': 6.890576474687264e-05}
+{'loss': -0.1971803793579112, 'policy_loss': 0.10520728017840231, 'entropy': 0.09197309901937842, 'entropy_bonus': 0.09197309901937842, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999940100981265, 'reward_mean': 0.21118496358394623, 'reward_std': 0.07421065121889114, 'soft_q_mean': 0.5707934498786926, 'grad_norm_mean': 0.00535058556124568, 'skipped_updates': 0, 'selected_samples': 297, 'current_reward_mean': 0.12403637915849686, 'current_reward_std': 0.025648286566138268, 'replay_reward_mean': 0.13017462193965912, 'replay_reward_std': 0.019325511530041695, 'replay_samples': 41, 'replay_source_epoch': 21, 'epoch': 22, 'seed': 123, 'learning_rate': 6.619104492241848e-05}
+ 40%|████      | 20/50 [6:06:37<9:23:12, 1126.40s/it] 42%|████▏     | 21/50 [6:24:48<8:59:12, 1115.59s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 57031.73it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 36862.14it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.1979248079167185, 'policy_loss': 0.10592013981896548, 'entropy': 0.09200466838190142, 'entropy_bonus': 0.09200466838190142, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999938007520169, 'reward_mean': 0.2100507915019989, 'reward_std': 0.07329978048801422, 'soft_q_mean': 0.5688815712928772, 'grad_norm_mean': 0.005197222554124891, 'skipped_updates': 0, 'selected_samples': 316, 'current_reward_mean': 0.12238441407680511, 'current_reward_std': 0.025245869532227516, 'replay_reward_mean': 0.13201531767845154, 'replay_reward_std': 0.017980705946683884, 'replay_samples': 60, 'replay_source_epoch': 22, 'epoch': 23, 'seed': 123, 'learning_rate': 6.343215915635763e-05}
+{'loss': -0.20797334902501685, 'policy_loss': 0.11592972750433397, 'entropy': 0.092043621792477, 'entropy_bonus': 0.092043621792477, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999940631340961, 'reward_mean': 0.2098914384841919, 'reward_std': 0.0742829293012619, 'soft_q_mean': 0.6239026784896851, 'grad_norm_mean': 0.006017439300194383, 'skipped_updates': 0, 'selected_samples': 290, 'current_reward_mean': 0.12400193512439728, 'current_reward_std': 0.025953644886612892, 'replay_reward_mean': 0.12499891966581345, 'replay_reward_std': 0.01980285719037056, 'replay_samples': 34, 'replay_source_epoch': 23, 'epoch': 24, 'seed': 123, 'learning_rate': 6.063999551039372e-05}
+ 44%|████▍     | 22/50 [6:43:06<8:38:15, 1110.54s/it] 46%|████▌     | 23/50 [7:02:01<8:22:59, 1117.76s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 55540.48it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 42948.11it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.19830546317983191, 'policy_loss': 0.10623119724439267, 'entropy': 0.09207426592973726, 'entropy_bonus': 0.09207426592973726, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999941133722967, 'reward_mean': 0.21346968412399292, 'reward_std': 0.07451760768890381, 'soft_q_mean': 0.5706909894943237, 'grad_norm_mean': 0.005408639134839177, 'skipped_updates': 0, 'selected_samples': 299, 'current_reward_mean': 0.1241561695933342, 'current_reward_std': 0.02533363364636898, 'replay_reward_mean': 0.1386100798845291, 'replay_reward_std': 0.01612541638314724, 'replay_samples': 43, 'replay_source_epoch': 24, 'epoch': 25, 'seed': 123, 'learning_rate': 5.7825573378819125e-05}
+Saved checkpoint for completed epoch 25 to outputs/emo_v3/seed_123/checkpoint/checkpoint.pt
+{'loss': -0.19064390254111924, 'policy_loss': 0.09849785417841025, 'entropy': 0.09214604871575625, 'entropy_bonus': 0.09214604871575625, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999943076347818, 'reward_mean': 0.2091737985610962, 'reward_std': 0.07349211722612381, 'soft_q_mean': 0.5463804006576538, 'grad_norm_mean': 0.005680630961433053, 'skipped_updates': 0, 'selected_samples': 283, 'current_reward_mean': 0.12298324704170227, 'current_reward_std': 0.025119639933109283, 'replay_reward_mean': 0.1304376870393753, 'replay_reward_std': 0.019180459901690483, 'replay_samples': 27, 'replay_source_epoch': 25, 'epoch': 26, 'seed': 123, 'learning_rate': 5.5000000000000016e-05}
+ 48%|████▊     | 24/50 [7:19:59<7:59:09, 1105.76s/it] 50%|█████     | 25/50 [7:38:05<7:38:16, 1099.85s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40361.85it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 37921.24it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.19466494058867043, 'policy_loss': 0.1025258210753756, 'entropy': 0.09213911939260302, 'entropy_bonus': 0.09213911939260302, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999941700575303, 'reward_mean': 0.2106044590473175, 'reward_std': 0.07497187703847885, 'soft_q_mean': 0.5550387501716614, 'grad_norm_mean': 0.006831225054338574, 'skipped_updates': 0, 'selected_samples': 261, 'current_reward_mean': 0.1245817020535469, 'current_reward_std': 0.025567924603819847, 'replay_reward_mean': 0.12242996692657471, 'replay_reward_std': 0.03605615720152855, 'replay_samples': 5, 'replay_source_epoch': 26, 'epoch': 27, 'seed': 123, 'learning_rate': 5.217442662118091e-05}
+{'loss': -0.18867884098400114, 'policy_loss': 0.09648527934558081, 'entropy': 0.09219356185319472, 'entropy_bonus': 0.09219356185319472, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999926777518525, 'reward_mean': 0.21453417837619781, 'reward_std': 0.0733201801776886, 'soft_q_mean': 0.5287734866142273, 'grad_norm_mean': 0.005383122246712446, 'skipped_updates': 0, 'selected_samples': 290, 'current_reward_mean': 0.12675459682941437, 'current_reward_std': 0.023254824802279472, 'replay_reward_mean': 0.127690389752388, 'replay_reward_std': 0.023724965751171112, 'replay_samples': 34, 'replay_source_epoch': 27, 'epoch': 28, 'seed': 123, 'learning_rate': 4.936000448960633e-05}
+ 52%|█████▏    | 26/50 [7:55:42<7:14:45, 1086.91s/it] 54%|█████▍    | 27/50 [8:12:03<6:44:31, 1055.30s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 48311.35it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 45633.73it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.19761637140977747, 'policy_loss': 0.10535901800719831, 'entropy': 0.09225735347147802, 'entropy_bonus': 0.09225735347147802, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999935706051029, 'reward_mean': 0.21464429795742035, 'reward_std': 0.07361682504415512, 'soft_q_mean': 0.5770646333694458, 'grad_norm_mean': 0.005516997305676341, 'skipped_updates': 0, 'selected_samples': 304, 'current_reward_mean': 0.1261826753616333, 'current_reward_std': 0.024564135819673538, 'replay_reward_mean': 0.13091212511062622, 'replay_reward_std': 0.01692863553762436, 'replay_samples': 48, 'replay_source_epoch': 28, 'epoch': 29, 'seed': 123, 'learning_rate': 4.6567840843642404e-05}
+{'loss': -0.22843783197316284, 'policy_loss': 0.13616705462384057, 'entropy': 0.09227077742772442, 'entropy_bonus': 0.09227077742772442, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999943859723149, 'reward_mean': 0.21073858439922333, 'reward_std': 0.0739300325512886, 'soft_q_mean': 0.7314989566802979, 'grad_norm_mean': 0.006508438801392913, 'skipped_updates': 0, 'selected_samples': 285, 'current_reward_mean': 0.12432504445314407, 'current_reward_std': 0.025164958089590073, 'replay_reward_mean': 0.1272215098142624, 'replay_reward_std': 0.021006213501095772, 'replay_samples': 29, 'replay_source_epoch': 29, 'epoch': 30, 'seed': 123, 'learning_rate': 4.380895507758155e-05}
+Saved checkpoint for completed epoch 30 to outputs/emo_v3/seed_123/checkpoint/checkpoint.pt
+ 56%|█████▌    | 28/50 [8:30:13<6:30:44, 1065.66s/it] 58%|█████▊    | 29/50 [8:48:44<6:17:46, 1079.35s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 37977.48it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 53215.72it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.1962790635556971, 'policy_loss': 0.10399702491941956, 'entropy': 0.09228203810219254, 'entropy_bonus': 0.09228203810219254, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999942605592766, 'reward_mean': 0.21260958909988403, 'reward_std': 0.07324431091547012, 'soft_q_mean': 0.5593244433403015, 'grad_norm_mean': 0.005336185079067945, 'skipped_updates': 0, 'selected_samples': 306, 'current_reward_mean': 0.12420281767845154, 'current_reward_std': 0.02420329488813877, 'replay_reward_mean': 0.13352596759796143, 'replay_reward_std': 0.019046947360038757, 'replay_samples': 50, 'replay_source_epoch': 30, 'epoch': 31, 'seed': 123, 'learning_rate': 4.109423525312739e-05}
+{'loss': -0.19869250433937627, 'policy_loss': 0.10638374279785369, 'entropy': 0.09230876213927962, 'entropy_bonus': 0.09230876213927962, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999944987345715, 'reward_mean': 0.21065844595432281, 'reward_std': 0.07295670360326767, 'soft_q_mean': 0.5735817551612854, 'grad_norm_mean': 0.0054880767595022915, 'skipped_updates': 0, 'selected_samples': 291, 'current_reward_mean': 0.12391948699951172, 'current_reward_std': 0.02432475984096527, 'replay_reward_mean': 0.12934793531894684, 'replay_reward_std': 0.0194407906383276, 'replay_samples': 35, 'replay_source_epoch': 31, 'epoch': 32, 'seed': 123, 'learning_rate': 3.843439512918952e-05}
+ 60%|██████    | 30/50 [9:06:34<5:58:50, 1076.55s/it] 62%|██████▏   | 31/50 [9:25:11<5:44:44, 1088.64s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 33070.06it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 42017.76it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.19270673653072848, 'policy_loss': 0.10033516189159483, 'entropy': 0.09237157435213425, 'entropy_bonus': 0.09237157435213425, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.999994489976338, 'reward_mean': 0.21279338002204895, 'reward_std': 0.07376494258642197, 'soft_q_mean': 0.5407137274742126, 'grad_norm_mean': 0.005804809415712953, 'skipped_updates': 0, 'selected_samples': 291, 'current_reward_mean': 0.12490145862102509, 'current_reward_std': 0.02460535429418087, 'replay_reward_mean': 0.1326621174812317, 'replay_reward_std': 0.019343838095664978, 'replay_samples': 35, 'replay_source_epoch': 32, 'epoch': 33, 'seed': 123, 'learning_rate': 3.5839931879571745e-05}
+{'loss': -0.20953281348172043, 'policy_loss': 0.1171413716356441, 'entropy': 0.09239144217298956, 'entropy_bonus': 0.09239144217298956, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999945662459548, 'reward_mean': 0.2093522548675537, 'reward_std': 0.07177859544754028, 'soft_q_mean': 0.6278815865516663, 'grad_norm_mean': 0.005950670829042793, 'skipped_updates': 0, 'selected_samples': 281, 'current_reward_mean': 0.12267912924289703, 'current_reward_std': 0.02342081628739834, 'replay_reward_mean': 0.13527747988700867, 'replay_reward_std': 0.013231701217591763, 'replay_samples': 25, 'replay_source_epoch': 33, 'epoch': 34, 'seed': 123, 'learning_rate': 3.332108466542282e-05}
+ 64%|██████▍   | 32/50 [9:43:19<5:26:31, 1088.39s/it] 66%|██████▌   | 33/50 [10:01:15<5:07:22, 1084.84s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 50261.09it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 32348.53it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.1930402517337732, 'policy_loss': 0.10065477364554012, 'entropy': 0.09238547808775792, 'entropy_bonus': 0.09238547808775792, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999944219783861, 'reward_mean': 0.2091308832168579, 'reward_std': 0.07396314293146133, 'soft_q_mean': 0.5517173409461975, 'grad_norm_mean': 0.005482357461005449, 'skipped_updates': 0, 'selected_samples': 306, 'current_reward_mean': 0.12265336513519287, 'current_reward_std': 0.026495356112718582, 'replay_reward_mean': 0.1288694590330124, 'replay_reward_std': 0.015851974487304688, 'replay_samples': 50, 'replay_source_epoch': 34, 'epoch': 35, 'seed': 123, 'learning_rate': 3.0887794225945154e-05}
+Saved checkpoint for completed epoch 35 to outputs/emo_v3/seed_123/checkpoint/checkpoint.pt
+{'loss': -0.19182889532696987, 'policy_loss': 0.09945057169391716, 'entropy': 0.09237832319827713, 'entropy_bonus': 0.09237832319827713, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999947442083943, 'reward_mean': 0.21335914731025696, 'reward_std': 0.07537108659744263, 'soft_q_mean': 0.5320259928703308, 'grad_norm_mean': 0.005610591033473611, 'skipped_updates': 0, 'selected_samples': 293, 'current_reward_mean': 0.12461379170417786, 'current_reward_std': 0.026117784902453423, 'replay_reward_mean': 0.13693290948867798, 'replay_reward_std': 0.018346989527344704, 'replay_samples': 37, 'replay_source_epoch': 35, 'epoch': 36, 'seed': 123, 'learning_rate': 2.8549663646838724e-05}
+ 68%|██████▊   | 34/50 [10:19:00<4:47:38, 1078.66s/it] 70%|███████   | 35/50 [10:37:41<4:32:51, 1091.43s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 33788.74it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40775.47it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.1972681298433822, 'policy_loss': 0.1047651312810521, 'entropy': 0.09250299879064669, 'entropy_bonus': 0.09250299879064669, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999947315576125, 'reward_mean': 0.2112571895122528, 'reward_std': 0.07423041760921478, 'soft_q_mean': 0.5712776184082031, 'grad_norm_mean': 0.005851630144752562, 'skipped_updates': 0, 'selected_samples': 275, 'current_reward_mean': 0.12495625019073486, 'current_reward_std': 0.02510673552751541, 'replay_reward_mean': 0.12452508509159088, 'replay_reward_std': 0.022956302389502525, 'replay_samples': 19, 'replay_source_epoch': 36, 'epoch': 37, 'seed': 123, 'learning_rate': 2.6315920461308974e-05}
+{'loss': -0.1864221976946431, 'policy_loss': 0.09394861741077003, 'entropy': 0.09247357971129977, 'entropy_bonus': 0.09247357971129977, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999946884962977, 'reward_mean': 0.2102150171995163, 'reward_std': 0.07328052073717117, 'soft_q_mean': 0.5057356953620911, 'grad_norm_mean': 0.005335541511885822, 'skipped_updates': 0, 'selected_samples': 300, 'current_reward_mean': 0.12322662770748138, 'current_reward_std': 0.024426817893981934, 'replay_reward_mean': 0.13061441481113434, 'replay_reward_std': 0.022354844957590103, 'replay_samples': 44, 'replay_source_epoch': 37, 'epoch': 38, 'seed': 123, 'learning_rate': 2.4195380233209022e-05}
+ 72%|███████▏  | 36/50 [10:56:07<4:15:40, 1095.74s/it] 74%|███████▍  | 37/50 [11:13:13<3:52:52, 1074.81s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 52367.91it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 43827.16it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.20481711625577692, 'policy_loss': 0.11225259769232754, 'entropy': 0.09256451908803108, 'entropy_bonus': 0.09256451908803108, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999947162307039, 'reward_mean': 0.20982687175273895, 'reward_std': 0.07405773550271988, 'soft_q_mean': 0.6058220267295837, 'grad_norm_mean': 0.00544890770688653, 'skipped_updates': 0, 'selected_samples': 313, 'current_reward_mean': 0.12354122847318649, 'current_reward_std': 0.025835148990154266, 'replay_reward_mean': 0.12650325894355774, 'replay_reward_std': 0.021397313103079796, 'replay_samples': 57, 'replay_source_epoch': 38, 'epoch': 39, 'seed': 123, 'learning_rate': 2.2196411766036502e-05}
+{'loss': -0.17981197139894475, 'policy_loss': 0.08727140641220066, 'entropy': 0.0925405654562067, 'entropy_bonus': 0.0925405654562067, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999947695099578, 'reward_mean': 0.21161635220050812, 'reward_std': 0.07233017683029175, 'soft_q_mean': 0.4888652563095093, 'grad_norm_mean': 0.0052445088513195515, 'skipped_updates': 0, 'selected_samples': 281, 'current_reward_mean': 0.12497812509536743, 'current_reward_std': 0.023344989866018295, 'replay_reward_mean': 0.12678468227386475, 'replay_reward_std': 0.019070222973823547, 'replay_samples': 25, 'replay_source_epoch': 39, 'epoch': 40, 'seed': 123, 'learning_rate': 2.03269040750895e-05}
+Saved checkpoint for completed epoch 40 to outputs/emo_v3/seed_123/checkpoint/checkpoint.pt
+ 76%|███████▌  | 38/50 [11:31:54<3:37:44, 1088.72s/it] 78%|███████▊  | 39/50 [11:50:57<3:22:35, 1105.07s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 39152.69it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 49476.77it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.

@@ -1,7 +1,7 @@
-"""EMOV2: max diversity denoising diffusion policy optimization.
+"""EMOV4: diffusion policy optimization with accumulated diversity replay.
 
 Converted from ``clover/exp/ddpo.ipynb``. Run with
-``python -m clover.baselines.emo_v2``.
+``python -m clover.baselines.emo_v4``.
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ B2_FULL_TRAIN_PROMPTS, B2_FULL_EVAL_PROMPTS = get_prompts(seed=123, save=True)
 @dataclass
 class EMOV2V2Config:
     model_id: str = "runwayml/stable-diffusion-v1-5"
-    output_dir: str = "outputs/emo_v2"
+    output_dir: str = "outputs/emo_v4"
     seed: int = 17
     gpu_ids: list[int] = field(default_factory=lambda: [0])
     use_data_parallel: bool = True
@@ -232,7 +232,7 @@ def _load_variance_head(pipe: Any, path: Path) -> None:
         _variance_head(pipe).load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
 
 
-def _predict_emo_v2_chunked(
+def _predict_emo_v4_chunked(
     pipe: Any, latents: Tensor, timestep: Tensor | int, prompt_embeds: Tensor,
     guidance_scale: float, chunk_size: int,
 ) -> Tensor:
@@ -305,7 +305,7 @@ def _learned_range_variance(
     return torch.exp(log_variance)
 
 
-def _emo_v2_step_with_log_prob(
+def _emo_v4_step_with_log_prob(
     scheduler: Any, model_output: Tensor, timestep: int, sample: Tensor,
     generator: torch.Generator | None = None, prev_sample: Tensor | None = None,
     eta: float = 1.0, likelihood_scale: float = 1.0,
@@ -389,7 +389,7 @@ def collect_rollouts(
         )
         if trainable_transition:
             states.append(latents.detach().float().cpu())
-        noise_pred = _predict_emo_v2_chunked(
+        noise_pred = _predict_emo_v4_chunked(
             pipe,
             latents,
             timestep_tensor,
@@ -397,7 +397,7 @@ def collect_rollouts(
             config.guidance_scale,
             config.rollout_chunk_size,
         )
-        next_latents, log_prob = _emo_v2_step_with_log_prob(
+        next_latents, log_prob = _emo_v4_step_with_log_prob(
             pipe.scheduler, noise_pred, timestep, latents, generator, eta=config.eta,
             likelihood_scale=config.likelihood_scale,
         )
@@ -430,7 +430,7 @@ def collect_rollouts(
     }
 
 @torch.no_grad()
-def _generate_emo_v2_eval_images(
+def _generate_emo_v4_eval_images(
     pipe: Any, prompts: list[str], config: EMOV2V2Config,
     device: torch.device, dtype: torch.dtype, seed: int = 123,
 ) -> list[Image.Image]:
@@ -452,11 +452,11 @@ def _generate_emo_v2_eval_images(
     ) * pipe.scheduler.init_noise_sigma
     try:
         for timestep_tensor in pipe.scheduler.timesteps:
-            model_output = _predict_emo_v2_chunked(
+            model_output = _predict_emo_v4_chunked(
                 pipe, latents, timestep_tensor, prompt_embeds,
                 config.guidance_scale, config.rollout_chunk_size,
             )
-            latents, _ = _emo_v2_step_with_log_prob(
+            latents, _ = _emo_v4_step_with_log_prob(
                 pipe.scheduler, model_output, int(timestep_tensor.item()), latents,
                 generator=generator, eta=config.eta,
                 likelihood_scale=config.likelihood_scale,
@@ -466,13 +466,13 @@ def _generate_emo_v2_eval_images(
         pipe.unet.train(was_training)
 
 
-def _evaluate_emo_v2(
+def _evaluate_emo_v4(
     pipe: Any, config: EMOV2V2Config, device: torch.device,
     dtype: torch.dtype, epoch: int | None = None,
 ) -> None:
     """Generate and persist standard evaluation artifacts with EMO-v2 sampling."""
     prompts = standard_eval_prompts(config)
-    images = _generate_emo_v2_eval_images(pipe, prompts, config, device, dtype)
+    images = _generate_emo_v4_eval_images(pipe, prompts, config, device, dtype)
     eval_dir = Path(config.output_dir) / "evals"
     image_dir = eval_dir / "images"
     image_dir.mkdir(parents=True, exist_ok=True)
@@ -514,12 +514,12 @@ def _evaluate_emo_v2(
     save_json(metrics_path, history)
 
 
-def emo_v2_combined_rollouts(
+def emo_v4_combined_rollouts(
     reference_rollout, trajectories=None, diversity_threshold=0.35,
     trajectory_path=None,
     required_trajectory_epoch=None,
 ):
-    """Combine a reference rollout with samples from the latest saved rollout.
+    """Combine a reference rollout with qualifying samples from all saved rounds.
 
     Saved samples are first selected by exact prompt matches with the current
     rollout. Each selected saved image is then compared with every current image
@@ -533,18 +533,18 @@ def emo_v2_combined_rollouts(
             saved trajectory field format.
         trajectories: Optional mapping from integer-like rollout numbers to
             saved rollout dictionaries. When omitted, trajectories are loaded
-            from ``trajectory_path`` or the default EMOV2 trajectory file.
+            from ``trajectory_path`` or the default EMOV4 trajectory file.
         trajectory_path: Optional seed-specific replay file used when
             ``trajectories`` is omitted.
-        required_trajectory_epoch: Exact saved epoch to combine. When set, a
-            missing file or mismatched saved epoch raises an error instead of
-            silently training on only the current rollout.
+        required_trajectory_epoch: Latest previous epoch to include. All saved
+            rounds through this epoch are considered. A missing file or missing
+            required epoch raises an error. Later epochs are excluded on resume.
         diversity_threshold: Minimum normalized singleton-FID for a saved
             sample/current sample pair to qualify for replay.
 
     Returns:
         A live-training rollout containing every reference sample followed by
-        qualifying samples from only the latest saved rollout. If no saved
+        qualifying samples from all eligible saved rollouts. If no saved
         trajectory exists or no sample qualifies, returns the reference data.
 
     Raises:
@@ -555,7 +555,7 @@ def emo_v2_combined_rollouts(
     """
     if trajectories is None:
         try:
-            trajectory_path = trajectory_path or "clover/data/emo_v2/trajectories.pt"
+            trajectory_path = trajectory_path or "clover/data/emo_v4/trajectories.pt"
             trajectories = torch.load(trajectory_path, map_location="cpu", weights_only=True)
         except FileNotFoundError:
             if required_trajectory_epoch is not None:
@@ -706,31 +706,39 @@ def emo_v2_combined_rollouts(
         return training_format(reference)
 
     try:
-        trajectories_by_epoch = {int(key): key for key in valid_trajectory_keys}
+        # Append-mode storage uses rollout numbers as keys; the recorded epoch
+        # remains authoritative when training resumes with a partial buffer.
+        saved_rounds = sorted(
+            ((int(trajectories[key].get("epoch", key)), key)
+             for key in valid_trajectory_keys),
+            key=lambda entry: entry[0],
+        )
     except (TypeError, ValueError) as error:
-        raise ValueError("trajectory keys must be integer-like rollout numbers") from error
+        raise ValueError("trajectory epochs must be integer-like rollout numbers") from error
 
-    if required_trajectory_epoch is None:
-        latest_trajectory_key = trajectories_by_epoch[max(trajectories_by_epoch)]
-    else:
+    if required_trajectory_epoch is not None:
         required_trajectory_epoch = int(required_trajectory_epoch)
-        if required_trajectory_epoch not in trajectories_by_epoch:
+        saved_epochs = {epoch for epoch, _ in saved_rounds}
+        if required_trajectory_epoch not in saved_epochs:
             raise ValueError(
                 f"Required replay epoch {required_trajectory_epoch} is unavailable; "
-                f"found epochs {sorted(trajectories_by_epoch)}"
+                f"found epochs {sorted(saved_epochs)}"
             )
-        latest_trajectory_key = trajectories_by_epoch[required_trajectory_epoch]
+        saved_rounds = [
+            (epoch, key) for epoch, key in saved_rounds
+            if epoch <= required_trajectory_epoch
+        ]
 
-    saved_rollout = trajectories[latest_trajectory_key]
-    if isinstance(saved_rollout, dict):
+    for saved_epoch, trajectory_key in saved_rounds:
+        saved_rollout = trajectories[trajectory_key]
         rollout = canonicalize(saved_rollout)
         validate(rollout)
         if not torch.equal(reference["timesteps"], rollout["timesteps"]):
             if required_trajectory_epoch is not None:
                 raise ValueError(
-                    f"Replay epoch {required_trajectory_epoch} has a different timestep schedule"
+                    f"Replay epoch {saved_epoch} has a different timestep schedule"
                 )
-            return training_format(reference)
+            continue
         prompt_mask = torch.tensor(
             [prompt in reference_indices_by_prompt for prompt in rollout["prompts"]],
             dtype=torch.bool,
@@ -909,8 +917,8 @@ def sac_update(
     terminal_advantages = leave_one_out_advantages(
         rewards[:, -1], prompts, reference_count=reference_count,
     )
-    # soft_q = beta * discount_rewards(terminal_advantages, rewards.shape[1], config.gamma)
-    soft_q = beta * sigmoid_discounting(terminal_advantages, num_steps=rewards.shape[1], k=5)
+    soft_q = beta * discount_rewards(terminal_advantages, rewards.shape[1], config.gamma)
+    # soft_q = beta * sigmoid_discounting(terminal_advantages, num_steps=rewards.shape[1], k=5)
 
     trajectory_len = old_log_probs.shape[1]
     indices = torch.arange(batch_size)
@@ -992,7 +1000,7 @@ def sac_update(
                     # second C channels:
                     #     learned variance
                     # -----------------------------------------------------
-                    noise_pred = _predict_emo_v2_chunked(
+                    noise_pred = _predict_emo_v4_chunked(
                         pipe,
                         state,
                         timestep_tensor,
@@ -1020,7 +1028,7 @@ def sac_update(
                     #
                     # Pass the full 2C output.
                     # -----------------------------------------------------
-                    _, log_prob = _emo_v2_step_with_log_prob(
+                    _, log_prob = _emo_v4_step_with_log_prob(
                         pipe.scheduler,
                         noise_pred,
                         timestep,
@@ -1244,7 +1252,7 @@ def sac_update(
     
 def train(
     config: EMOV2V2Config,
-    baseline_name: str = "emo_v2",
+    baseline_name: str = "emo_v4",
 ) -> list[dict[str, float]]:
     """Train an EMOV2-V2 LoRA policy and persist its experiment artifacts.
 
@@ -1316,7 +1324,7 @@ def train(
             print(f"Resuming epoch {epoch} without replay: {replay_path} is missing")
             combined_rollout = reference_rollout
         else:
-            combined_rollout = emo_v2_combined_rollouts(
+            combined_rollout = emo_v4_combined_rollouts(
                 reference_rollout, diversity_threshold=0.3,
                 trajectory_path=str(replay_path),
                 required_trajectory_epoch=epoch - 1 if epoch > 1 else None,
@@ -1351,8 +1359,8 @@ def train(
         history.append(metrics)
         save_json(output_dir / "history.json", history)
 
-        # Persist only the current iteration's pre-replay reference rollout.
-        save_trajectory_data(data_name, epoch, reference_rollout, keep_latest_only=True)
+        # Append fresh samples only; replay samples are already in the buffer.
+        save_trajectory_data(data_name, epoch, reference_rollout, keep_latest_only=False)
 
         # Save evaluation metrics from the current epoch training
         save_evaluation_metrics(
@@ -1377,7 +1385,7 @@ def train(
             torch.cuda.empty_cache()
 
         if config.evaluate_every > 0 and epoch % config.evaluate_every == 0:
-            _evaluate_emo_v2(pipe, config, device, dtype, epoch=epoch)
+            _evaluate_emo_v4(pipe, config, device, dtype, epoch=epoch)
 
     # Save final training data
     save_training_data(f"{baseline_name}/seed_{config.seed}", history)
@@ -1392,12 +1400,12 @@ def train(
 
 
 def main() -> None:
-    """Parse command-line configuration and run EMOV2 training.
+    """Parse command-line configuration and run EMOV4 training.
 
     Returns:
         None.
     """
-    train(parse_config(EMOV2V2Config, __doc__ or "Train EMOV2V2"))
+    train(parse_config(EMOV2V2Config, __doc__ or "Train EMOV4"))
 
 
 if __name__ == "__main__":
