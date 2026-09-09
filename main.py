@@ -71,6 +71,7 @@ DEFAULT_BASELINE_ARGS = {
     "ppo_epochs": 2,
     "sac_epochs": 2,
     "emo_reward_scale": 20.0,
+    "diversity_threshold": 0.5,
     "reward_scale": 20.0,
     "importance_ratio_clip": 1.0,
     "lora_alpha": 16,
@@ -129,6 +130,8 @@ def build_default_argv(
         argv.extend(["--clip-range", str(DEFAULT_BASELINE_ARGS["clip_range"])])
         epoch_flag = "--dpok-epochs" if script_name.endswith("dpok") else "--ppo-epochs"
         argv.extend([epoch_flag, str(DEFAULT_BASELINE_ARGS["ppo_epochs"])])
+    if baseline_name in ("emo_v2", "emo_v4"):
+        argv.extend(["--diversity-threshold", str(DEFAULT_BASELINE_ARGS["diversity_threshold"])])
     argv.extend(["--lora-alpha", str(DEFAULT_BASELINE_ARGS["lora_alpha"])])
     argv.extend(["--lora-rank", str(DEFAULT_BASELINE_ARGS["lora_rank"])])
     argv.extend(["--min-log-prob-std", str(DEFAULT_BASELINE_ARGS["min_log_prob_std"])])

@@ -924,3 +924,26 @@ else:
 - Added EMO v4 to the active main.py baseline list alongside EMO v3 and documented its accumulated replay behavior. Included it in shared SAC argument and EMO reward-scale selection, retaining seed-specific output/data paths. Updated its CLI description to identify EMO v4.
 - Capped launcher GPU visibility at two to match project instructions; run_experiments.sh already launches main.py and needs no change.
 - Verified real EMO v4 configuration parsing for two seeds and one/two GPUs, SAC/reward defaults, baseline registration, and the two-GPU visibility cap. Syntax checks passed. Existing xFormers binary compatibility warning appeared during import. No experiments submitted.
+
+## 2026-09-08 — Wired EMO diversity threshold into launcher arguments
+
+- Added diversity_threshold=0.5 to main.py defaults and forward --diversity-threshold only to emo_v2 and emo_v4, the EMO configs that currently expose this field.
+- Registered the float CLI option in common.py conditional on the config dataclass supporting it.
+- Verified baseline routing and actual EMO v4 config parsing for default and overridden thresholds using uv. Existing xFormers compatibility warning appeared during import; no experiments launched.
+
+## 2026-09-08 — Explained EMO v4 loss terms
+
+- Traced the active loss to a capped, detached importance-weighted reward policy objective plus unit-weight analytic Gaussian entropy, averaged over retained transitions.
+- Verified same-prompt fresh-only reward baselines, exponential advantage discounting, fixed reward scale, per-dimension mean log likelihood/entropy, and the positive-objective sign of the policy_loss metric. Diversity threshold controls replay selection rather than adding a loss term.
+- Read-only code review; no training changes or experiments launched.
+
+## 2026-09-08 — Corrected notebook EMO loss analysis
+
+- Updated the current_reward_mean/policy_loss plotting cell to derive reward_loss=-policy_loss, entropy_loss=-entropy, and reconstructed_total_loss as their sum, preserving the original metric columns.
+- Added current reward versus corrected reward loss and a loss-component panel with the logged total overlaid. Rendered and embedded the figure from 26 saved EMO v4 training rows; maximum reconstruction difference was 2.36e-10.
+- No experiments launched.
+
+## 2026-09-08 — Simplified loss plots
+
+- Shortened the corrected-loss notebook cell to two compact 6x3 plots, each with a secondary y-axis: current reward versus reward loss, and total loss versus entropy loss.
+- Executed the cell on saved EMO v4 metrics and embedded both refreshed figures. No experiments launched.

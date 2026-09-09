@@ -188,6 +188,7 @@ def parse_config(
         "clip_range": float,
         "sac_epochs": int,
         "reward_scale": float,
+        "diversity_threshold": float,
         "importance_ratio_clip": float,
         "dpok_epochs": int,
         "lora_alpha": int,

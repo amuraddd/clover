@@ -103,6 +103,7 @@ class EMOV2V2Config:
     log_every: int = 1
     save_every: int = 5
     evaluate_every: int = 2
+    diversity_threshold: float = 0.5
 
     def __post_init__(self) -> None:
         if self.num_inference_steps <= 0:
@@ -515,7 +516,7 @@ def _evaluate_emo_v4(
 
 
 def emo_v4_combined_rollouts(
-    reference_rollout, trajectories=None, diversity_threshold=0.35,
+    reference_rollout, trajectories=None, diversity_threshold=0.5,
     trajectory_path=None,
     required_trajectory_epoch=None,
 ):
@@ -1297,7 +1298,7 @@ def train(
         eps=config.adam_epsilon,
     )
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=config.train_epochs, eta_min=1e-5
+        optimizer, T_max=config.train_epochs, eta_min=1e-4
     )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(
@@ -1325,7 +1326,7 @@ def train(
             combined_rollout = reference_rollout
         else:
             combined_rollout = emo_v4_combined_rollouts(
-                reference_rollout, diversity_threshold=0.3,
+                reference_rollout, diversity_threshold=config.diversity_threshold,
                 trajectory_path=str(replay_path),
                 required_trajectory_epoch=epoch - 1 if epoch > 1 else None,
             )
