@@ -79,3 +79,21 @@ classifier.weight   | UNEXPECTED |  |
 
 Notes:
 - UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.12184184289883944, 'policy_loss': 0.030432799006147045, 'entropy': 0.09140907449799837, 'entropy_bonus': 0.09140907449799837, 'kl_mean': 3.2463167722384317e-06, 'kl_penalty': 3.246316772238432e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999974688705133, 'reward_mean': 0.20731639862060547, 'reward_std': 0.07422816008329391, 'soft_q_mean': 0.8327498435974121, 'grad_norm_mean': 0.004956063930876553, 'skipped_updates': 0, 'selected_samples': 265, 'current_reward_mean': 0.1227765902876854, 'current_reward_std': 0.02555067092180252, 'replay_reward_mean': 0.11746180057525635, 'replay_reward_std': 0.03182879835367203, 'replay_samples': 9, 'replay_source_epoch': 8, 'epoch': 9, 'seed': 123, 'learning_rate': 0.0001}
+{'loss': -0.11312844354067739, 'policy_loss': 0.021702448621734368, 'entropy': 0.09142603120975652, 'entropy_bonus': 0.09142603120975652, 'kl_mean': 3.72730596296253e-06, 'kl_penalty': 3.72730596296253e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999970322969008, 'reward_mean': 0.21305130422115326, 'reward_std': 0.07483328133821487, 'soft_q_mean': 0.6866075992584229, 'grad_norm_mean': 0.004184623598121107, 'skipped_updates': 0, 'selected_samples': 270, 'current_reward_mean': 0.12615863978862762, 'current_reward_std': 0.024710610508918762, 'replay_reward_mean': 0.12285648286342621, 'replay_reward_std': 0.031978849321603775, 'replay_samples': 14, 'replay_source_epoch': 9, 'epoch': 10, 'seed': 123, 'learning_rate': 0.0001}
+Saved checkpoint for completed epoch 10 to outputs/emo_v4/seed_123/checkpoint/checkpoint.pt
+ 16%|█▌        | 8/50 [2:54:19<15:41:07, 1344.46s/it] 18%|█▊        | 9/50 [3:16:58<15:21:54, 1349.14s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 38025.53it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 42545.03it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+config              | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
