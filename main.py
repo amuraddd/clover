@@ -71,11 +71,12 @@ DEFAULT_BASELINE_ARGS = {
     "ppo_epochs": 2,
     "sac_epochs": 2,
     "emo_reward_scale": 20.0,
-    "diversity_threshold": 0.5,
+    "kl_coefficient": 0.01,
+    "diversity_threshold": 0.7,
     "reward_scale": 20.0,
     "importance_ratio_clip": 1.0,
-    "lora_alpha": 16,
-    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_rank": 32,
     "min_log_prob_std": 1e-4,
     "rollout_chunk_size": 64,
     "guidance_scale": 5.0,
@@ -122,10 +123,14 @@ def build_default_argv(
             else DEFAULT_BASELINE_ARGS["reward_scale"]
         )
         argv.extend(["--reward-scale", str(reward_scale)])
-        argv.extend([
-            "--importance-ratio-clip",
-            str(DEFAULT_BASELINE_ARGS["importance_ratio_clip"]),
-        ])
+        if script_name.endswith("emo_v4"):
+            argv.extend(["--kl-coefficient", str(DEFAULT_BASELINE_ARGS["kl_coefficient"])])
+            argv.extend(["--clip-range", str(DEFAULT_BASELINE_ARGS["clip_range"])])
+        else:
+            argv.extend([
+                "--importance-ratio-clip",
+                str(DEFAULT_BASELINE_ARGS["importance_ratio_clip"]),
+            ])
     elif not script_name.endswith("sqdf"):
         argv.extend(["--clip-range", str(DEFAULT_BASELINE_ARGS["clip_range"])])
         epoch_flag = "--dpok-epochs" if script_name.endswith("dpok") else "--ppo-epochs"

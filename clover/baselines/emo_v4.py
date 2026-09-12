@@ -7,6 +7,8 @@ Converted from ``clover/exp/ddpo.ipynb``. Run with
 from __future__ import annotations
 
 import gc
+from copy import deepcopy
+from types import SimpleNamespace
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -87,7 +89,9 @@ class EMOV2V2Config:
     # Initial reward weight relative to the unit-weight entropy objective. The
     # training loop adds 10 to this value every ten completed epochs.
     reward_scale: float = 10.0
-    importance_ratio_clip: float = 1.0
+    clip_range: float = 1e-4
+    # Per-latent-dimension KL to a snapshot refreshed at each sac_update.
+    kl_coefficient: float = 0.03
     minibatch_size: int = 32
     learning_rate: float = 3e-4
     adam_beta1: float = 0.9
@@ -106,6 +110,8 @@ class EMOV2V2Config:
     diversity_threshold: float = 0.5
 
     def __post_init__(self) -> None:
+        if not math.isfinite(self.kl_coefficient) or self.kl_coefficient < 0:
+            raise ValueError("kl_coefficient must be finite and non-negative")
         if self.num_inference_steps <= 0:
             raise ValueError("num_inference_steps must be positive")
         self.gamma = 1.0 - (1.0 / self.num_inference_steps)
@@ -156,19 +162,18 @@ def learning_rate_for_epoch(initial_learning_rate: float, epoch: int) -> float:
 def capped_log_probability_ratio(
     new_log_prob: Tensor,
     old_log_prob: Tensor,
-    max_ratio: float = 1.0,
+    clip_range: float = 1e-4,
 ) -> Tensor:
-    """Return exp(new_log_prob - old_log_prob), detached and capped above.
+    """Return a detached ratio clipped to [1 - clip_range, 1 + clip_range].
 
-    Cap in log space before exponentiating to avoid overflow for large
-    positive log-probability differences.
+    Exponentiate the log ratio, then clamp the importance weight directly.
     """
-    if max_ratio <= 0:
-        raise ValueError("max_ratio must be positive")
+    if not 0 <= clip_range < 1:
+        raise ValueError("clip_range must be in [0, 1)")
     if new_log_prob.shape != old_log_prob.shape:
         raise ValueError("new and old log probabilities must have matching shapes")
     log_ratio = new_log_prob.detach().float() - old_log_prob.detach().float()
-    return log_ratio.clamp(max=math.log(max_ratio)).exp()
+    return log_ratio.exp().clamp(min=1 - clip_range, max=1 + clip_range)
 
 
 class EMOV2OutputHead(torch.nn.Module):
@@ -870,17 +875,49 @@ def _learned_range_ddpm_entropy(scheduler, model_output, sample, timestep):
     return entropy
 
 
+def _diagonal_gaussian_kl(
+    mean: Tensor, variance: Tensor, reference_mean: Tensor, reference_variance: Tensor,
+) -> Tensor:
+    """KL(current || reference), averaged over latent coordinates per sample.
+
+    The reference is a fixed target; only current mean and variance receive
+    gradients. This is dimension-normalized KL, not the summed joint KL.
+    """
+    mean, variance = mean.float(), variance.float()
+    reference_mean = reference_mean.detach().float()
+    reference_variance = reference_variance.detach().float()
+    if any(t.shape != mean.shape for t in (variance, reference_mean, reference_variance)):
+        raise ValueError("Gaussian means and variances must have matching shapes")
+    if any(not torch.isfinite(t).all() for t in (mean, variance, reference_mean, reference_variance)):
+        raise FloatingPointError("non-finite Gaussian KL inputs")
+    if (variance <= 0).any() or (reference_variance <= 0).any():
+        raise FloatingPointError("Gaussian KL requires positive variances")
+    log_variance_ratio = variance.log() - reference_variance.log()
+    kl = 0.5 * (
+        torch.expm1(log_variance_ratio) - log_variance_ratio
+        + (mean - reference_mean).square() / reference_variance
+    )
+    result = kl.flatten(1).mean(1)
+    if not torch.isfinite(result).all():
+        raise FloatingPointError("non-finite Gaussian KL")
+    return result
+
+
 def sac_update(
     pipe, rollout, optimizer, config, device, dtype,
     reward_scale: float | None = None,
     reference_count: int | None = None,
 ):
+    if not math.isfinite(config.kl_coefficient) or config.kl_coefficient < 0:
+        raise ValueError("kl_coefficient must be finite and non-negative")
+    if config.kl_coefficient > 0 and (not math.isfinite(config.eta) or config.eta <= 0):
+        raise ValueError("KL regularization requires finite positive eta")
     beta = config.reward_scale if reward_scale is None else reward_scale
     if beta <= 0:
         raise ValueError("reward_scale must be positive")
 
-    if config.importance_ratio_clip <= 0:
-        raise ValueError("importance_ratio_clip must be positive")
+    if not 0 <= config.clip_range < 1:
+        raise ValueError("clip_range must be in [0, 1)")
 
     if pipe.scheduler.config.variance_type != "learned_range":
         raise ValueError(
@@ -903,6 +940,9 @@ def sac_update(
             "policy_loss": float("nan"),
             "entropy": float("nan"),
             "entropy_bonus": float("nan"),
+            "kl_mean": float("nan"),
+            "kl_penalty": float("nan"),
+            "kl_coefficient": float(config.kl_coefficient),
             "importance_ratio": float("nan"),
             "reward_mean": float("nan"),
             "reward_std": float("nan"),
@@ -929,9 +969,18 @@ def sac_update(
     entropies = []
     entropy_bonuses = []
     importance_ratios = []
+    kl_values = []
     grad_norms = []
 
     skipped_updates = 0
+
+    # Snapshot once per update, before any optimizer step. Keep collection-time
+    # replay log probabilities unchanged: they serve a different purpose.
+    reference_pipe = None
+    if config.kl_coefficient > 0:
+        reference_pipe = SimpleNamespace(
+            unet=deepcopy(pipe.unet).requires_grad_(False).eval(),
+        )
 
     pipe.unet.train()
 
@@ -1045,7 +1094,7 @@ def sac_update(
                         )
 
                     # -----------------------------------------------------
-                    # Capped probability importance ratio
+                    # Two-sided clipped probability importance ratio
                     #
                     # rho = exp(log pi_theta(a|s) - log pi_old(a|s))
                     #
@@ -1062,7 +1111,7 @@ def sac_update(
 
                     ratio = capped_log_probability_ratio(
                         log_prob, old,
-                        max_ratio=config.importance_ratio_clip,
+                        clip_range=config.clip_range,
                     )
 
                     # -----------------------------------------------------
@@ -1108,21 +1157,47 @@ def sac_update(
 
                     entropy_objective = entropy.mean()
 
+                    kl_to_reference = torch.zeros_like(log_prob)
+                    if reference_pipe is not None:
+                        if timestep <= 0:
+                            raise ValueError("KL requires stochastic DDPM transitions")
+                        with torch.no_grad():
+                            reference_output = _predict_emo_v4_chunked(
+                                reference_pipe, state, timestep_tensor, prompt_embeds,
+                                config.guidance_scale, config.rollout_chunk_size,
+                            )
+                            reference_mean, _ = ddpm_mean_std(
+                                pipe.scheduler, reference_output, timestep, state, eta=config.eta,
+                            )
+                            reference_variance = config.eta ** 2 * _learned_range_variance(
+                                pipe.scheduler, reference_output, timestep, state,
+                            )
+                        current_mean, _ = ddpm_mean_std(
+                            pipe.scheduler, noise_pred, timestep, state, eta=config.eta,
+                        )
+                        current_variance = config.eta ** 2 * _learned_range_variance(
+                            pipe.scheduler, noise_pred, timestep, state,
+                        )
+                        kl_to_reference = _diagonal_gaussian_kl(
+                            current_mean, current_variance, reference_mean, reference_variance,
+                        )
+
                     # -----------------------------------------------------
-                    # Entropy-regularized objective:
+                    # Entropy- and KL-regularized objective:
                     #
                     # J =
                     #   rho * Q * log pi
-                    #   + H(pi)
+                    #   + H(pi) - kl_coefficient * KL(pi || reference)
                     #
                     # Gradient:
                     #
                     # rho Q grad log pi
-                    # + grad H
+                    # + grad H - kl_coefficient * grad KL
                     # -----------------------------------------------------
                     objective = (
                         policy_objective
                         + entropy_objective
+                        - config.kl_coefficient * kl_to_reference.mean()
                     )
 
                     step_loss = (
@@ -1135,6 +1210,7 @@ def sac_update(
                         )
 
                     step_loss.backward()
+                    kl_values.append(float(kl_to_reference.detach().mean().cpu()))
 
                     # -----------------------------------------------------
                     # Metrics
@@ -1228,6 +1304,9 @@ def sac_update(
         "policy_loss": metric_mean(policy_losses),
         "entropy": metric_mean(entropies),
         "entropy_bonus": metric_mean(entropy_bonuses),
+        "kl_mean": metric_mean(kl_values),
+        "kl_penalty": config.kl_coefficient * metric_mean(kl_values),
+        "kl_coefficient": float(config.kl_coefficient),
         "beta": float(beta),
         "reward_scale": float(beta),
         "importance_ratio": metric_mean(

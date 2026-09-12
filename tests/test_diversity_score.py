@@ -66,6 +66,21 @@ class DiversityScoreTests(unittest.TestCase):
         )
         self.assertGreater(score, 0.0)
 
+    def test_fid_cached_features_match_image_path_without_reextracting(self):
+        import numpy as np
+        rng = np.random.default_rng(9)
+        reference = torch.from_numpy(rng.normal(size=(20, 5)))
+        generated = torch.from_numpy(rng.normal(size=(30, 5)))
+        with patch("clover.utils.diversity_score._inception_outputs", side_effect=[reference, generated]):
+            expected = frechet_inception_distance(self.images, self.images)
+        with patch("clover.utils.diversity_score._inception_outputs") as extract:
+            actual = frechet_inception_distance(reference.numpy(), generated, precomputed_features=True)
+            extract.assert_not_called()
+        self.assertAlmostEqual(actual, expected, places=10)
+        for invalid in (np.empty((0, 5)), np.full((2, 5), np.nan), np.zeros((2, 4))):
+            with self.assertRaises(ValueError):
+                frechet_inception_distance(invalid, generated, precomputed_features=True)
+
     def test_successive_epoch_metrics_returns_requested_schema(self):
         with TemporaryDirectory() as directory:
             paths = []

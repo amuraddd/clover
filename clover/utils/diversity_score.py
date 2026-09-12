@@ -149,28 +149,45 @@ def inception_score(
 
 
 def frechet_inception_distance(
-    ground_truth_images: ImageBatch,
-    generated_images: ImageBatch,
+    ground_truth_images: ImageBatch | np.ndarray,
+    generated_images: ImageBatch | np.ndarray,
     *,
     device: torch.device | str | None = None,
     batch_size: int = 32,
     feature_model: nn.Module | None = None,
+    precomputed_features: bool = False,
 ) -> float:
-    """Calculate dataset-level FID between reference and generated images."""
-    real = _inception_outputs(
-        ground_truth_images, device=device, batch_size=batch_size, features=True, model=feature_model
-    ).numpy().astype(np.float64)
-    generated = _inception_outputs(
-        generated_images, device=device, batch_size=batch_size, features=True, model=feature_model
-    ).numpy().astype(np.float64)
+    """Calculate dataset-level FID between reference and generated images.
+
+    With precomputed_features=True, both inputs are [N, D] feature arrays or
+    tensors. This reuses cached features without loading Inception again.
+    """
+    if precomputed_features:
+        real = (ground_truth_images.detach().cpu().numpy()
+                if torch.is_tensor(ground_truth_images) else np.asarray(ground_truth_images))
+        generated = (generated_images.detach().cpu().numpy()
+                     if torch.is_tensor(generated_images) else np.asarray(generated_images))
+        real, generated = real.astype(np.float64), generated.astype(np.float64)
+        if (real.ndim != 2 or generated.ndim != 2 or real.shape[1] != generated.shape[1]
+                or not real.shape[1] or min(len(real), len(generated)) == 0):
+            raise ValueError("FID features must be nonempty [N, D] arrays with matching dimensions")
+        if not np.isfinite(real).all() or not np.isfinite(generated).all():
+            raise ValueError("FID features must be finite")
+    else:
+        real = _inception_outputs(
+            ground_truth_images, device=device, batch_size=batch_size, features=True, model=feature_model
+        ).numpy().astype(np.float64)
+        generated = _inception_outputs(
+            generated_images, device=device, batch_size=batch_size, features=True, model=feature_model
+        ).numpy().astype(np.float64)
     real_mean, generated_mean = real.mean(0), generated.mean(0)
     # A singleton distribution has zero covariance. This supports manifests
     # containing one generated image per prompt and epoch.
-    real_cov = np.zeros((real.shape[1], real.shape[1])) if len(real) == 1 else np.cov(real, rowvar=False)
+    real_cov = np.zeros((real.shape[1], real.shape[1])) if len(real) == 1 else np.atleast_2d(np.cov(real, rowvar=False))
     generated_cov = (
         np.zeros((generated.shape[1], generated.shape[1]))
         if len(generated) == 1
-        else np.cov(generated, rowvar=False)
+        else np.atleast_2d(np.cov(generated, rowvar=False))
     )
     covariance_product = real_cov @ generated_cov
     covariance_mean = (

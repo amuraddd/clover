@@ -4,6 +4,7 @@ clover/run_experiments.sh
 clover/data/
 outputs/
 .cache/
+*.log
 
 # Python bytecode
 __pycache__/

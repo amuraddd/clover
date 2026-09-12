@@ -7,12 +7,13 @@ from unittest.mock import patch
 import torch
 from diffusers import DDPMScheduler
 
-from clover.baselines import b2diffurl, ddpo, dpok, md3po, md3po_sac, sqdf
+from clover.baselines import b2diffurl, ddpo, dpok, sqdf
 from clover.baselines.b2diffurl import B2DiffuRLConfig
 from clover.baselines.ddpo import DDPOConfig
 from clover.baselines.dpok import DPOKConfig
-from clover.baselines.md3po import MD3POConfig
-from clover.baselines.md3po_sac import MD3POSACConfig, sac_update
+from clover.baselines.older_baselines.md3po import MD3POConfig
+from clover.baselines.older_baselines.md3po_sac import MD3POSACConfig, sac_update
+from clover.baselines.older_baselines import md3po, md3po_sac
 from clover.baselines.sqdf import (
     DifferentiableCLIPReward,
     SQDFConfig,

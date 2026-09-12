@@ -3,6 +3,12 @@
 - Corrected the EMO v2/v3 reward-scale schedule so epochs 1–10 retain the configured positive initial scale and the scale doubles after each completed ten-epoch interval.
 - Confirmed the schedule boundaries with the focused EMO v3 regression tests. No GPU experiment was launched.
 
+## 2026-09-09 — Added a shell-friendly B2 evaluation entry point
+
+- Replaced the stub [evaluate.py](evaluate.py) module with an argparse-based CLI that launches `run_b2_evaluation()` directly.
+- Added explicit B2 arguments for baselines, seeds, run name, images per prompt, and prompt-template fraction, including input validation for shell-script usage.
+- Verified the script wiring through focused CLI help and syntax checks. No GPU evaluation job was launched.
+
 ## 2026-09-02 — Enabled cosine learning-rate annealing for EMO v2
 
 - Replaced the active step scheduler with cosine annealing from the configured starting learning rate to a floor of `1e-5` over 50 epochs.
@@ -947,3 +953,157 @@ else:
 
 - Shortened the corrected-loss notebook cell to two compact 6x3 plots, each with a secondary y-axis: current reward versus reward loss, and total loss versus entropy loss.
 - Executed the cell on saved EMO v4 metrics and embedded both refreshed figures. No experiments launched.
+
+## 2026-09-09 — Added notebook checkpoint loading and inference
+
+- Added load_baseline_model and LoadedBaseline.generate to clover/exp/total_evals.ipynb for all eight listed baselines, with saved configuration, seeded/legacy output resolution, LoRA restoration, and inference overrides.
+- Restores separate FP32 variance heads for emo_v2, emo_v3, emo_v4, and emo_v3_old; reuses each implementation’s learned-variance sampler with noise-only classifier-free guidance. Derived dataclass fields are excluded from constructor arguments.
+- Validated notebook syntax/imports, seven saved run configurations/checkpoint layouts, and strict loading plus finite synthetic CPU forward passes for all four real variance heads using uv. DPOK has a legacy config but no checkpoint/checkpoint.pt; loader reports missing artifacts explicitly.
+- Full model loading and GPU generation were not run; no experiments submitted. Existing xFormers binary compatibility warning appeared during imports.
+
+## 2026-09-09 — Extracted reusable baseline inference module
+
+- Moved LoadedBaseline and load_baseline_model from total_evals.ipynb to clover/evaluate/inference.py; notebook now imports them and demonstrates passing its output root.
+- Removed notebook-global dependencies: baseline validation uses the module registry and the default output root resolves relative to the project. Preserved variance-aware inference.
+- Verified imports, notebook syntax, unknown-baseline rejection, and missing-checkpoint handling using uv on CPU. Existing xFormers compatibility warning remains; no GPU inference or experiments run.
+
+## 2026-09-09 — Grouped notebook evaluation prompts by B2 template
+
+- Imported the three template evaluation sets from clover/utils/prompts.py into total_evals.ipynb and created named lists for object behavior, object attributes, and positional relationships, plus a prompts_by_template mapping keyed by template number.
+- Used the held-out evaluation split for the evaluation notebook. Executed the new cell on CPU and verified list types and counts (45/10/10); notebook code syntax passes. No experiments run.
+
+## 2026-09-09 — Added T2I-CompBench checkpoint evaluation workflow
+
+- Added clover/evaluate/compbench.py with pinned official validation prompt loading, LoadedBaseline image generation with paired seeds, official BLIP-VQA/UniDet subprocess execution, and strict image-ID score aggregation. Added notebook imports and usage alongside the B2 prompt groups.
+- Downloaded and verified all six validation sets (300 prompts each) and official evaluator source at 4aa404212eb5d06e5adbcd9cee696c750d0d25a5. BLIP-VQA covers color/shape/texture; UniDet covers 2D spatial relations. Non-spatial/complex prompts are exposed but their CLIPScore/3-in-1 metrics are not represented as supported scores.
+- Added compbench_setup.py, a dedicated uv metric project and resolved lockfile, COMPBENCH.md, and compbench/compbench-setup dispatch in run_experiments.sh. Main training dependencies and default launch behavior are preserved. Each metric subprocess exposes one GPU; native setup compilation uses at most two jobs.
+- Images/manifests/raw metric artifacts save under clover/data/<baseline>/t2i_compbench/<run_name>; per-image scores and category summaries save under outputs/<baseline>/evals/t2i_compbench/<run_name>/metrics.json. The optional project reward callable uses the existing rewards_utils.py implementation; the instructions-referenced reward.py does not exist. No RL trajectories are fabricated for image-only inference.
+- Seven CPU tests pass for paired seeds, filename/ID joins, score validity/completeness, partial generation rejection, and metric dispatch/GPU visibility. All prompt filenames, notebook/module syntax, CLI help, and shell syntax checked. The 99-package metric dependency set resolves successfully.
+- No Slurm jobs or full checkpoint/metric GPU inference were run. Metric runtime installation, Detectron2 CUDA compilation, and model-weight loading remain an explicit setup step (sbatch run_experiments.sh compbench-setup); binary compatibility and actual metric outputs are not yet validated.
+
+## 2026-09-09 — Moved CompBench workflow directly into the notebook
+
+- Restored run_experiments.sh byte-for-byte to its original tracked content, removing the benchmark dispatch additions.
+- Moved benchmark setup, prompt loading, generation, scoring, and aggregation definitions into total_evals.ipynb, with directly runnable generation/scoring cells and optional one-time uv runtime installation from the notebook. Removed the duplicate compbench.py and compbench_setup.py modules and the Slurm job-ID requirement. Retained the existing inference.py model import and local metric dependency project.
+- Updated usage documentation and adapted the seven CPU tests to exercise the actual notebook definitions. All seven pass, including metric dispatch without a Slurm job ID. Both definition cells execute and all six cached validation sets load (300 prompts each). No GPU inference or dependency installation was run.
+
+## 2026-09-09 — Extracted T2I-CompBench setup and evaluation module
+
+- Moved benchmark setup, prompt loading, image generation, official metric execution, and aggregation functions into clover/evaluate/t21_comp_bench.py next to inference.py. total_evals.ipynb imports these functions and retains its interactive setup/generation/scoring cells.
+- Resolved project paths relative to the module rather than notebook working directory; updated documentation and tests to use the new module.
+- Seven CPU tests pass, the notebook import executes, and all six cached prompt lists load with 300 prompts each. Verified run_experiments.sh remains byte-for-byte unchanged. No GPU scoring or dependency installation run.
+
+## 2026-09-09 — Cleared remaining inline CompBench notebook definitions
+
+- Removed the inline benchmark and setup implementation cells currently present in total_evals.ipynb and replaced them with imports from clover.evaluate.t21_comp_bench. Kept the existing B2 content and benchmark usage cells; corrected stale markdown about inline definitions.
+- Verified the notebook contains no function/class definitions, all code cells parse, and the new import executes successfully. No GPU work or launcher changes.
+
+## 2026-09-09 — Implemented the single-GPU B2 baseline evaluation flow
+
+- Added ordered B2 configuration, generation, FID, CLIP, caption/BERTScore, ImageReward, and summary cells before T2I-CompBench in total_evals.ipynb. Helpers live in clover/evaluate/b2_evaluation.py; existing CompBench imports remain. run_experiments.sh is unchanged.
+- Added sd15 to the inference loader as vanilla SD 1.5 without adapters. Sampling seeds [123, 124, 126] select 80% of held-out prompts independently per template (36 behavior, 8 attribute, 8 spatial prompts); ten paired image seeds per prompt produce 1,560 images per baseline, or 14,040 for the nine configured models. Checkpoint selection seed is separate.
+- Located DPOK weights at outputs/older_checkpoints/dpok/checkpoint/checkpoint.pt (epoch 15); exposed that override with outputs/dpok/config.json in the notebook, verified LoRA rank 16, and checked all nine model sources are available. Configs, checkpoint files and variance heads are fingerprinted in the evaluation plan.
+- Standard pytorch-fid 2048-D Inception features compare each baseline to matching SD1.5 distributions per seed/template, with optional per-prompt scores. Sample-covariance FID uses an equivalent centered cross-feature nuclear-norm calculation to handle rank-deficient small samples. CLIP follows the project ViT-H-14 cosine reward; BERTScore uses BLIP captions versus original prompts; ImageReward uses official ImageReward-v1.0. Captions, per-image metrics, template/seed summaries and across-seed mean/std are saved.
+- Generation loads one model at a time on cuda:0 and resumes checksum-verified images. Metric models run sequentially; BLIP captioning is released before BERTScore. Data/manifests live under clover/data/<baseline>/b2_evaluation/<run_name>; metrics/features under outputs/<baseline>/evals/b2/<run_name>. Cached metrics are tied to both plan and image-content fingerprints.
+- Installed pytorch-fid locally with uv. ImageReward conflicts with the main open-clip timm dependency, so installed and locked a separate local b2_imagereward_backend runtime plus its undeclared official CLIP dependency. Retried installation using project scratch space after /tmp filled. Main FID/BLIP/BERTScore and ImageReward runtime imports pass.
+- Thirteen B2/CompBench CPU tests pass (sampling counts, pairing, covariance FID equivalence, vanilla loading, checkpoint errors, generation resume, score joins, and existing CompBench checks). Notebook configuration/import/syntax checks pass; all nine checkpoint sources are available. Existing xFormers compatibility warning persists. This shell has no CUDA access, so no full checkpoint image generation, model-weight scoring, or notebook GPU run was executed.
+
+## 2026-09-09 — Restricted evaluation to four requested baselines
+
+- Set total_evals.ipynb baselines to ddpo, b2diffurl, emo_v3, and sd15; B2 copies this list without duplicating the reference. Removed the DPOK path overrides and switched the CompBench example to emo_v3.
+- Selected b2_four_baselines_v1 as a fresh run name to avoid conflicts with any previous nine-model plan. Sampling is unchanged: 1,560 images per baseline, 6,240 total. Verified notebook syntax and the exact baseline list; no evaluation launched.
+
+## 2026-09-09 — Set notebook model-cache locations
+
+- Added os.environ assignments for TORCH_HOME=/aiau010_scratch/azm0269/clover/.cache/torch and HF_HOME=/aiau010_scratch/azm0269/hub at the start of total_evals.ipynb, before model-related imports. Verified notebook code syntax; no model loading or evaluation run.
+
+## 2026-09-09 — Muted notebook generation output
+
+- Inspected saved generation outputs: repeated 50-step diffusion progress bars and KeyboardInterrupt. Disabled per-image pipeline progress bars in LoadedBaseline.generate and made B2 outer progress/resume messages quiet by default.
+- Wrapped notebook B2 and CompBench generation cells in IPython capture_output to suppress routine loading/generation output while preserving exception propagation. Cleared saved outputs only for those generation cells.
+- Notebook and changed module syntax verified; no generation rerun.
+
+## 2026-09-09 — Reused local Inception weights for B2 FID
+
+- Located inception_v3_google-0cc3c7bd.pth under .cache/torch/hub/checkpoints (not scheckpoints). Updated score_b2_fid and the notebook to load this file explicitly with weights=None plus strict state-dict loading; missing files now raise instead of downloading.
+- The available checkpoint is torchvision ImageNet Inception, distinct from the TensorFlow-derived pytorch-fid weights. Updated notebook descriptions and saved metadata to identify the extractor, preprocessing, local path and checksum; incompatible feature caches are recomputed. Summary JSON retains the extractor identity.
+- Verified the real local checkpoint loads strictly and returns finite 2048-D features on a synthetic CPU image with torch download_url_to_file blocked. Notebook/module syntax passes; no GPU evaluation run.
+
+## 2026-09-09 — Reused the shared FID utility in B2 evaluation
+
+- Removed b2_evaluation.empirical_fid and routed template/per-prompt scoring through clover.utils.diversity_score.frechet_inception_distance.
+- Added an optional precomputed_features path to the existing utility so B2 can reuse cached Inception features without repeating model loading or extraction; existing image-based calls retain their default behavior and covariance calculation. Local cached model weights remain in use.
+- Twelve diversity/B2 CPU tests pass, including equality of image-based and cached-feature utility calls, invalid-feature validation, and existing B2 checks. No GPU evaluation run.
+
+## 2026-09-09 — Wrapped notebook B2 evaluation with per-stage JSON exports
+
+- Wrapped the combined B2 cell in run_b2_evaluation(baselines, seeds, b2_run_name, images_per_prompt, fraction). The function has no result return or display output; preserves quiet generation, existing local Inception/shared FID utility, and sequential single-GPU stages.
+- Atomically saves each completed stage under clover/evaluate/metrics/<b2_run_name>/, including b2_fid.json, b2_clip.json, b2_captions.json, b2_bert.json, b2_imagereward.json, plan/manifest references, and final per-image/per-seed/summary files. Earlier completed JSON files survive later-stage failures. Existing underlying data/feature artifacts remain reusable.
+- Updated comparison cells to read saved JSON instead of depending on returned globals; retained the user’s current fraction=0.1 in the example invocation.
+- Two CPU wrapper tests pass for exact argument forwarding, immediate ordered saves, None return, and preservation after failure. Notebook syntax passes; no GPU evaluation run.
+
+## 2026-09-09 — Reviewed EMO v4 replay log probabilities
+
+- Confirmed sac_update recomputes current-policy transition log probabilities for stored states/actions and uses stored collection-policy log probabilities in the capped importance-ratio denominator. Keeping those behavior probabilities is intentional; refreshing them would change the replay objective.
+- Reviewed code only; no training changes or GPU experiments. This review does not establish unbiasedness of diversity-selected replay or capped importance weights.
+
+## 2026-09-09 — Added two-sided EMO v4 importance-ratio clipping
+
+- Replaced EMO v4 importance_ratio_clip with clip_range (default 1e-4, matching the launcher) and clamp detached ratios to [1 - clip_range, 1 + clip_range] in log space for overflow safety. Validate clip_range in [0, 1).
+- Updated main.py to pass --clip-range for EMO v4 while preserving other baselines' arguments. Existing EMO v4 invocations using --importance-ratio-clip must use --clip-range instead.
+- Focused uv CPU checks passed for lower/upper clipping, interior values, extreme log probabilities, detached weights, zero clipping range, invalid ranges, and shape validation; module/launcher syntax checked. No GPU experiments run.
+
+## 2026-09-09 — Simplified EMO v4 ratio clamping
+
+- Changed the detached importance weight to log_ratio.exp().clamp(min=1 - clip_range, max=1 + clip_range), as requested, and updated its docstring.
+- Focused uv CPU check passed for lower/upper bounds with extreme log ratios, unit ratio, finite output, and detached weights. No GPU experiment run.
+
+## 2026-09-09 — Compared PPO and EMO v4 trajectory loss scaling
+
+- Confirmed both updates divide each timestep loss by trajectory length before backward and accumulate gradients across timesteps. PPO multiplies the detached loss by trajectory length only for metric logging; EMO v4 logs the equivalent unscaled negative objective directly.
+- No implementation change needed. Code inspection only; no experiments run.
+
+## 2026-09-09 — Traced PPO old-probability gradient history
+
+- Verified DDPO and B2-DiffuRL collect rollouts under torch.no_grad and explicitly detach log probabilities before storing them. PPO's indexing and .to call preserve that lack of gradient history; .to itself does not detach arbitrary inputs.
+- No code change needed for these callers. Review only; no GPU experiment run.
+
+## 2026-09-09 — Located EMO v4 gradients beyond ratio clipping bounds
+
+- Located detached ratio clipping at lines 169–170 and the explicit differentiable log_prob factor at lines 1085–1089. Clipping caps the weight but does not zero the reward gradient beyond the bounds.
+- Observed the current call site passes clip_range=1e-4 directly. Inspection only; no code changes or experiments.
+
+## 2026-09-09 — Compared SQDF with KL-regularized EMO v4
+
+- SQDF already penalizes deviation from a permanently frozen pretrained UNet, using a variance-normalized mean-distance penalty. Unlike the proposed per-update reference for EMO v4, this anchors training to the original model.
+- SQDF differentiates through a sampled DDIM transition, frozen reference prediction, VAE, and CLIP reward at one sampled timestep per trajectory; EMO v4 uses detached rewards and score-function gradients across stored transitions with replay and learned variance.
+- Noted SQDF's penalty uses a coordinate mean and omits the Gaussian KL factor of one half (with a denominator floor), so its scale differs from full Gaussian KL. No code changes or experiments.
+
+## 2026-09-09 — Added frozen-reference KL regularization to EMO v4
+
+- Added kl_coefficient (default 0.01; zero disables reference allocation and penalty) and subtract kl_coefficient * kl_to_reference.mean() from the entropy-regularized objective.
+- Snapshot the UNet once at the start of each nonempty sac_update and freeze it across minibatches and SAC passes. Compute analytic KL(current || reference) including learned mean/variance and eta scaling, averaged over latent dimensions to match entropy normalization. Replay behavior log probabilities remain unchanged.
+- Added kl_mean, kl_penalty, and kl_coefficient to update metrics, which flow into existing history/evaluation output. Reference inference adds UNet memory and forward-pass cost on the configured devices; no additional GPUs requested.
+- Two focused uv CPU tests pass: comparison against torch.distributions KL, reference gradient isolation, identical-policy zero KL, invalid variance rejection, frozen snapshot across optimizer steps, penalty influence on updates, and zero-coefficient bypass. No full diffusion or GPU experiment run.
+
+## 2026-09-11 — Added EMO v4 parameter sweep launcher
+
+- Added emo_v4_experiments.py for all 36 reward-scale, KL-coefficient, and diversity-threshold combinations per seed, inheriting all remaining CLI arguments and seed/GPU defaults from main.py.
+- Runs sequential subprocesses with at most two visible GPUs; isolates checkpoints and evaluation artifacts under outputs/emo_v4/evals/parameter_sweep/<configuration>/seed_<seed>/ and baseline-managed replay/training artifacts under clover/data/emo_v4/trajectories/<configuration>/seed_<seed>/. Saves incremental structured execution results and reports unsuccessful runs through the exit status.
+- Added run_emo_v4.sh with the same Slurm/environment configuration as run_experiments.sh, targeting the sweep and a separate sweep log.
+- Validation: shell syntax passed; CPU-only configuration checks confirmed 36 unique runs, exact inheritance of other arguments, and launcher parity. No Slurm jobs submitted or GPU experiments run.
+
+## 2026-09-11 — Use parameter-specific EMO v4 output roots
+
+- Changed sweep output directories to outputs/emo_v4_reward_<reward>_kl_<kl>_diversity_<threshold>/seed_<seed>/, so each parameter combination has its own top-level output directory. Checkpoints, history, and evaluations inherit this path.
+- CPU-only checks confirmed all 36 combinations have unique output paths and matching --output-dir arguments. No experiments submitted.
+
+## 2026-09-11 — Register EMO v4 KL coefficient CLI argument
+
+- Registered kl_coefficient as a float in the shared baseline parser, conditional on the config containing that field. Added the existing EMO v4 default of 0.03 to main.py and forwarded --kl-coefficient for EMO v4; the sweep overrides it per combination.
+- CPU-only verification exercised the actual parser and EMO v4 config extracted without model imports: all 36 complete sweep argument lists parsed successfully with matching parameters and output paths, exactly one KL flag each, and the main.py default parsed correctly. Confirmed DDPO does not receive the flag. No GPU experiments submitted.
+
+## 2026-09-11 — Explained EMO v4 sweep process and GPU allocation
+
+- Reviewed current launch scripts: run_emo_v4.sh requests one Slurm task with two GPUs and starts one sweep coordinator. The coordinator launches one training worker at a time using blocking subprocess.run, passing both visible GPUs to that worker. The 36 combinations run sequentially; the scripts do not submit two independent Slurm jobs.
+- Code inspection only; no experiments submitted or launcher behavior changed.

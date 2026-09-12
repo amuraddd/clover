@@ -1,0 +1,20 @@
+[project]
+name = "clover-b2-imagereward"
+version = "0.1.0"
+requires-python = ">=3.10,<3.11"
+dependencies = [
+    "image-reward==1.5",
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "transformers==4.44.2",
+    "diffusers==0.30.3",
+    "huggingface-hub==0.25.2",
+    "accelerate==0.34.2",
+    "datasets==2.21.0",
+    "numpy==1.26.4",
+    "setuptools<81",
+    "clip",
+]
+
+[tool.uv.sources]
+clip = { git = "https://github.com/openai/CLIP.git", rev = "d05afc436d78f1c48dc0dbf8e5980a9d471f35f6" }
