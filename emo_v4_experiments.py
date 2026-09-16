@@ -12,7 +12,7 @@ from main import EXPERIMENT_SEEDS, allocated_gpu_ids, build_default_argv, save_j
 
 REWARD_SCALES = (2, 5, 10, 20)
 KL_COEFFICIENTS = (0.01, 0.05, 0.1)
-DIVERSITY_THRESHOLDS = (0.25, 0.50, 0.75)
+DIVERSITY_THRESHOLDS = (0.50, 0.75) #0.25
 MODULE = "clover.baselines.emo_v4"
 SWEEP_DIR = Path("outputs/emo_v4/evals/parameter_sweep")
 

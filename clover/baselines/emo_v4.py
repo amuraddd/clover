@@ -1197,7 +1197,7 @@ def sac_update(
                     objective = (
                         policy_objective
                         + entropy_objective
-                        - config.kl_coefficient * kl_to_reference.mean()
+                        - (config.kl_coefficient * kl_to_reference.mean())
                     )
 
                     step_loss = (
@@ -1377,7 +1377,7 @@ def train(
         eps=config.adam_epsilon,
     )
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=config.train_epochs, eta_min=1e-4
+        optimizer, T_max=config.train_epochs, eta_min=1e-6
     )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(

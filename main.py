@@ -34,8 +34,8 @@ BASELINES = [
     # ("md3po_sac", "clover.baselines.md3po_sac"),
     # ("emo", "clover.baselines.emo"),
     # ("emo_v2", "clover.baselines.emo_v2"),
-    # ("emo_v3", "clover.baselines.emo_v3"),
-    ("emo_v4", "clover.baselines.emo_v4"),
+    ("emo_v3", "clover.baselines.emo_v3"),
+    # ("emo_v4", "clover.baselines.emo_v4"),
     # ("ddpo", "clover.baselines.ddpo"),
     # ("sqdf", "clover.baselines.sqdf"),
 ]
@@ -61,9 +61,9 @@ def allocated_gpu_ids() -> tuple[str, ...]:
     return gpu_ids[:MAX_ALLOCATED_GPUS]
 
 DEFAULT_BASELINE_ARGS = {
-    "train_epochs": 50,
+    "train_epochs": 100,
     "rollouts_per_epoch": 256,
-    "learning_rate": 1e-4,
+    "learning_rate": 1e-5,
     "gpu_ids": [0],
     "save_every": 5,
     "num_inference_steps": 50,
@@ -72,11 +72,11 @@ DEFAULT_BASELINE_ARGS = {
     "sac_epochs": 2,
     "emo_reward_scale": 20.0,
     "kl_coefficient": 0.01,
-    "diversity_threshold": 0.7,
+    "diversity_threshold": 0.25,
     "reward_scale": 20.0,
     "importance_ratio_clip": 1.0,
-    "lora_alpha": 32,
-    "lora_rank": 32,
+    "lora_alpha": 16,
+    "lora_rank": 16,
     "min_log_prob_std": 1e-4,
     "rollout_chunk_size": 64,
     "guidance_scale": 5.0,
