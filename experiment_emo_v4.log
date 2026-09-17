@@ -1,319 +1,152 @@
 ================================================================================
 Running Clover baseline/seed jobs on up to two GPUs
 ================================================================================
-Starting EMO_V3 seed=123 on GPUs 5
-Arguments: --seed 123 --output-dir outputs/emo_v3/seed_123 --train-epochs 100 --rollouts-per-epoch 256 --minibatch-size 64 --learning-rate 1e-05 --save-every 5 --num-inference-steps 50 --guidance-scale 5.0 --adam-epsilon 1e-08 --eta 1.0 --sac-epochs 2 --reward-scale 20.0 --importance-ratio-clip 1.0 --lora-alpha 32 --lora-rank 32 --min-log-prob-std 0.0001 --rollout-chunk-size 64 --reward-type clip --gpu-ids 0
+Starting EMO_V4 seed=123 on GPUs 4
+Arguments: --seed 123 --output-dir outputs/emo_v4/seed_123 --train-epochs 100 --rollouts-per-epoch 256 --minibatch-size 64 --learning-rate 0.0001 --save-every 5 --num-inference-steps 50 --guidance-scale 5.0 --adam-epsilon 1e-08 --eta 1.0 --sac-epochs 2 --reward-scale 20.0 --kl-coefficient 0.01 --clip-range 0.0001 --diversity-threshold 0.25 --lora-alpha 32 --lora-rank 32 --min-log-prob-std 0.0001 --rollout-chunk-size 64 --reward-type clip --gpu-ids 0
 cuda:0 torch.float16 gpu_ids=[0]
-Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  33%|███▎      | 2/6 [00:00<00:01,  3.96it/s]
-Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 3633.53it/s]
-Loading pipeline components...:  50%|█████     | 3/6 [00:00<00:00,  4.64it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:00<00:00,  9.66it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:00<00:00,  7.58it/s]
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/aiau010_scratch/azm0269/clover/clover/baselines/emo_v3.py", line 44, in <module>
-    main()
-  File "/aiau010_scratch/azm0269/clover/clover/baselines/emo_v3.py", line 40, in main
-    train(parse_config(EMOV3Config, __doc__ or "Train EMO v3"))
-  File "/aiau010_scratch/azm0269/clover/clover/baselines/emo_v3.py", line 35, in train
-    return train_emo(config, baseline_name="emo_v3")
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/aiau010_scratch/azm0269/clover/clover/baselines/emo_v2.py", line 1296, in train
-    last_epoch, history = load_training_checkpoint(
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/aiau010_scratch/azm0269/clover/clover/utils/baseline_utils.py", line 112, in load_training_checkpoint
-    set_peft_model_state_dict(unwrap_unet(pipe.unet), checkpoint["lora_state_dict"])
-  File "/aiau010_scratch/azm0269/clover/.venv/lib/python3.12/site-packages/peft/utils/save_and_load.py", line 834, in set_peft_model_state_dict
-    load_result = model.load_state_dict(peft_model_state_dict, strict=False)
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/aiau010_scratch/azm0269/clover/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 2638, in load_state_dict
-    raise RuntimeError(
-RuntimeError: Error(s) in loading state_dict for UNet2DConditionModel:
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for down_blocks.0.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for down_blocks.2.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for up_blocks.1.attentions.2.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 640]) from checkpoint, the shape in current model is torch.Size([32, 640]).
-	size mismatch for up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([640, 16]) from checkpoint, the shape in current model is torch.Size([640, 32]).
-	size mismatch for up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_A.d{'loss': -0.09392658707484842, 'policy_loss': 0.0021373086201068444, 'entropy': 0.09178929907234477, 'entropy_bonus': 0.09178929907234477, 'kl_mean': 2.3322523644897833e-06, 'kl_penalty': 2.3322523644897835e-08, 'kl_coefficient': 0.01, 'beta': 2.0, 'reward_scale': 2.0, 'importance_ratio': 0.9999966221283199, 'reward_mean': 0.22162918746471405, 'reward_std': 0.07254111766815186, 'soft_q_mean': 0.06729184836149216, 'grad_norm_mean': 6.98419488084515e-06, 'skipped_updates': 0, 'selected_samples': 1758, 'current_reward_mean': 0.1235063299536705, 'current_reward_std': 0.025332221761345863, 'replay_reward_mean': 0.13234736025333405, 'replay_reward_std': 0.019445136189460754, 'replay_samples': 1502, 'replay_source_epoch': 32, 'epoch': 33, 'seed': 123, 'learning_rate': 3.5839931879571745e-05}
-{'loss': -0.09363631816941313, 'policy_loss': 0.001819121445754778, 'entropy': 0.0918172177251848, 'entropy_bonus': 0.0918172177251848, 'kl_mean': 2.406801175821601e-06, 'kl_penalty': 2.4068011758216008e-08, 'kl_coefficient': 0.01, 'beta': 2.0, 'reward_scale': 2.0, 'importance_ratio': 0.9999966375862029, 'reward_mean': 0.224455326795578, 'reward_std': 0.0724518671631813, 'soft_q_mean': 0.057175811380147934, 'grad_norm_mean': 5.638368636314057e-06, 'skipped_updates': 0, 'selected_samples': 1706, 'current_reward_mean': 0.12306678295135498, 'current_reward_std': 0.02432771772146225, 'replay_reward_mean': 0.1344374120235443, 'replay_reward_std': 0.018278148025274277, 'replay_samples': 1450, 'replay_source_epoch': 33, 'epoch': 34, 'seed': 123, 'learning_rate': 3.332108466542282e-05}
- 60%|██████    | 27/45 [30:10:26<30:57:41, 6192.31s/it] 62%|██████▏   | 28/45 [32:20:12<31:29:56, 6670.39s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 35744.12it/s]
-
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 49906.16it/s]
-[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
-Key                 | Status     |  | 
---------------------+------------+--+-
-pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
-classifier.weight   | UNEXPECTED |  | 
-config              | UNEXPECTED |  | 
-
-Notes:
-- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.0938867289405172, 'policy_loss': 0.00209905490803763, 'entropy': 0.09178769536530056, 'entropy_bonus': 0.09178769536530056, 'kl_mean': 2.3807947162136328e-06, 'kl_penalty': 2.3807947162136327e-08, 'kl_coefficient': 0.01, 'beta': 2.0, 'reward_scale': 2.0, 'importance_ratio': 0.9999966593295398, 'reward_mean': 0.2164907604455948, 'reward_std': 0.07191351056098938, 'soft_q_mean': 0.06613826006650925, 'grad_norm_mean': 6.0584908641791614e-06, 'skipped_updates': 0, 'selected_samples': 1818, 'current_reward_mean': 0.12163242697715759, 'current_reward_std': 0.026393568143248558, 'replay_reward_mean': 0.12906841933727264, 'replay_reward_std': 0.0202013049274683, 'replay_samples': 1562, 'replay_source_epoch': 34, 'epoch': 35, 'seed': 123, 'learning_rate': 3.0887794225945154e-05}
-Saved checkpoint for completed epoch 35 to outputs/emo_v4/seed_123/checkpoint/checkpoint.pt
-{'loss': -0.09344091836155588, 'policy_loss': 0.0016313407030712883, 'entropy': 0.09180959777314165, 'entropy_bonus': 0.09180959777314165, 'kl_mean': 2.2897032082542777e-06, 'kl_penalty': 2.289703208254278e-08, 'kl_coefficient': 0.01, 'beta': 2.0, 'reward_scale': 2.0, 'importance_ratio': 0.9999967932853163, 'reward_mean': 0.22741523385047913, 'reward_std': 0.07289649546146393, 'soft_q_mean': 0.05137847736477852, 'grad_norm_mean': 6.569102935749527e-05, 'skipped_updates': 0, 'selected_samples': 1490, 'current_reward_mean': 0.12403301894664764, 'current_reward_std': 0.025648409500718117, 'replay_reward_mean': 0.13664908707141876, 'replay_reward_std': 0.01701357774436474, 'replay_samples': 1234, 'replay_source_epoch': 35, 'epoch': 36, 'seed': 123, 'learning_rate': 2.8549663646838724e-05}
- 64%|██████▍   | 29/45 [34:27:47<30:57:31, 6965.74s/it] 67%|██████▋   | 30/45 [36:46:02<30:41:07, 7364.48s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40308.54it/s]
-
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 43552.69it/s]
-[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
-Key                 | Status     |  | 
---------------------+------------+--+-
-pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
-classifier.weight   | UNEXPECTED |  | 
-config              | UNEXPECTED |  | 
-
-Notes:
-- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.09361019764366595, 'policy_loss': 0.001806500568977572, 'entropy': 0.09180371779221265, 'entropy_bonus': 0.09180371779221265, 'kl_mean': 2.334438874427356e-06, 'kl_penalty': 2.334438874427356e-08, 'kl_coefficient': 0.01, 'beta': 2.0, 'reward_scale': 2.0, 'importance_ratio': 0.9999968308786851, 'reward_mean': 0.22364240884780884, 'reward_std': 0.0737282857298851, 'soft_q_mean': 0.05667968839406967, 'grad_norm_mean': 6.992995056605097e-06, 'skipped_updates': 0, 'selected_samples': 1461, 'current_reward_mean': 0.1257304698228836, 'current_reward_std': 0.024178238585591316, 'replay_reward_mean': 0.13363558053970337, 'replay_reward_std': 0.02053099498152733, 'replay_samples': 1205, 'replay_source_epoch': 36, 'epoch': 37, 'seed': 123, 'learning_rate': 2.6315920461308974e-05}
-{'loss': -0.09395730442541908, 'policy_loss': 0.002127325774467716, 'entropy': 0.091829999697161, 'entropy_bonus': 0.091829999697161, 'kl_mean': 2.3627364170678326e-06, 'kl_penalty': 2.3627364170678327e-08, 'kl_coefficient': 0.01, 'beta': 2.0, 'reward_scale': 2.0, 'importance_ratio': 0.9999966899744746, 'reward_mean': 0.22373436391353607, 'reward_std': 0.07300566136837006, 'soft_q_mean': 0.06679286062717438, 'grad_norm_mean': 4.69272342062301e-06, 'skipped_updates': 0, 'selected_samples': 2176, 'current_reward_mean': 0.12318721413612366, 'current_reward_std': 0.02523001842200756, 'replay_reward_mean': 0.13352049887180328, 'replay_reward_std': 0.0195651613175869, 'replay_samples': 1920, 'replay_source_epoch': 37, 'epoch': 38, 'seed': 123, 'learning_rate': 2.4195380233209022e-05}
- 69%|██████▉   | 31/45 [38:41:48<28:09:05, 7239.00s/it] 71%|███████   | 32/45 [40:38:00<25:51:07, 7159.05s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 29587.57it/s]
-
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 33193.75it/s]
-[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
-Key                 | Status     |  | 
---------------------+------------+--+-
-pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
-classifier.weight   | UNEXPECTED |  | 
-config              | UNEXPECTED |  | 
-
-Notes:
-- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.09364535858141616, 'policy_loss': 0.0018022183903150149, 'entropy': 0.09184316176881964, 'entropy_bonus': 0.09184316176881964, 'kl_mean': 2.4376215435047186e-06, 'kl_penalty': 2.4376215435047188e-08, 'kl_coefficient': 0.01, 'beta': 2.0, 'reward_scale': 2.0, 'importance_ratio': 0.999996747934457, 'reward_mean': 0.2198362797498703, 'reward_std': 0.07214928418397903, 'soft_q_mean': 0.05739494785666466, 'grad_norm_mean': 3.253251413649526e-05, 'skipped_updates': 0, 'selected_samples': 2059, 'current_reward_mean': 0.12430751323699951, 'current_reward_std': 0.025059202685952187, 'replay_reward_mean': 0.13080790638923645, 'replay_reward_std': 0.019871363416314125, 'replay_samples': 1803, 'replay_source_epoch': 38, 'epoch': 39, 'seed': 123, 'learning_rate': 2.2196411766036502e-05}
-{'loss': -0.09382818044467392, 'policy_loss': 0.0019895063654638803, 'entropy': 0.09183869512219514, 'entropy_bonus': 0.09183869512219514, 'kl_mean': 2.392441997586946e-06, 'kl_penalty': 2.392441997586946e-08, 'kl_coefficient': 0.01, 'beta': 2.0, 'reward_scale': 2.0, 'importance_ratio': 0.999996912195569, 'reward_mean': 0.22131036221981049, 'reward_std': 0.07167015224695206, 'soft_q_mean': 0.06312341243028641, 'grad_norm_mean': 5.661686701425121e-05, 'skipped_updates': 0, 'selected_samples': 1859, 'current_reward_mean': 0.12370757758617401, 'current_reward_std': 0.023727847263216972, 'replay_reward_mean': 0.1320154219865799, 'replay_reward_std': 0.01876123435795307, 'replay_samples': 1603, 'replay_source_epoch': 39, 'epoch': 40, 'seed': 123, 'learning_rate': 2.03269040750895e-05}
-Saved checkpoint for completed epoch 40 to outputs/emo_v4/seed_123/checkpoint/checkpoint.pt
- 73%|███████▎  | 33/45 [43:26:02<26:47:09, 8035.78s/it] 76%|███████▌  | 34/45 [46:00:28<25:40:52, 8404.81s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 28220.16it/s]
-
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 23330.75it/s]
-[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
-Key                 | Status     |  | 
---------------------+------------+--+-
-pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
-classifier.weight   | UNEXPECTED |  | 
-config              | UNEXPECTED |  | 
-
-Notes:
-- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.1.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 320]) from checkpoint, the shape in current model is torch.Size([32, 320]).
-	size mismatch for up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([320, 16]) from checkpoint, the shape in current model is torch.Size([320, 32]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn1.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn1.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn1.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn1.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn1.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn1.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn1.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn2.to_q.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn2.to_q.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn2.to_k.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn2.to_k.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn2.to_v.lora_A.default.weight: copying a param with shape torch.Size([16, 768]) from checkpoint, the shape in current model is torch.Size([32, 768]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn2.to_v.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_A.default.weight: copying a param with shape torch.Size([16, 1280]) from checkpoint, the shape in current model is torch.Size([32, 1280]).
-	size mismatch for mid_block.attentions.0.transformer_blocks.0.attn2.to_out.0.lora_B.default.weight: copying a param with shape torch.Size([1280, 16]) from checkpoint, the shape in current model is torch.Size([1280, 32]).
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 2233.91it/s]
+Loading pipeline components...:  67%|██████▋   | 4/6 [00:00<00:00, 13.62it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.87it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  5.59it/s]
 Trainable LoRA parameters kept in FP32 for optimizer stability
 xFormers memory efficient attention enabled
 Training 6,388,996 LoRA parameters
-✗ EMO_V3 seed=123 failed with exit code 1 on GPUs 5 in 12.38 seconds
+Resuming from checkpoint outputs/emo_v4/seed_123/checkpoint/checkpoint.pt after completed epoch 5
+Resuming epoch 6 without replay: clover/data/emo_v4/seed_123/trajectories.pt is missing
+{'loss': -0.11801457944100512, 'policy_loss': 0.026620489382422625, 'entropy': 0.09139412647464826, 'entropy_bonus': 0.09139412647464826, 'kl_mean': 3.77458883269636e-06, 'kl_penalty': 3.77458883269636e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999977572231876, 'reward_mean': 0.2101365178823471, 'reward_std': 0.0739872083067894, 'soft_q_mean': 0.8277321457862854, 'grad_norm_mean': 0.004574666381813586, 'skipped_updates': 0, 'selected_samples': 256, 'current_reward_mean': 0.12426374852657318, 'current_reward_std': 0.024976573884487152, 'replay_reward_mean': nan, 'replay_reward_std': nan, 'replay_samples': 0, 'replay_source_epoch': 5, 'epoch': 6, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+  0%|          | 0/95 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 29778.54it/s]
 
-================================================================================
-All baseline and seed runs completed
-================================================================================
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 35508.50it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
 
-Total execution time: 12.38 seconds
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.11148813975652994, 'policy_loss': 0.020081102178070923, 'entropy': 0.09140710372819888, 'entropy_bonus': 0.09140710372819888, 'kl_mean': 6.786756683556298e-06, 'kl_penalty': 6.786756683556298e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999967734424435, 'reward_mean': 0.2130654901266098, 'reward_std': 0.07365058362483978, 'soft_q_mean': 0.635951042175293, 'grad_norm_mean': 0.0039162181317806246, 'skipped_updates': 0, 'selected_samples': 301, 'current_reward_mean': 0.12459878623485565, 'current_reward_std': 0.024754343554377556, 'replay_reward_mean': 0.13394317030906677, 'replay_reward_std': 0.01700770854949951, 'replay_samples': 45, 'replay_source_epoch': 6, 'epoch': 7, 'seed': 123, 'learning_rate': 9.683994186497131e-05}
+{'loss': -0.11969117770115723, 'policy_loss': 0.028265799427417672, 'entropy': 0.09142543830382986, 'entropy_bonus': 0.09142543830382986, 'kl_mean': 6.102125103867446e-06, 'kl_penalty': 6.102125103867446e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999954030424559, 'reward_mean': 0.21361440420150757, 'reward_std': 0.07444562017917633, 'soft_q_mean': 0.8609897494316101, 'grad_norm_mean': 0.0042564528800236685, 'skipped_updates': 0, 'selected_samples': 345, 'current_reward_mean': 0.12366382032632828, 'current_reward_std': 0.025487057864665985, 'replay_reward_mean': 0.1339617669582367, 'replay_reward_std': 0.020196108147501945, 'replay_samples': 89, 'replay_source_epoch': 7, 'epoch': 8, 'seed': 123, 'learning_rate': 9.571721736097089e-05}
+  1%|          | 1/95 [20:51<32:40:56, 1251.67s/it]  2%|▏         | 2/95 [45:17<35:35:31, 1377.76s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 49343.53it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 50349.30it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.11646725322273387, 'policy_loss': 0.02499370725958475, 'entropy': 0.09147363335828218, 'entropy_bonus': 0.09147363335828218, 'kl_mean': 8.834765625356764e-06, 'kl_penalty': 8.834765625356764e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999933572100481, 'reward_mean': 0.2137484848499298, 'reward_std': 0.07401644438505173, 'soft_q_mean': 0.7403901219367981, 'grad_norm_mean': 0.004014617264536875, 'skipped_updates': 0, 'selected_samples': 397, 'current_reward_mean': 0.12330048531293869, 'current_reward_std': 0.02573728933930397, 'replay_reward_mean': 0.1320265680551529, 'replay_reward_std': 0.01991346664726734, 'replay_samples': 141, 'replay_source_epoch': 8, 'epoch': 9, 'seed': 123, 'learning_rate': 9.443380060197386e-05}
+{'loss': -0.11196009849492793, 'policy_loss': 0.02044693159710605, 'entropy': 0.0915132235808966, 'entropy_bonus': 0.0915132235808966, 'kl_mean': 5.796320011252927e-06, 'kl_penalty': 5.796320011252927e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999922175101567, 'reward_mean': 0.2150736153125763, 'reward_std': 0.07411367446184158, 'soft_q_mean': 0.6404151916503906, 'grad_norm_mean': 0.0034535874313275728, 'skipped_updates': 0, 'selected_samples': 418, 'current_reward_mean': 0.12744726240634918, 'current_reward_std': 0.024858316406607628, 'replay_reward_mean': 0.1267661303281784, 'replay_reward_std': 0.02253144420683384, 'replay_samples': 162, 'replay_source_epoch': 9, 'epoch': 10, 'seed': 123, 'learning_rate': 9.299475664759068e-05}
+Saved checkpoint for completed epoch 10 to outputs/emo_v4/seed_123/checkpoint/checkpoint.pt
+  3%|▎         | 3/95 [1:13:36<38:57:39, 1524.56s/it]  4%|▍         | 4/95 [1:45:34<42:27:18, 1679.54s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40050.59it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 59953.95it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.11383799240344378, 'policy_loss': 0.02228112397484655, 'entropy': 0.0915569153671362, 'entropy_bonus': 0.0915569153671362, 'kl_mean': 4.802753634247874e-06, 'kl_penalty': 4.802753634247874e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999918168731056, 'reward_mean': 0.21512851119041443, 'reward_std': 0.0725276917219162, 'soft_q_mean': 0.7014177441596985, 'grad_norm_mean': 0.00345273084738957, 'skipped_updates': 0, 'selected_samples': 425, 'current_reward_mean': 0.12418744713068008, 'current_reward_std': 0.025059351697564125, 'replay_reward_mean': 0.1318030208349228, 'replay_reward_std': 0.016423843801021576, 'replay_samples': 169, 'replay_source_epoch': 10, 'epoch': 11, 'seed': 123, 'learning_rate': 9.140576474687264e-05}
+{'loss': -0.11498353361505033, 'policy_loss': 0.023425191673521445, 'entropy': 0.09155838296758201, 'entropy_bonus': 0.09155838296758201, 'kl_mean': 4.233994429725385e-06, 'kl_penalty': 4.2339944297253854e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.999989967489121, 'reward_mean': 0.21873314678668976, 'reward_std': 0.07381134480237961, 'soft_q_mean': 0.7311419248580933, 'grad_norm_mean': 0.003470831870799884, 'skipped_updates': 0, 'selected_samples': 502, 'current_reward_mean': 0.12414857000112534, 'current_reward_std': 0.024020323529839516, 'replay_reward_mean': 0.13475745916366577, 'replay_reward_std': 0.020060161128640175, 'replay_samples': 246, 'replay_source_epoch': 11, 'epoch': 12, 'seed': 123, 'learning_rate': 8.967309592491052e-05}
+  5%|▌         | 5/95 [2:19:36<45:15:38, 1810.43s/it]  6%|▋         | 6/95 [2:54:14<47:00:34, 1901.52s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 35008.66it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40965.36it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.11388554907979259, 'policy_loss': 0.022288894525161636, 'entropy': 0.09159669672130843, 'entropy_bonus': 0.09159669672130843, 'kl_mean': 4.34836961137243e-06, 'kl_penalty': 4.34836961137243e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999926436920555, 'reward_mean': 0.21821676194667816, 'reward_std': 0.07414855808019638, 'soft_q_mean': 0.6985258460044861, 'grad_norm_mean': 0.003562851858857487, 'skipped_updates': 0, 'selected_samples': 432, 'current_reward_mean': 0.12412542849779129, 'current_reward_std': 0.02452123537659645, 'replay_reward_mean': 0.13619334995746613, 'replay_reward_std': 0.01919405721127987, 'replay_samples': 176, 'replay_source_epoch': 12, 'epoch': 13, 'seed': 123, 'learning_rate': 8.780358823396352e-05}
+{'loss': -0.11340595994923354, 'policy_loss': 0.02177404508099188, 'entropy': 0.09163196315627774, 'entropy_bonus': 0.09163196315627774, 'kl_mean': 4.930430490843468e-06, 'kl_penalty': 4.9304304908434684e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999907639561867, 'reward_mean': 0.2175746113061905, 'reward_std': 0.07251856476068497, 'soft_q_mean': 0.6771154999732971, 'grad_norm_mean': 0.00304127560229972, 'skipped_updates': 0, 'selected_samples': 625, 'current_reward_mean': 0.12356562912464142, 'current_reward_std': 0.024388620629906654, 'replay_reward_mean': 0.13219811022281647, 'replay_reward_std': 0.018851403146982193, 'replay_samples': 369, 'replay_source_epoch': 13, 'epoch': 14, 'seed': 123, 'learning_rate': 8.5804619766791e-05}
+  7%|▋         | 7/95 [3:34:48<50:44:04, 2075.51s/it]  8%|▊         | 8/95 [4:10:35<50:42:35, 2098.33s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 29268.05it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 46252.38it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.11568109913791051, 'policy_loss': 0.023986187217548034, 'entropy': 0.09169508834958685, 'entropy_bonus': 0.09169508834958685, 'kl_mean': 1.7728951722343638e-05, 'kl_penalty': 1.7728951722343638e-07, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999879885084775, 'reward_mean': 0.22021068632602692, 'reward_std': 0.07484491914510727, 'soft_q_mean': 0.751458466053009, 'grad_norm_mean': 0.0032154078944586217, 'skipped_updates': 0, 'selected_samples': 630, 'current_reward_mean': 0.12359927594661713, 'current_reward_std': 0.025484129786491394, 'replay_reward_mean': 0.13475365936756134, 'replay_reward_std': 0.020867865532636642, 'replay_samples': 374, 'replay_source_epoch': 14, 'epoch': 15, 'seed': 123, 'learning_rate': 8.368407953869104e-05}
+Saved checkpoint for completed epoch 15 to outputs/emo_v4/seed_123/checkpoint/checkpoint.pt
+{'loss': -0.11281841550844604, 'policy_loss': 0.02107760753538138, 'entropy': 0.0917408699367131, 'entropy_bonus': 0.0917408699367131, 'kl_mean': 6.335611086924037e-06, 'kl_penalty': 6.335611086924037e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999858984486836, 'reward_mean': 0.2165166437625885, 'reward_std': 0.07318682968616486, 'soft_q_mean': 0.6610367894172668, 'grad_norm_mean': 0.0027734321909240233, 'skipped_updates': 0, 'selected_samples': 819, 'current_reward_mean': 0.12386994063854218, 'current_reward_std': 0.024449912831187248, 'replay_reward_mean': 0.1299312263727188, 'replay_reward_std': 0.021581439301371574, 'replay_samples': 563, 'replay_source_epoch': 15, 'epoch': 16, 'seed': 123, 'learning_rate': 8.145033635316131e-05}
+  9%|▉         | 9/95 [5:00:31<56:49:35, 2378.78s/it] 11%|█         | 10/95 [5:50:21<60:37:10, 2567.42s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 52616.52it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 59363.46it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.11705583422012915, 'policy_loss': 0.025224637785879675, 'entropy': 0.09183131984407243, 'entropy_bonus': 0.09183131984407243, 'kl_mean': 1.2415605489713976e-05, 'kl_penalty': 1.2415605489713976e-07, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999855864366145, 'reward_mean': 0.21768558025360107, 'reward_std': 0.07327819615602493, 'soft_q_mean': 0.7444121241569519, 'grad_norm_mean': 0.0036681879204339706, 'skipped_updates': 0, 'selected_samples': 771, 'current_reward_mean': 0.12120408564805984, 'current_reward_std': 0.024930331856012344, 'replay_reward_mean': 0.1324678659439087, 'replay_reward_std': 0.020162831991910934, 'replay_samples': 515, 'replay_source_epoch': 16, 'epoch': 17, 'seed': 123, 'learning_rate': 7.911220577405486e-05}
+{'loss': -0.11549005096823928, 'policy_loss': 0.0235406362844172, 'entropy': 0.09194965558448219, 'entropy_bonus': 0.09194965558448219, 'kl_mean': 2.4167723838451523e-05, 'kl_penalty': 2.4167723838451523e-07, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999794591820595, 'reward_mean': 0.21972118318080902, 'reward_std': 0.07325559854507446, 'soft_q_mean': 0.7395429611206055, 'grad_norm_mean': 0.002815970416682271, 'skipped_updates': 0, 'selected_samples': 819, 'current_reward_mean': 0.1238345056772232, 'current_reward_std': 0.023757100105285645, 'replay_reward_mean': 0.13270403444766998, 'replay_reward_std': 0.020486745983362198, 'replay_samples': 563, 'replay_source_epoch': 17, 'epoch': 18, 'seed': 123, 'learning_rate': 7.66789153345772e-05}
+ 12%|█▏        | 11/95 [6:54:04<68:52:41, 2951.92s/it] 13%|█▎        | 12/95 [7:54:27<72:45:34, 3155.83s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 39295.38it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 48523.76it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.1108688305242779, 'policy_loss': 0.01882083863515472, 'entropy': 0.09204803288333205, 'entropy_bonus': 0.09204803288333205, 'kl_mean': 4.268843289186634e-06, 'kl_penalty': 4.268843289186634e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999801013455795, 'reward_mean': 0.21759647130966187, 'reward_std': 0.07246696949005127, 'soft_q_mean': 0.5969370603561401, 'grad_norm_mean': 0.0023855191289580296, 'skipped_updates': 0, 'selected_samples': 894, 'current_reward_mean': 0.12412343919277191, 'current_reward_std': 0.023820320144295692, 'replay_reward_mean': 0.1305016130208969, 'replay_reward_std': 0.020434793084859848, 'replay_samples': 638, 'replay_source_epoch': 18, 'epoch': 19, 'seed': 123, 'learning_rate': 7.416006812042828e-05}
+{'loss': -0.113757637473518, 'policy_loss': 0.021541927604271625, 'entropy': 0.09221576076431745, 'entropy_bonus': 0.09221576076431745, 'kl_mean': 5.218308285187508e-06, 'kl_penalty': 5.2183082851875075e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999785367323428, 'reward_mean': 0.22535377740859985, 'reward_std': 0.07523483037948608, 'soft_q_mean': 0.7255974411964417, 'grad_norm_mean': 0.0028479253873229028, 'skipped_updates': 0, 'selected_samples': 897, 'current_reward_mean': 0.12420643121004105, 'current_reward_std': 0.023661062121391296, 'replay_reward_mean': 0.13687920570373535, 'replay_reward_std': 0.021136779338121414, 'replay_samples': 641, 'replay_source_epoch': 19, 'epoch': 20, 'seed': 123, 'learning_rate': 7.156560487081053e-05}
+Saved checkpoint for completed epoch 20 to outputs/emo_v4/seed_123/checkpoint/checkpoint.pt
+ 14%|█▎        | 13/95 [8:58:18<76:32:49, 3360.60s/it] 15%|█▍        | 14/95 [10:08:18<81:19:07, 3614.17s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40132.41it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40846.09it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+classifier.bias     | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.

@@ -5,6 +5,7 @@ clover/data/
 outputs/
 .cache/
 *.log
+clover/exp/total_evals.ipynb
 
 # Python bytecode
 __pycache__/
