@@ -958,8 +958,8 @@ def sac_update(
     terminal_advantages = leave_one_out_advantages(
         rewards[:, -1], prompts, reference_count=reference_count,
     )
-    soft_q = beta * discount_rewards(terminal_advantages, rewards.shape[1], config.gamma)
-    # soft_q = beta * sigmoid_discounting(terminal_advantages, num_steps=rewards.shape[1], k=5)
+    # soft_q = beta * discount_rewards(terminal_advantages, rewards.shape[1], config.gamma)
+    soft_q = beta * sigmoid_discounting(terminal_advantages, num_steps=rewards.shape[1], k=5)
 
     trajectory_len = old_log_probs.shape[1]
     indices = torch.arange(batch_size)
@@ -1376,12 +1376,16 @@ def train(
         betas=(config.adam_beta1, config.adam_beta2),
         eps=config.adam_epsilon,
     )
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=config.train_epochs, eta_min=1e-6
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    #     optimizer, T_max=config.train_epochs, eta_min=1e-4
+    # )
+    scheduler = torch.optim.lr_scheduler.ConstantLR(
+        optimizer, factor=1.0, total_iters=config.train_epochs
     )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(
-        pipe, optimizer, output_dir, device, generator, scheduler=scheduler
+        pipe, optimizer, output_dir, device, generator, 
+        scheduler=None, #scheduler
     )
     _load_variance_head(pipe, output_dir / "checkpoint" / "variance_head.pt")
     for epoch in trange(last_epoch + 1, config.train_epochs + 1):

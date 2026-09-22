@@ -1,152 +1,169 @@
 ================================================================================
 Running Clover baseline/seed jobs on up to two GPUs
 ================================================================================
-Starting EMO_V4 seed=123 on GPUs 4
-Arguments: --seed 123 --output-dir outputs/emo_v4/seed_123 --train-epochs 100 --rollouts-per-epoch 256 --minibatch-size 64 --learning-rate 0.0001 --save-every 5 --num-inference-steps 50 --guidance-scale 5.0 --adam-epsilon 1e-08 --eta 1.0 --sac-epochs 2 --reward-scale 20.0 --kl-coefficient 0.01 --clip-range 0.0001 --diversity-threshold 0.25 --lora-alpha 32 --lora-rank 32 --min-log-prob-std 0.0001 --rollout-chunk-size 64 --reward-type clip --gpu-ids 0
+Starting EMO_V4 seed=123 on GPUs 6
+Arguments: --seed 123 --output-dir outputs/emo_v4/seed_123 --train-epochs 100 --rollouts-per-epoch 256 --minibatch-size 64 --learning-rate 1e-05 --save-every 5 --num-inference-steps 50 --guidance-scale 5.0 --adam-epsilon 1e-08 --eta 1.0 --sac-epochs 2 --reward-scale 6.0 --kl-coefficient 0.03 --clip-range 0.0001 --diversity-threshold 0.5 --lora-alpha 32 --lora-rank 32 --min-log-prob-std 0.0001 --rollout-chunk-size 64 --reward-type clip --gpu-ids 0
 cuda:0 torch.float16 gpu_ids=[0]
-Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]
-Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 2233.91it/s]
-Loading pipeline components...:  67%|██████▋   | 4/6 [00:00<00:00, 13.62it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  4.87it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:01<00:00,  5.59it/s]
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  17%|█▋        | 1/6 [00:00<00:00,  6.92it/s]Loading pipeline components...:  50%|█████     | 3/6 [00:00<00:00,  5.61it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 196/196 [00:00<00:00, 3888.11it/s]
+Loading pipeline components...: 100%|██████████| 6/6 [00:00<00:00,  9.21it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:00<00:00,  8.34it/s]
 Trainable LoRA parameters kept in FP32 for optimizer stability
 xFormers memory efficient attention enabled
 Training 6,388,996 LoRA parameters
 Resuming from checkpoint outputs/emo_v4/seed_123/checkpoint/checkpoint.pt after completed epoch 5
 Resuming epoch 6 without replay: clover/data/emo_v4/seed_123/trajectories.pt is missing
-{'loss': -0.11801457944100512, 'policy_loss': 0.026620489382422625, 'entropy': 0.09139412647464826, 'entropy_bonus': 0.09139412647464826, 'kl_mean': 3.77458883269636e-06, 'kl_penalty': 3.77458883269636e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999977572231876, 'reward_mean': 0.2101365178823471, 'reward_std': 0.0739872083067894, 'soft_q_mean': 0.8277321457862854, 'grad_norm_mean': 0.004574666381813586, 'skipped_updates': 0, 'selected_samples': 256, 'current_reward_mean': 0.12426374852657318, 'current_reward_std': 0.024976573884487152, 'replay_reward_mean': nan, 'replay_reward_std': nan, 'replay_samples': 0, 'replay_source_epoch': 5, 'epoch': 6, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+{'loss': -0.12777405191802096, 'policy_loss': 0.03638118086590631, 'entropy': 0.09139295779073572, 'entropy_bonus': 0.09139295779073572, 'kl_mean': 2.9881766815874144e-06, 'kl_penalty': 8.964530044762243e-08, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999978654846853, 'reward_mean': 0.2101365178823471, 'reward_std': 0.0739872083067894, 'soft_q_mean': 0.19362975656986237, 'grad_norm_mean': 0.00093804291827837, 'skipped_updates': 0, 'selected_samples': 256, 'current_reward_mean': 0.12426374852657318, 'current_reward_std': 0.024976573884487152, 'replay_reward_mean': nan, 'replay_reward_std': nan, 'replay_samples': 0, 'replay_source_epoch': 5, 'epoch': 6, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
   0%|          | 0/95 [00:00<?, ?it/s]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 29778.54it/s]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 33916.98it/s]
 
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 35508.50it/s]
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 62133.09it/s]
 [transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
 Key                 | Status     |  | 
 --------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
 classifier.weight   | UNEXPECTED |  | 
 pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
 config              | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
 
 Notes:
 - UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.11148813975652994, 'policy_loss': 0.020081102178070923, 'entropy': 0.09140710372819888, 'entropy_bonus': 0.09140710372819888, 'kl_mean': 6.786756683556298e-06, 'kl_penalty': 6.786756683556298e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999967734424435, 'reward_mean': 0.2130654901266098, 'reward_std': 0.07365058362483978, 'soft_q_mean': 0.635951042175293, 'grad_norm_mean': 0.0039162181317806246, 'skipped_updates': 0, 'selected_samples': 301, 'current_reward_mean': 0.12459878623485565, 'current_reward_std': 0.024754343554377556, 'replay_reward_mean': 0.13394317030906677, 'replay_reward_std': 0.01700770854949951, 'replay_samples': 45, 'replay_source_epoch': 6, 'epoch': 7, 'seed': 123, 'learning_rate': 9.683994186497131e-05}
-{'loss': -0.11969117770115723, 'policy_loss': 0.028265799427417672, 'entropy': 0.09142543830382986, 'entropy_bonus': 0.09142543830382986, 'kl_mean': 6.102125103867446e-06, 'kl_penalty': 6.102125103867446e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999954030424559, 'reward_mean': 0.21361440420150757, 'reward_std': 0.07444562017917633, 'soft_q_mean': 0.8609897494316101, 'grad_norm_mean': 0.0042564528800236685, 'skipped_updates': 0, 'selected_samples': 345, 'current_reward_mean': 0.12366382032632828, 'current_reward_std': 0.025487057864665985, 'replay_reward_mean': 0.1339617669582367, 'replay_reward_std': 0.020196108147501945, 'replay_samples': 89, 'replay_source_epoch': 7, 'epoch': 8, 'seed': 123, 'learning_rate': 9.571721736097089e-05}
-  1%|          | 1/95 [20:51<32:40:56, 1251.67s/it]  2%|▏         | 2/95 [45:17<35:35:31, 1377.76s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 49343.53it/s]
+{'loss': -0.12430179744046561, 'policy_loss': 0.03289854795581718, 'entropy': 0.0914034314396582, 'entropy_bonus': 0.0914034314396582, 'kl_mean': 6.1559350488745885e-06, 'kl_penalty': 1.8467805146623765e-07, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999977029099756, 'reward_mean': 0.21213731169700623, 'reward_std': 0.07386240363121033, 'soft_q_mean': 0.15027780830860138, 'grad_norm_mean': 0.001216211504652165, 'skipped_updates': 0, 'selected_samples': 274, 'current_reward_mean': 0.12452049553394318, 'current_reward_std': 0.02451028861105442, 'replay_reward_mean': 0.13862282037734985, 'replay_reward_std': 0.018463069573044777, 'replay_samples': 18, 'replay_source_epoch': 6, 'epoch': 7, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+{'loss': -0.13000524514924963, 'policy_loss': 0.03858482913465752, 'entropy': 0.09142052296511069, 'entropy_bonus': 0.09142052296511069, 'kl_mean': 3.6376970632661644e-06, 'kl_penalty': 1.0913091189798492e-07, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999974453935818, 'reward_mean': 0.21058806777000427, 'reward_std': 0.07448217272758484, 'soft_q_mean': 0.20524287223815918, 'grad_norm_mean': 0.0009693337953649462, 'skipped_updates': 0, 'selected_samples': 290, 'current_reward_mean': 0.1236318051815033, 'current_reward_std': 0.025933483615517616, 'replay_reward_mean': 0.1312994360923767, 'replay_reward_std': 0.019128071144223213, 'replay_samples': 34, 'replay_source_epoch': 7, 'epoch': 8, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+  1%|          | 1/95 [20:39<32:22:12, 1239.71s/it]  2%|▏         | 2/95 [42:38<33:13:26, 1286.10s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 20213.82it/s]
 
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 50349.30it/s]
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 35762.10it/s]
 [transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
 Key                 | Status     |  | 
 --------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
 classifier.weight   | UNEXPECTED |  | 
 pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
 config              | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
 
 Notes:
 - UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.11646725322273387, 'policy_loss': 0.02499370725958475, 'entropy': 0.09147363335828218, 'entropy_bonus': 0.09147363335828218, 'kl_mean': 8.834765625356764e-06, 'kl_penalty': 8.834765625356764e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999933572100481, 'reward_mean': 0.2137484848499298, 'reward_std': 0.07401644438505173, 'soft_q_mean': 0.7403901219367981, 'grad_norm_mean': 0.004014617264536875, 'skipped_updates': 0, 'selected_samples': 397, 'current_reward_mean': 0.12330048531293869, 'current_reward_std': 0.02573728933930397, 'replay_reward_mean': 0.1320265680551529, 'replay_reward_std': 0.01991346664726734, 'replay_samples': 141, 'replay_source_epoch': 8, 'epoch': 9, 'seed': 123, 'learning_rate': 9.443380060197386e-05}
-{'loss': -0.11196009849492793, 'policy_loss': 0.02044693159710605, 'entropy': 0.0915132235808966, 'entropy_bonus': 0.0915132235808966, 'kl_mean': 5.796320011252927e-06, 'kl_penalty': 5.796320011252927e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999922175101567, 'reward_mean': 0.2150736153125763, 'reward_std': 0.07411367446184158, 'soft_q_mean': 0.6404151916503906, 'grad_norm_mean': 0.0034535874313275728, 'skipped_updates': 0, 'selected_samples': 418, 'current_reward_mean': 0.12744726240634918, 'current_reward_std': 0.024858316406607628, 'replay_reward_mean': 0.1267661303281784, 'replay_reward_std': 0.02253144420683384, 'replay_samples': 162, 'replay_source_epoch': 9, 'epoch': 10, 'seed': 123, 'learning_rate': 9.299475664759068e-05}
+{'loss': -0.12662918073391274, 'policy_loss': 0.0351922687362851, 'entropy': 0.0914369998594784, 'entropy_bonus': 0.0914369998594784, 'kl_mean': 3.0960102246437454e-06, 'kl_penalty': 9.288030673931236e-08, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999976695800314, 'reward_mean': 0.21049873530864716, 'reward_std': 0.07473583519458771, 'soft_q_mean': 0.18705002963542938, 'grad_norm_mean': 0.0008874127903254703, 'skipped_updates': 0, 'selected_samples': 290, 'current_reward_mean': 0.12428182363510132, 'current_reward_std': 0.02562306448817253, 'replay_reward_mean': 0.12595461308956146, 'replay_reward_std': 0.025468820706009865, 'replay_samples': 34, 'replay_source_epoch': 8, 'epoch': 9, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+{'loss': -0.11919041903575464, 'policy_loss': 0.02775036695791047, 'entropy': 0.0914401377988409, 'entropy_bonus': 0.0914401377988409, 'kl_mean': 2.9708911884598614e-06, 'kl_penalty': 8.912673565379583e-08, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999974035486883, 'reward_mean': 0.2147619128227234, 'reward_std': 0.07507623732089996, 'soft_q_mean': 0.14805206656455994, 'grad_norm_mean': 0.0007125062256818637, 'skipped_updates': 0, 'selected_samples': 308, 'current_reward_mean': 0.12671110033988953, 'current_reward_std': 0.02496662735939026, 'replay_reward_mean': 0.12841616570949554, 'replay_reward_std': 0.025148235261440277, 'replay_samples': 52, 'replay_source_epoch': 9, 'epoch': 10, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
 Saved checkpoint for completed epoch 10 to outputs/emo_v4/seed_123/checkpoint/checkpoint.pt
-  3%|▎         | 3/95 [1:13:36<38:57:39, 1524.56s/it]  4%|▍         | 4/95 [1:45:34<42:27:18, 1679.54s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40050.59it/s]
+  3%|▎         | 3/95 [1:06:20<34:27:10, 1348.16s/it]  4%|▍         | 4/95 [1:30:26<35:03:08, 1386.69s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 39279.04it/s]
 
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 59953.95it/s]
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 47193.98it/s]
 [transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
 Key                 | Status     |  | 
 --------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
 classifier.weight   | UNEXPECTED |  | 
 pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
 config              | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
 
 Notes:
 - UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.11383799240344378, 'policy_loss': 0.02228112397484655, 'entropy': 0.0915569153671362, 'entropy_bonus': 0.0915569153671362, 'kl_mean': 4.802753634247874e-06, 'kl_penalty': 4.802753634247874e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999918168731056, 'reward_mean': 0.21512851119041443, 'reward_std': 0.0725276917219162, 'soft_q_mean': 0.7014177441596985, 'grad_norm_mean': 0.00345273084738957, 'skipped_updates': 0, 'selected_samples': 425, 'current_reward_mean': 0.12418744713068008, 'current_reward_std': 0.025059351697564125, 'replay_reward_mean': 0.1318030208349228, 'replay_reward_std': 0.016423843801021576, 'replay_samples': 169, 'replay_source_epoch': 10, 'epoch': 11, 'seed': 123, 'learning_rate': 9.140576474687264e-05}
-{'loss': -0.11498353361505033, 'policy_loss': 0.023425191673521445, 'entropy': 0.09155838296758201, 'entropy_bonus': 0.09155838296758201, 'kl_mean': 4.233994429725385e-06, 'kl_penalty': 4.2339944297253854e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.999989967489121, 'reward_mean': 0.21873314678668976, 'reward_std': 0.07381134480237961, 'soft_q_mean': 0.7311419248580933, 'grad_norm_mean': 0.003470831870799884, 'skipped_updates': 0, 'selected_samples': 502, 'current_reward_mean': 0.12414857000112534, 'current_reward_std': 0.024020323529839516, 'replay_reward_mean': 0.13475745916366577, 'replay_reward_std': 0.020060161128640175, 'replay_samples': 246, 'replay_source_epoch': 11, 'epoch': 12, 'seed': 123, 'learning_rate': 8.967309592491052e-05}
-  5%|▌         | 5/95 [2:19:36<45:15:38, 1810.43s/it]  6%|▋         | 6/95 [2:54:14<47:00:34, 1901.52s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 35008.66it/s]
+{'loss': -0.1241240720891831, 'policy_loss': 0.032653002939139475, 'entropy': 0.0914711491984068, 'entropy_bonus': 0.0914711491984068, 'kl_mean': 2.767598032661152e-06, 'kl_penalty': 8.302794097983456e-08, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999978465693338, 'reward_mean': 0.21385566890239716, 'reward_std': 0.07281234860420227, 'soft_q_mean': 0.17525017261505127, 'grad_norm_mean': 0.0007271793903782964, 'skipped_updates': 0, 'selected_samples': 311, 'current_reward_mean': 0.12535203993320465, 'current_reward_std': 0.02396210841834545, 'replay_reward_mean': 0.1316344290971756, 'replay_reward_std': 0.016580529510974884, 'replay_samples': 55, 'replay_source_epoch': 10, 'epoch': 11, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+{'loss': -0.12191814213490658, 'policy_loss': 0.030472928811813828, 'entropy': 0.09144531459180119, 'entropy_bonus': 0.09144531459180119, 'kl_mean': 3.4334789411858064e-06, 'kl_penalty': 1.030043682355742e-07, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999972347702298, 'reward_mean': 0.21520374715328217, 'reward_std': 0.07358754426240921, 'soft_q_mean': 0.18250234425067902, 'grad_norm_mean': 0.0009251615459409853, 'skipped_updates': 0, 'selected_samples': 322, 'current_reward_mean': 0.1251576691865921, 'current_reward_std': 0.02370256744325161, 'replay_reward_mean': 0.1354156881570816, 'replay_reward_std': 0.020351504907011986, 'replay_samples': 66, 'replay_source_epoch': 11, 'epoch': 12, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+  5%|▌         | 5/95 [1:55:49<35:54:14, 1436.16s/it]  6%|▋         | 6/95 [2:21:33<36:24:29, 1472.70s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 34315.32it/s]
 
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40965.36it/s]
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 50814.65it/s]
 [transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
 Key                 | Status     |  | 
 --------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
 classifier.weight   | UNEXPECTED |  | 
 pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
 config              | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
 
 Notes:
 - UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.11388554907979259, 'policy_loss': 0.022288894525161636, 'entropy': 0.09159669672130843, 'entropy_bonus': 0.09159669672130843, 'kl_mean': 4.34836961137243e-06, 'kl_penalty': 4.34836961137243e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999926436920555, 'reward_mean': 0.21821676194667816, 'reward_std': 0.07414855808019638, 'soft_q_mean': 0.6985258460044861, 'grad_norm_mean': 0.003562851858857487, 'skipped_updates': 0, 'selected_samples': 432, 'current_reward_mean': 0.12412542849779129, 'current_reward_std': 0.02452123537659645, 'replay_reward_mean': 0.13619334995746613, 'replay_reward_std': 0.01919405721127987, 'replay_samples': 176, 'replay_source_epoch': 12, 'epoch': 13, 'seed': 123, 'learning_rate': 8.780358823396352e-05}
-{'loss': -0.11340595994923354, 'policy_loss': 0.02177404508099188, 'entropy': 0.09163196315627774, 'entropy_bonus': 0.09163196315627774, 'kl_mean': 4.930430490843468e-06, 'kl_penalty': 4.9304304908434684e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999907639561867, 'reward_mean': 0.2175746113061905, 'reward_std': 0.07251856476068497, 'soft_q_mean': 0.6771154999732971, 'grad_norm_mean': 0.00304127560229972, 'skipped_updates': 0, 'selected_samples': 625, 'current_reward_mean': 0.12356562912464142, 'current_reward_std': 0.024388620629906654, 'replay_reward_mean': 0.13219811022281647, 'replay_reward_std': 0.018851403146982193, 'replay_samples': 369, 'replay_source_epoch': 13, 'epoch': 14, 'seed': 123, 'learning_rate': 8.5804619766791e-05}
-  7%|▋         | 7/95 [3:34:48<50:44:04, 2075.51s/it]  8%|▊         | 8/95 [4:10:35<50:42:35, 2098.33s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 29268.05it/s]
+{'loss': -0.12503545999869095, 'policy_loss': 0.03353803378068937, 'entropy': 0.09149752255453139, 'entropy_bonus': 0.09149752255453139, 'kl_mean': 3.2922842239936377e-06, 'kl_penalty': 9.876852671980913e-08, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999968474008599, 'reward_mean': 0.2103884220123291, 'reward_std': 0.07326596975326538, 'soft_q_mean': 0.17626143991947174, 'grad_norm_mean': 0.0007158318912843242, 'skipped_updates': 0, 'selected_samples': 310, 'current_reward_mean': 0.12245474755764008, 'current_reward_std': 0.02446804754436016, 'replay_reward_mean': 0.13369494676589966, 'replay_reward_std': 0.020628413185477257, 'replay_samples': 54, 'replay_source_epoch': 12, 'epoch': 13, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+{'loss': -0.12337529761526658, 'policy_loss': 0.031863843751310995, 'entropy': 0.09151153914364321, 'entropy_bonus': 0.09151153914364321, 'kl_mean': 2.976965958672346e-06, 'kl_penalty': 8.930897876017038e-08, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999970588148857, 'reward_mean': 0.21170228719711304, 'reward_std': 0.07339306175708771, 'soft_q_mean': 0.16630713641643524, 'grad_norm_mean': 0.0008281186135718599, 'skipped_updates': 0, 'selected_samples': 306, 'current_reward_mean': 0.12470890581607819, 'current_reward_std': 0.024242162704467773, 'replay_reward_mean': 0.1276511698961258, 'replay_reward_std': 0.02287120558321476, 'replay_samples': 50, 'replay_source_epoch': 13, 'epoch': 14, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+  7%|▋         | 7/95 [2:48:47<37:17:11, 1525.36s/it]  8%|▊         | 8/95 [3:14:50<37:09:06, 1537.32s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 35350.51it/s]
 
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 46252.38it/s]
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 43316.21it/s]
 [transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
 Key                 | Status     |  | 
 --------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
 classifier.weight   | UNEXPECTED |  | 
 pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
 config              | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
 
 Notes:
 - UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.11568109913791051, 'policy_loss': 0.023986187217548034, 'entropy': 0.09169508834958685, 'entropy_bonus': 0.09169508834958685, 'kl_mean': 1.7728951722343638e-05, 'kl_penalty': 1.7728951722343638e-07, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999879885084775, 'reward_mean': 0.22021068632602692, 'reward_std': 0.07484491914510727, 'soft_q_mean': 0.751458466053009, 'grad_norm_mean': 0.0032154078944586217, 'skipped_updates': 0, 'selected_samples': 630, 'current_reward_mean': 0.12359927594661713, 'current_reward_std': 0.025484129786491394, 'replay_reward_mean': 0.13475365936756134, 'replay_reward_std': 0.020867865532636642, 'replay_samples': 374, 'replay_source_epoch': 14, 'epoch': 15, 'seed': 123, 'learning_rate': 8.368407953869104e-05}
+{'loss': -0.12816833253873855, 'policy_loss': 0.03663185378394033, 'entropy': 0.09153656342389936, 'entropy_bonus': 0.09153656342389936, 'kl_mean': 2.9319173399485686e-06, 'kl_penalty': 8.795752019845706e-08, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999966518003114, 'reward_mean': 0.21203278005123138, 'reward_std': 0.07411909103393555, 'soft_q_mean': 0.195304736495018, 'grad_norm_mean': 0.0006131685033324175, 'skipped_updates': 0, 'selected_samples': 319, 'current_reward_mean': 0.12324560433626175, 'current_reward_std': 0.025049354881048203, 'replay_reward_mean': 0.1340789645910263, 'replay_reward_std': 0.021011216565966606, 'replay_samples': 63, 'replay_source_epoch': 14, 'epoch': 15, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
 Saved checkpoint for completed epoch 15 to outputs/emo_v4/seed_123/checkpoint/checkpoint.pt
-{'loss': -0.11281841550844604, 'policy_loss': 0.02107760753538138, 'entropy': 0.0917408699367131, 'entropy_bonus': 0.0917408699367131, 'kl_mean': 6.335611086924037e-06, 'kl_penalty': 6.335611086924037e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999858984486836, 'reward_mean': 0.2165166437625885, 'reward_std': 0.07318682968616486, 'soft_q_mean': 0.6610367894172668, 'grad_norm_mean': 0.0027734321909240233, 'skipped_updates': 0, 'selected_samples': 819, 'current_reward_mean': 0.12386994063854218, 'current_reward_std': 0.024449912831187248, 'replay_reward_mean': 0.1299312263727188, 'replay_reward_std': 0.021581439301371574, 'replay_samples': 563, 'replay_source_epoch': 15, 'epoch': 16, 'seed': 123, 'learning_rate': 8.145033635316131e-05}
-  9%|▉         | 9/95 [5:00:31<56:49:35, 2378.78s/it] 11%|█         | 10/95 [5:50:21<60:37:10, 2567.42s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 52616.52it/s]
+{'loss': -0.11846468241910646, 'policy_loss': 0.026937810200610837, 'entropy': 0.09152696358964962, 'entropy_bonus': 0.09152696358964962, 'kl_mean': 3.1932556321616715e-06, 'kl_penalty': 9.579766896485014e-08, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999963441470854, 'reward_mean': 0.2107645869255066, 'reward_std': 0.07351232320070267, 'soft_q_mean': 0.16685621440410614, 'grad_norm_mean': 0.0007360571228976672, 'skipped_updates': 0, 'selected_samples': 329, 'current_reward_mean': 0.12397228181362152, 'current_reward_std': 0.024750057607889175, 'replay_reward_mean': 0.12695978581905365, 'replay_reward_std': 0.02287406474351883, 'replay_samples': 73, 'replay_source_epoch': 15, 'epoch': 16, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+  9%|▉         | 9/95 [3:40:43<36:50:48, 1542.43s/it] 11%|█         | 10/95 [4:07:19<36:48:29, 1558.94s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 31546.65it/s]
 
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 59363.46it/s]
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 41426.28it/s]
 [transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
 Key                 | Status     |  | 
 --------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
 classifier.weight   | UNEXPECTED |  | 
 pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
 config              | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
 
 Notes:
 - UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.11705583422012915, 'policy_loss': 0.025224637785879675, 'entropy': 0.09183131984407243, 'entropy_bonus': 0.09183131984407243, 'kl_mean': 1.2415605489713976e-05, 'kl_penalty': 1.2415605489713976e-07, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999855864366145, 'reward_mean': 0.21768558025360107, 'reward_std': 0.07327819615602493, 'soft_q_mean': 0.7444121241569519, 'grad_norm_mean': 0.0036681879204339706, 'skipped_updates': 0, 'selected_samples': 771, 'current_reward_mean': 0.12120408564805984, 'current_reward_std': 0.024930331856012344, 'replay_reward_mean': 0.1324678659439087, 'replay_reward_std': 0.020162831991910934, 'replay_samples': 515, 'replay_source_epoch': 16, 'epoch': 17, 'seed': 123, 'learning_rate': 7.911220577405486e-05}
-{'loss': -0.11549005096823928, 'policy_loss': 0.0235406362844172, 'entropy': 0.09194965558448219, 'entropy_bonus': 0.09194965558448219, 'kl_mean': 2.4167723838451523e-05, 'kl_penalty': 2.4167723838451523e-07, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999794591820595, 'reward_mean': 0.21972118318080902, 'reward_std': 0.07325559854507446, 'soft_q_mean': 0.7395429611206055, 'grad_norm_mean': 0.002815970416682271, 'skipped_updates': 0, 'selected_samples': 819, 'current_reward_mean': 0.1238345056772232, 'current_reward_std': 0.023757100105285645, 'replay_reward_mean': 0.13270403444766998, 'replay_reward_std': 0.020486745983362198, 'replay_samples': 563, 'replay_source_epoch': 17, 'epoch': 18, 'seed': 123, 'learning_rate': 7.66789153345772e-05}
- 12%|█▏        | 11/95 [6:54:04<68:52:41, 2951.92s/it] 13%|█▎        | 12/95 [7:54:27<72:45:34, 3155.83s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 39295.38it/s]
+{'loss': -0.12777421537305222, 'policy_loss': 0.03622421799176119, 'entropy': 0.09155009495138768, 'entropy_bonus': 0.09155009495138768, 'kl_mean': 3.37615337581785e-06, 'kl_penalty': 1.0128460127453549e-07, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999953187039109, 'reward_mean': 0.2076616734266281, 'reward_std': 0.07245784997940063, 'soft_q_mean': 0.19106648862361908, 'grad_norm_mean': 0.000794397873202494, 'skipped_updates': 0, 'selected_samples': 368, 'current_reward_mean': 0.12127260863780975, 'current_reward_std': 0.024602148681879044, 'replay_reward_mean': 0.12629207968711853, 'replay_reward_std': 0.02233521081507206, 'replay_samples': 112, 'replay_source_epoch': 16, 'epoch': 17, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+{'loss': -0.12968893239962026, 'policy_loss': 0.038079280385250214, 'entropy': 0.09160974331447208, 'entropy_bonus': 0.09160974331447208, 'kl_mean': 3.1691411233138605e-06, 'kl_penalty': 9.507423369941581e-08, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999964212884709, 'reward_mean': 0.21166254580020905, 'reward_std': 0.07183320820331573, 'soft_q_mean': 0.20329119265079498, 'grad_norm_mean': 0.0008928789150862334, 'skipped_updates': 0, 'selected_samples': 345, 'current_reward_mean': 0.1250321865081787, 'current_reward_std': 0.023269308730959892, 'replay_reward_mean': 0.1255515068769455, 'replay_reward_std': 0.020039035007357597, 'replay_samples': 89, 'replay_source_epoch': 17, 'epoch': 18, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+ 12%|█▏        | 11/95 [4:35:15<37:12:25, 1594.59s/it] 13%|█▎        | 12/95 [5:05:59<38:30:43, 1670.40s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 39487.00it/s]
 
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 48523.76it/s]
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 58558.16it/s]
 [transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
 Key                 | Status     |  | 
 --------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
 classifier.weight   | UNEXPECTED |  | 
 pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
 config              | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
 
 Notes:
 - UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-{'loss': -0.1108688305242779, 'policy_loss': 0.01882083863515472, 'entropy': 0.09204803288333205, 'entropy_bonus': 0.09204803288333205, 'kl_mean': 4.268843289186634e-06, 'kl_penalty': 4.268843289186634e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999801013455795, 'reward_mean': 0.21759647130966187, 'reward_std': 0.07246696949005127, 'soft_q_mean': 0.5969370603561401, 'grad_norm_mean': 0.0023855191289580296, 'skipped_updates': 0, 'selected_samples': 894, 'current_reward_mean': 0.12412343919277191, 'current_reward_std': 0.023820320144295692, 'replay_reward_mean': 0.1305016130208969, 'replay_reward_std': 0.020434793084859848, 'replay_samples': 638, 'replay_source_epoch': 18, 'epoch': 19, 'seed': 123, 'learning_rate': 7.416006812042828e-05}
-{'loss': -0.113757637473518, 'policy_loss': 0.021541927604271625, 'entropy': 0.09221576076431745, 'entropy_bonus': 0.09221576076431745, 'kl_mean': 5.218308285187508e-06, 'kl_penalty': 5.2183082851875075e-08, 'kl_coefficient': 0.01, 'beta': 20.0, 'reward_scale': 20.0, 'importance_ratio': 0.9999785367323428, 'reward_mean': 0.22535377740859985, 'reward_std': 0.07523483037948608, 'soft_q_mean': 0.7255974411964417, 'grad_norm_mean': 0.0028479253873229028, 'skipped_updates': 0, 'selected_samples': 897, 'current_reward_mean': 0.12420643121004105, 'current_reward_std': 0.023661062121391296, 'replay_reward_mean': 0.13687920570373535, 'replay_reward_std': 0.021136779338121414, 'replay_samples': 641, 'replay_source_epoch': 19, 'epoch': 20, 'seed': 123, 'learning_rate': 7.156560487081053e-05}
+{'loss': -0.125843157776359, 'policy_loss': 0.034172487561195, 'entropy': 0.09167077116902639, 'entropy_bonus': 0.09167077116902639, 'kl_mean': 3.5042591133792576e-06, 'kl_penalty': 1.0512777340137773e-07, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999960256474358, 'reward_mean': 0.2135215401649475, 'reward_std': 0.07264495640993118, 'soft_q_mean': 0.18182435631752014, 'grad_norm_mean': 0.0007386964183145513, 'skipped_updates': 0, 'selected_samples': 372, 'current_reward_mean': 0.12303279340267181, 'current_reward_std': 0.023645896464586258, 'replay_reward_mean': 0.13339968025684357, 'replay_reward_std': 0.019203582778573036, 'replay_samples': 116, 'replay_source_epoch': 18, 'epoch': 19, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+{'loss': -0.1346191495807832, 'policy_loss': 0.04292745127346205, 'entropy': 0.09169203123286823, 'entropy_bonus': 0.09169203123286823, 'kl_mean': 1.1159164881652364e-05, 'kl_penalty': 3.347749464495709e-07, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999921499770514, 'reward_mean': 0.22103112936019897, 'reward_std': 0.07590636610984802, 'soft_q_mean': 0.22068071365356445, 'grad_norm_mean': 0.0011718785372067941, 'skipped_updates': 0, 'selected_samples': 450, 'current_reward_mean': 0.12365495413541794, 'current_reward_std': 0.024538541212677956, 'replay_reward_mean': 0.14001105725765228, 'replay_reward_std': 0.020807532593607903, 'replay_samples': 194, 'replay_source_epoch': 19, 'epoch': 20, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
 Saved checkpoint for completed epoch 20 to outputs/emo_v4/seed_123/checkpoint/checkpoint.pt
- 14%|█▎        | 13/95 [8:58:18<76:32:49, 3360.60s/it] 15%|█▍        | 14/95 [10:08:18<81:19:07, 3614.17s/it]
-Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 40132.41it/s]
+ 14%|█▎        | 13/95 [5:35:41<38:49:19, 1704.38s/it] 15%|█▍        | 14/95 [6:06:53<39:29:22, 1755.10s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 43463.81it/s]
 
-Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 40846.09it/s]
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 50424.18it/s]
 [transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
 Key                 | Status     |  | 
 --------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
 classifier.weight   | UNEXPECTED |  | 
 pooler.dense.bias   | UNEXPECTED |  | 
-pooler.dense.weight | UNEXPECTED |  | 
-classifier.bias     | UNEXPECTED |  | 
 config              | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+{'loss': -0.12572991792080912, 'policy_loss': 0.03397348016832296, 'entropy': 0.09175679393961621, 'entropy_bonus': 0.09175679393961621, 'kl_mean': 1.1946936534176759e-05, 'kl_penalty': 3.5840809602530275e-07, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999894538298756, 'reward_mean': 0.21353726089000702, 'reward_std': 0.07268388569355011, 'soft_q_mean': 0.1813216507434845, 'grad_norm_mean': 0.0006626436249158966, 'skipped_updates': 0, 'selected_samples': 384, 'current_reward_mean': 0.12396079301834106, 'current_reward_std': 0.024708064272999763, 'replay_reward_mean': 0.1309027373790741, 'replay_reward_std': 0.017898885533213615, 'replay_samples': 128, 'replay_source_epoch': 20, 'epoch': 21, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+{'loss': -0.12358716886311379, 'policy_loss': 0.031827062519088, 'entropy': 0.09176021304562601, 'entropy_bonus': 0.09176021304562601, 'kl_mean': 3.6291759260346454e-06, 'kl_penalty': 1.0887527778103935e-07, 'kl_coefficient': 0.03, 'beta': 6.0, 'reward_scale': 6.0, 'importance_ratio': 0.9999886321951975, 'reward_mean': 0.21036823093891144, 'reward_std': 0.07384063303470612, 'soft_q_mean': 0.16835321485996246, 'grad_norm_mean': 0.0004792846453450953, 'skipped_updates': 0, 'selected_samples': 432, 'current_reward_mean': 0.12233567982912064, 'current_reward_std': 0.026243342086672783, 'replay_reward_mean': 0.12740455567836761, 'replay_reward_std': 0.02215384691953659, 'replay_samples': 176, 'replay_source_epoch': 21, 'epoch': 22, 'seed': 123, 'learning_rate': 9.779754323328191e-05}
+ 16%|█▌        | 15/95 [6:43:59<42:09:07, 1896.84s/it] 17%|█▋        | 16/95 [7:16:14<41:52:44, 1908.41s/it]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 473/473 [00:00<00:00, 41481.74it/s]
+
+Loading weights:   0%|          | 0/388 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 388/388 [00:00<00:00, 53657.88it/s]
+[transformers] [1mDebertaModel LOAD REPORT[0m from: microsoft/deberta-large-mnli
+Key                 | Status     |  | 
+--------------------+------------+--+-
+classifier.bias     | UNEXPECTED |  | 
+classifier.weight   | UNEXPECTED |  | 
+pooler.dense.bias   | UNEXPECTED |  | 
+config              | UNEXPECTED |  | 
+pooler.dense.weight | UNEXPECTED |  | 
 
 Notes:
 - UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.

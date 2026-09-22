@@ -169,6 +169,7 @@ def capped_log_probability_ratio(
         raise ValueError("new and old log probabilities must have matching shapes")
     log_ratio = new_log_prob.detach().float() - old_log_prob.detach().float()
     return log_ratio.clamp(max=math.log(max_ratio)).exp()
+    # return log_ratio.exp()
 
 
 class EMOV2OutputHead(torch.nn.Module):
@@ -1289,12 +1290,16 @@ def train(
         betas=(config.adam_beta1, config.adam_beta2),
         eps=config.adam_epsilon,
     )
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=config.train_epochs, eta_min=1e-6
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    #     optimizer, T_max=config.train_epochs, eta_min=1e-4
+    # )
+    scheduler = torch.optim.lr_scheduler.ConstantLR(
+        optimizer, factor=1.0, total_iters=config.train_epochs
     )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(
-        pipe, optimizer, output_dir, device, generator, scheduler=scheduler
+        pipe, optimizer, output_dir, device, generator, 
+        scheduler=None #scheduler - keep commented while testing a constant LR scheduler
     )
     _load_variance_head(pipe, output_dir / "checkpoint" / "variance_head.pt")
     for epoch in trange(last_epoch + 1, config.train_epochs + 1):
