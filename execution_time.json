@@ -1,10 +1,10 @@
 {
   "baseline": "total",
-  "execution_time": 9.594480752944946,
+  "execution_time": 13683.350113391876,
   "runs": [
     {
       "baseline": "emo_v4",
-      "execution_time": 9.594268798828125,
+      "execution_time": 13683.349888801575,
       "gpu_ids": [
         "6"
       ],

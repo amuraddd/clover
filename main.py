@@ -12,6 +12,7 @@ Available baselines:
     - md3po_sac: MD3PO with a reward-scaled maximum-entropy actor update
     - emo_v3: Scheduled third-generation entropy-maximizing optimization baseline
     - emo_v4: Entropy-maximizing optimization with accumulated trajectory replay
+    - emo_v5: Entropy and cross-entropy optimization with periodic replay resets
     - sqdf: Soft Q-based diffusion fine-tuning for text-to-image alignment
 """
 
@@ -35,7 +36,8 @@ BASELINES = [
     # ("emo", "clover.baselines.emo"),
     # ("emo_v2", "clover.baselines.emo_v2"),
     # ("emo_v3", "clover.baselines.emo_v3"),
-    ("emo_v4", "clover.baselines.emo_v4"),
+    # ("emo_v4", "clover.baselines.emo_v4"),
+    ("emo_v5", "clover.baselines.emo_v5"),
     # ("ddpo", "clover.baselines.ddpo"),
     # ("sqdf", "clover.baselines.sqdf"),
 ]
@@ -70,9 +72,12 @@ DEFAULT_BASELINE_ARGS = {
     "minibatch_size": 64,
     "ppo_epochs": 2,
     "sac_epochs": 2,
-    "emo_reward_scale": 6.0,
-    "reward_scale": 6.0,
-    "kl_coefficient": 0.03,
+    "emo_reward_scale": 4.0,#for baselines older than emo_v5
+    "reward_scale": 4.0,#for baselines older than emo_v5
+    "kl_coefficient": 0.05, #for baselines older than emo_v5
+    "entropy_scale": 0.05, #for emo_v5
+    "cross_entropy_coefficient": 0.01,#for emo_v5
+    "buffer_reset": 5,#for emo_v5
     "diversity_threshold": 0.5,
     "importance_ratio_clip": 0.75,
     "lora_alpha": 32,
@@ -115,7 +120,10 @@ def build_default_argv(
     argv.extend(["--adam-epsilon", str(DEFAULT_BASELINE_ARGS["adam_epsilon"])])
     argv.extend(["--eta", str(DEFAULT_BASELINE_ARGS["eta"])])
     # argv.extend(["--max-grad-norm", str(DEFAULT_BASELINE_ARGS["max_grad_norm"])])
-    if script_name.endswith(("md3po_sac", "emo", "emo_v2", "emo_v3", "emo_v4")):
+    if baseline_name == "emo_v5":
+        for name in ("sac_epochs", "entropy_scale", "cross_entropy_coefficient", "buffer_reset", "clip_range"):
+            argv.extend([f"--{name.replace('_', '-')}", str(DEFAULT_BASELINE_ARGS[name])])
+    elif script_name.endswith(("md3po_sac", "emo", "emo_v2", "emo_v3", "emo_v4")):
         argv.extend(["--sac-epochs", str(DEFAULT_BASELINE_ARGS["sac_epochs"])])
         reward_scale = (
             DEFAULT_BASELINE_ARGS["emo_reward_scale"]
@@ -135,7 +143,7 @@ def build_default_argv(
         argv.extend(["--clip-range", str(DEFAULT_BASELINE_ARGS["clip_range"])])
         epoch_flag = "--dpok-epochs" if script_name.endswith("dpok") else "--ppo-epochs"
         argv.extend([epoch_flag, str(DEFAULT_BASELINE_ARGS["ppo_epochs"])])
-    if baseline_name in ("emo_v2", "emo_v4"):
+    if baseline_name in ("emo_v2", "emo_v4", "emo_v5"):
         argv.extend(["--diversity-threshold", str(DEFAULT_BASELINE_ARGS["diversity_threshold"])])
     argv.extend(["--lora-alpha", str(DEFAULT_BASELINE_ARGS["lora_alpha"])])
     argv.extend(["--lora-rank", str(DEFAULT_BASELINE_ARGS["lora_rank"])])

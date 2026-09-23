@@ -1,1 +1,0 @@
-slurmstepd: error: *** JOB 27969 ON aiau011 CANCELLED AT 2026-09-21T15:51:06 ***

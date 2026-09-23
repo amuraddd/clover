@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J "emov4"
+#SBATCH -J "emov5123"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=azm0269@auburn.edu
 #SBATCH -N1
@@ -30,6 +30,6 @@ export TMPDIR="/aiau010_scratch/azm0269/tmp"
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 # for baseline
-srun --ntasks=1 .venv/bin/python -m main > experiment_emo_v4.log 2>&1
+srun --ntasks=1 .venv/bin/python -m main > experiment_emo_v5_123.log 2>&1
 
 deactivate

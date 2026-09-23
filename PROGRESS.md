@@ -1107,3 +1107,26 @@ else:
 
 - Reviewed current launch scripts: run_emo_v4.sh requests one Slurm task with two GPUs and starts one sweep coordinator. The coordinator launches one training worker at a time using blocking subprocess.run, passing both visible GPUs to that worker. The 36 combinations run sequentially; the scripts do not submit two independent Slurm jobs.
 - Code inspection only; no experiments submitted or launcher behavior changed.
+
+## 2026-09-22 — Updated EMO v5 entropy and cross-entropy objective
+
+- Removed reward_scale and its schedule/override from EMO v5; rewards now enter the policy objective unscaled. Added entropy_scale=0.05 (the same setting requested as entropy_coefficient) and cross_entropy_coefficient=0.01, with finite non-negative validation and shared CLI support.
+- Replaced KL with analytical H(current, reference) = -E_current[log reference] for diagonal Gaussian transitions, averaged over latent dimensions and using eta-scaled variances. Preserved the frozen snapshot taken at each SAC update and gradients through current mean/variance.
+- Objective maximizes policy_objective + entropy_scale * entropy_objective - cross_entropy_coefficient * cross_entropy_objective. Metrics report raw objectives, entropy_bonus, cross_entropy_penalty, and both weights; removed obsolete KL/reward-scale metrics and corrected the positive policy objective's name. Default output root now uses outputs/emo_v5.
+- Validation: three focused uv CPU tests pass, covering distribution math, reference gradient isolation, frozen snapshots, objective weighting, zero-weight bypass, config validation, and CLI overrides. Syntax compilation and git diff --check pass. No GPU experiments or Slurm jobs submitted.
+
+## 2026-09-22 — Reset EMO v5 replay every five completed epochs
+
+- Added positive-integer buffer_reset=5 config and --buffer-reset CLI override. emo_v5_combined_rollouts deletes the active replay file before replay loading at epochs 6, 11, 16, etc.; the current fresh rollout starts a new buffer through the existing save step. Explicit in-memory buffers are cleared at the same boundaries.
+- Passed absolute epoch and reset interval from training, preserving boundary resets on resume and existing missing-replay errors outside reset boundaries. Logged replay_buffer_reset and buffer_reset; replay_source_epoch is now null when no replay samples are used.
+- Validation: all five EMO v5 CPU tests pass, including disk deletion, preservation of unrelated files, buffer refill with restarted storage keys, custom intervals, in-memory clearing, config/CLI validation, and objective regressions. Updated test mocks to match the current EMO v5 helper names. Syntax compilation and whitespace checks pass. No training buffers were deleted during implementation; no GPU experiments submitted.
+
+## 2026-09-22 — Apply replay reset immediately at completed epoch boundaries
+
+- Clarified reset timing: training now deletes the active replay file after saving trajectories for epochs 5, 10, 15, etc., rather than waiting for the next epoch's combiner call. replay_buffer_reset marks those completed epochs. The combiner retains its boundary handling for interrupted/resumed runs, and the next epoch starts fresh.
+- All five EMO v5 CPU regression tests, syntax compilation, and whitespace checks pass. No experiments submitted.
+
+## 2026-09-22 — Register EMO v5 in the unified launcher
+
+- Added emo_v5 to main.py's enabled baselines alongside emo_v4 and documented it. Forwarded SAC epochs, entropy_scale=0.05, cross_entropy_coefficient=0.01, buffer_reset=5, clip range, and diversity threshold with the shared training options.
+- Validated the complete generated EMO v5 argument list against its actual config/parser using uv CPU-only AST extraction; confirmed seed-specific output, two-GPU arguments, absence of obsolete reward/KL/PPO flags, and preserved EMO v4 arguments. Whitespace checks pass. No experiments submitted.
