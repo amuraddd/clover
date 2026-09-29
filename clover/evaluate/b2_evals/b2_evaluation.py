@@ -15,7 +15,7 @@ from typing import Any
 
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 REFERENCE = "sd15"
 TEMPLATES = {1: "object_behavior", 2: "object_attribute", 3: "positional_relationship"}
 CLIP_MODEL = "ViT-H-14"

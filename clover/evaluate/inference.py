@@ -17,6 +17,7 @@ _BASELINE_TYPES = {
     "emo_v2": ("emo_v2", "EMOV2V2Config"),
     "emo_v3": ("emo_v3", "EMOV3Config"),
     "emo_v4": ("emo_v4", "EMOV2V2Config"),
+    "emo_v5": ("emo_v5", "EMOV2V2Config"),
     "emo_v3_old": ("emo_v3", "EMOV3Config"),
     "ddpo": ("ddpo", "DDPOConfig"),
     "b2diffurl": ("b2diffurl", "B2DiffuRLConfig"),
@@ -25,6 +26,7 @@ _BASELINE_TYPES = {
 _VARIANCE_MODULES = {
     "emo_v2": "emo_v2", "emo_v3": "emo_v2",
     "emo_v3_old": "emo_v2", "emo_v4": "emo_v4",
+    "emo_v5": "emo_v5",
 }
 
 

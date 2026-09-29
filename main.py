@@ -44,7 +44,7 @@ BASELINES = [
 
 DEFAULT_GPU_IDS = ("0","1") #"1"
 MAX_ALLOCATED_GPUS = 2
-EXPERIMENT_SEEDS = [123] #123, 456, 789
+EXPERIMENT_SEEDS = [456] #123, 456, 789
 
 
 def allocated_gpu_ids() -> tuple[str, ...]:
@@ -63,23 +63,24 @@ def allocated_gpu_ids() -> tuple[str, ...]:
     return gpu_ids[:MAX_ALLOCATED_GPUS]
 
 DEFAULT_BASELINE_ARGS = {
-    "train_epochs": 100,
+    "train_epochs": 50,
     "rollouts_per_epoch": 256,
-    "learning_rate": 1e-5,
+    "learning_rate": 1e-4,
     "gpu_ids": [0],
     "save_every": 5,
     "num_inference_steps": 50,
     "minibatch_size": 64,
     "ppo_epochs": 2,
     "sac_epochs": 2,
-    "emo_reward_scale": 4.0,#for baselines older than emo_v5
-    "reward_scale": 4.0,#for baselines older than emo_v5
-    "kl_coefficient": 0.05, #for baselines older than emo_v5
-    "entropy_scale": 0.05, #for emo_v5
-    "cross_entropy_coefficient": 0.01,#for emo_v5
-    "buffer_reset": 5,#for emo_v5
-    "diversity_threshold": 0.5,
-    "importance_ratio_clip": 0.75,
+    "emo_reward_scale": 4.0,#for baselines older than emo_v5 - used 4 previously
+    "reward_scale": 4.0,#for baselines older than emo_v5 and emo_v5 - used 4 previously
+    "kl_coefficient": 0.01, #for baselines older than emo_v5
+    "gamma": 0.9, #for emo_v5; None uses 1 - 1 / num_inference_steps| 0.8, 0.9, 0.999
+    "entropy_scale": 0.25, #for emo_v5
+    "cross_entropy_coefficient": 0.50,#for emo_v5 - start 0.10
+    "buffer_reset": 5,#for emo_v5 - start with 15
+    "diversity_threshold": 0.25, #start 0.5
+    "importance_ratio_clip": 1.0,
     "lora_alpha": 32,
     "lora_rank": 32,
     "min_log_prob_std": 1e-4,
@@ -121,6 +122,9 @@ def build_default_argv(
     argv.extend(["--eta", str(DEFAULT_BASELINE_ARGS["eta"])])
     # argv.extend(["--max-grad-norm", str(DEFAULT_BASELINE_ARGS["max_grad_norm"])])
     if baseline_name == "emo_v5":
+        gamma = DEFAULT_BASELINE_ARGS.get("gamma")
+        if gamma is not None:
+            argv.extend(["--gamma", str(gamma)])
         for name in ("sac_epochs", "entropy_scale", "cross_entropy_coefficient", "buffer_reset", "clip_range"):
             argv.extend([f"--{name.replace('_', '-')}", str(DEFAULT_BASELINE_ARGS[name])])
     elif script_name.endswith(("md3po_sac", "emo", "emo_v2", "emo_v3", "emo_v4")):

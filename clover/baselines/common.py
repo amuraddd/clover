@@ -183,6 +183,8 @@ def parse_config(
     parser.add_argument("--minibatch-size", type=int)
     parser.add_argument("--reward-type", type=str)
     config_fields = {field.name for field in fields(config_type)}
+    if any(field.name == "gamma" and field.init for field in fields(config_type)):
+        parser.add_argument("--gamma", type=float)
     optional_arguments = {
         "ppo_epochs": int,
         "clip_range": float,

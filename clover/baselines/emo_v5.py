@@ -85,7 +85,7 @@ class EMOV2V2Config:
     rollouts_per_epoch: int = 256
     train_epochs: int = 10
     sac_epochs: int = 2
-    gamma: float = field(init=False)
+    gamma: float | None = None
     # Weight of the per-latent-dimension entropy objective.
     entropy_scale: float = 0.05
     clip_range: float = 1e-4
@@ -108,6 +108,7 @@ class EMOV2V2Config:
     evaluate_every: int = 2
     diversity_threshold: float = 0.5
     buffer_reset: int = 5
+    reward_scale: float = 4.0
 
     def __post_init__(self) -> None:
         if type(self.buffer_reset) is not int or self.buffer_reset <= 0:
@@ -118,7 +119,8 @@ class EMOV2V2Config:
             raise ValueError("entropy_scale must be finite and non-negative")
         if self.num_inference_steps <= 0:
             raise ValueError("num_inference_steps must be positive")
-        self.gamma = 1.0 - (1.0 / self.num_inference_steps)
+        if self.gamma is None:
+            self.gamma = 1.0 - (1.0 / self.num_inference_steps)
 
 
 def normalize_rewards_per_timestep(rewards: Tensor, eps: float = 1e-8) -> Tensor:
@@ -968,10 +970,13 @@ def sac_update(
     # Subtract a same-prompt leave-one-out baseline from raw terminal rewards,
     # then discount. Do not standardize away the resulting reward differences.
     # Only fresh rollouts estimate baselines when replay is present.
+    beta = config.reward_scale
     terminal_advantages = leave_one_out_advantages(
         rewards[:, -1], prompts, reference_count=reference_count,
     )
-    soft_q = sigmoid_discounting(terminal_advantages, num_steps=rewards.shape[1], k=5)
+    soft_q = beta * discount_rewards(terminal_advantages, rewards.shape[1], config.gamma)
+    soft_q = soft_q.round(decimals=5)
+    # soft_q = beta * sigmoid_discounting(terminal_advantages, num_steps=rewards.shape[1], k=5)
 
     trajectory_len = old_log_probs.shape[1]
     indices = torch.arange(batch_size)
@@ -1198,7 +1203,7 @@ def sac_update(
                     # Maximize reward + weighted entropy - weighted cross entropy.
                     objective = (
                         policy_objective
-                        + config.entropy_scale * entropy_objective
+                        + entropy_objective
                         - config.cross_entropy_coefficient * cross_entropy_objective
                     )
 
@@ -1244,9 +1249,7 @@ def sac_update(
 
                     entropy_bonuses.append(
                         float(
-                            (
-                                config.entropy_scale * entropy_objective
-                            )
+                            (entropy_objective)
                             .detach()
                             .cpu()
                         )
@@ -1316,6 +1319,9 @@ def sac_update(
         "reward_mean": float(
             reward_values.mean()
         ),
+        "reward_scale": float(
+            config.reward_scale
+        ),
         "reward_std": float(
             reward_values.std(
                 unbiased=False
@@ -1383,6 +1389,12 @@ def train(
     scheduler = torch.optim.lr_scheduler.ConstantLR(
         optimizer, factor=1.0, total_iters=config.train_epochs
     )
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+    #     optimizer,
+    #     T_0=config.buffer_reset,
+    #     T_mult=1,
+    #     eta_min=3e-6, #3e-6 (used for seed 123), 1e-5 used for other seeds
+    # )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(
         pipe, optimizer, output_dir, device, generator, 
@@ -1453,9 +1465,8 @@ def train(
             baseline_name,
             epoch,
             metrics,
-            reference_rollout.get("images"),
-            reference_rollout.get("prompts"),
-            output_dir,
+            prompts=reference_rollout.get("prompts"),
+            output_dir=output_dir,
         )
 
         if epoch % config.log_every == 0:

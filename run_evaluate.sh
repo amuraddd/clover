@@ -1,15 +1,15 @@
 #!/bin/bash
-#SBATCH -J "emov5456"
+#SBATCH -J "eval"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=azm0269@auburn.edu
 #SBATCH -N1
 #SBATCH --ntasks=1
 #SBATCH -D /aiau010_scratch/azm0269/clover
-#SBATCH --output=output.txt
-#SBATCH --error=error.txt
-#SBATCH --time=3-24:00:00
-#SBATCH --nodelist=aiau010
-#SBATCH --gres=gpu:2
+#SBATCH --output=evaluate_output.txt
+#SBATCH --error=evaluate_error.txt
+#SBATCH --time=1-00:00:00
+#SBATCH --nodelist=aiau011
+#SBATCH --gres=gpu:1
 #SBATCH --partition=general
 
 # module load python3
@@ -30,7 +30,9 @@ export TMPDIR="/aiau010_scratch/azm0269/tmp"
 # Reduce allocator fragmentation during long rollout/update cycles.
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-# for baseline
-srun --ntasks=1 .venv/bin/python -m main > experiment_emo_v5_456.log 2>&1
+# Usage: sbatch run_evaluate.sh --baselines sd15 emo_v5 --b2-run-name b2_eval
+srun --ntasks=1 .venv/bin/python -m evaluate "$@" > evaluate.log 2>&1
+evaluation_status=$?
 
 deactivate
+exit "$evaluation_status"

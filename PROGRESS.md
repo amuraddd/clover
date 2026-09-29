@@ -1130,3 +1130,56 @@ else:
 
 - Added emo_v5 to main.py's enabled baselines alongside emo_v4 and documented it. Forwarded SAC epochs, entropy_scale=0.05, cross_entropy_coefficient=0.01, buffer_reset=5, clip range, and diversity threshold with the shared training options.
 - Validated the complete generated EMO v5 argument list against its actual config/parser using uv CPU-only AST extraction; confirmed seed-specific output, two-GPU arguments, absence of obsolete reward/KL/PPO flags, and preserved EMO v4 arguments. Whitespace checks pass. No experiments submitted.
+
+## 2026-09-26 — Review EMO v5 loss normalization
+
+- Verified that all three objective components are already reduced with mean(), so objective is scalar and an additional objective.mean() at line 1209 would leave both loss and gradients unchanged.
+- Confirmed timestep gradients accumulate before the minibatch optimizer step; division by trajectory_len supplies the timestep averaging. Static inspection only; no training changes or experiments needed.
+
+## 2026-09-27 — Allow EMO v5 gamma overrides
+
+- Made gamma optional in EMO v5 config; omitted/None values resolve to 1.0 - (1.0 / num_inference_steps), while explicit values are preserved.
+- Added optional gamma setting in main.py and --gamma CLI support for configs with an initializable gamma field, preserving older baselines with derived gamma.
+- Validation: uv CPU-only checks using extracted config/parser/launcher definitions passed for default step counts, explicit gamma values including zero, omitted/None launcher settings, and EMO v4 argument isolation. Syntax and git diff --check passed. No GPU experiments submitted.
+
+## 2026-09-28 — Disable EMO v5 training image output
+
+- Stopped passing training images to save_evaluation_metrics; epoch metrics and prompts remain logged. Evaluation image output and replay trajectory data are unchanged.
+- Validation: Python syntax parsing and targeted call inspection passed. No GPU experiments submitted.
+
+## 2026-09-28 — Diagnose EMO v5 trajectory write failure
+
+- Traced experiment_emo_v5_123.log failure after resuming epoch 40 to torch.save of the accumulated replay buffer in common.py. The iostream write error is primary; unexpected ZIP position is a secondary cleanup error.
+- Observed a 25 GB trajectories.pt and 72 KB incomplete temporary file. Filesystem currently has 914 GB available and ample inodes; file-size limit is unlimited. User quota could not be checked because quota is unavailable. Exact storage failure remains unconfirmed (quota or transient filesystem failure are possibilities). No training code or replay files changed; no experiments submitted.
+
+## 2026-09-29 — Diagnose EMO v5 seed 456 NCCL failure
+
+- Inspected experiment_emo_v5_456.log and the rollout/launcher code. The initial reference rollout fails when DataParallel replicates UNet parameters across GPUs 4 and 5 via NCCL broadcast_coalesced, before the first training epoch completes.
+- Confirmed the launcher maps selected devices to logical IDs 0 and 1. The log reports only NCCL Error 1 (unhandled CUDA error); the underlying CUDA cause is not available. A diagnostic Slurm rerun with NCCL_DEBUG=INFO is needed to narrow it down. No training code changed or experiments submitted.
+
+## 2026-09-29 — Add Slurm evaluation launcher
+
+- Created executable run_evaluate.sh at the repository root, matching run_experiments.sh's Slurm allocation (two GPUs) and project environment setup. Runs evaluate.py through srun, forwards all CLI arguments, and preserves the evaluation exit status.
+- Uses separate evaluate_output.txt, evaluate_error.txt, and evaluate.log files. Example: sbatch run_evaluate.sh --baselines sd15 emo_v5 --b2-run-name b2_eval.
+- Validation: bash -n run_evaluate.sh passed. No evaluation or Slurm job submitted.
+
+## 2026-09-29 — Diagnose B2 evaluation checkpoint lookup failure
+
+- Traced evaluate.log FileNotFoundError to b2_evaluation.py ROOT using parents[2], which resolves to the clover package directory instead of the repository root. Evaluation searches nonexistent clover/outputs instead of outputs; the required seed_123 configs and checkpoints for ddpo, b2diffurl, and emo_v5 exist under repository outputs (including EMO v5 variance_head.pt).
+- The repository root is parents[3] for this module. The same root error also affects default data and metrics paths. Diagnosis only; no evaluation code changed or jobs submitted.
+
+## 2026-09-29 — Correct B2 evaluation repository root
+
+- Changed b2_evaluation.py ROOT from parents[2] to parents[3], resolving checkpoint lookup to repository outputs and correcting derived clover/data and clover/evaluate/metrics paths.
+- Validation: Python syntax parsing and evaluation of the actual ROOT expression passed; verified all required seed_123 configs/checkpoints for ddpo, b2diffurl, and emo_v5, including variance_head.pt, and the data directory. git diff --check passed for the changed module. No evaluation or Slurm job submitted.
+
+## 2026-09-29 — Add notebook B2 score summary function
+
+- Added the self-contained b2_evaluation_scores(baselines) function to clover/exp/evaluation_metrics_final.ipynb. Reads outputs/<baseline>/evals/b2/b2_four_baselines_v1/{fid,bert,clip,imagereward}.json and returns a DataFrame with baseline rows and four metric columns.
+- Averages within each seed then equally across seeds; bert uses BERTScore F1, and FID uses equally weighted template records, excluding optional prompt-level FID. Missing/invalid scores and inconsistent metric seed sets raise errors.
+- Validation: executed the function with the project Python environment for ddpo, b2diffurl, emo_v3_best_run, and sd15; all 16 values matched independent standard-library calculations. Notebook whitespace check passed. No GPU evaluation or Slurm jobs submitted.
+
+## 2026-09-29 — Group B2 notebook score columns by template
+
+- Updated b2_evaluation_scores to return two column levels: template_name then score, with baselines as rows. Scores are averaged within each template/seed and then equally across seeds per template; BERT remains F1 and FID excludes prompt-level records.
+- Preserved the existing example cell and cleared stale outputs. Validation: all 48 values across four baselines, three templates, and four metrics matched independent JSON calculations using the project Python environment; notebook whitespace check passed. No GPU jobs submitted.

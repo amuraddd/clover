@@ -7,10 +7,11 @@ from dotenv import load_dotenv
 
 from clover.evaluate.b2_run_evaluation import run_b2_evaluation
 
-
+BASELINES = ["ddpo", "b2diffurl", "emo_v5", "sd15"] 
 DEFAULT_SEEDS = [123, 124, 126]
-DEFAULT_IMAGES_PER_PROMPT = 10
+DEFAULT_IMAGES_PER_PROMPT = 20
 DEFAULT_FRACTION = 0.8
+RUN_NAME = "b2_eval_v2"
 
 
 def positive_int(value: str) -> int:
@@ -48,7 +49,8 @@ def build_parser() -> argparse.ArgumentParser:
 	parser.add_argument(
 		"--baselines",
 		nargs="+",
-		required=True,
+		required=False,
+		default=list(BASELINES),
 		help="Baselines to evaluate. Include sd15 exactly once alongside the trained baselines.",
 	)
 	parser.add_argument(
@@ -60,8 +62,9 @@ def build_parser() -> argparse.ArgumentParser:
 	)
 	parser.add_argument(
 		"--b2-run-name",
-		required=True,
+		required=False,
 		type=run_name,
+		default=RUN_NAME,
 		help="Directory name used under clover/evaluate/metrics and clover/data/b2_evaluation.",
 	)
 	parser.add_argument(
