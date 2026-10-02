@@ -71,15 +71,15 @@ DEFAULT_BASELINE_ARGS = {
     "num_inference_steps": 50,
     "minibatch_size": 64,
     "ppo_epochs": 2,
-    "sac_epochs": 2,
+    "sac_epochs": 3,
     "emo_reward_scale": 4.0,#for baselines older than emo_v5 - used 4 previously
     "reward_scale": 4.0,#for baselines older than emo_v5 and emo_v5 - used 4 previously
     "kl_coefficient": 0.01, #for baselines older than emo_v5
     "gamma": 0.9, #for emo_v5; None uses 1 - 1 / num_inference_steps| 0.8, 0.9, 0.999
-    "entropy_scale": 0.25, #for emo_v5
-    "cross_entropy_coefficient": 0.50,#for emo_v5 - start 0.10
-    "buffer_reset": 5,#for emo_v5 - start with 15
-    "diversity_threshold": 0.25, #start 0.5
+    "entropy_scale": 0.20, #for emo_v5
+    "cross_entropy_coefficient": 0.10,#for emo_v5 - start 0.10
+    "buffer_reset": 10,#for emo_v5 - start with 15
+    "diversity_threshold": 0.75, #start 0.5
     "importance_ratio_clip": 1.0,
     "lora_alpha": 32,
     "lora_rank": 32,

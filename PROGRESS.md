@@ -1183,3 +1183,17 @@ else:
 
 - Updated b2_evaluation_scores to return two column levels: template_name then score, with baselines as rows. Scores are averaged within each template/seed and then equally across seeds per template; BERT remains F1 and FID excludes prompt-level records.
 - Preserved the existing example cell and cleared stale outputs. Validation: all 48 values across four baselines, three templates, and four metrics matched independent JSON calculations using the project Python environment; notebook whitespace check passed. No GPU jobs submitted.
+
+## 2026-09-30 — Add evaluation rollout chunk-size override
+
+- Added optional positive-integer `--rollout-chunk-size` to evaluate.py and `rollout_chunk_size` to the B2 evaluation/generation APIs. For example, append `--rollout-chunk-size 8` to evaluation arguments. The runtime option reaches EMO v5 without changing saved configs or the immutable run plan, allowing completed images to be reused.
+- Completed the existing EMO v5 helper override: explicit chunk sizes take precedence; omission uses config.rollout_chunk_size (default 64). Other baselines ignore the memory option and retain their existing generation paths. Preserved unrelated working-tree changes.
+- Validation: all five existing B2 evaluation tests passed with uv; CPU-only mocked checks passed for CLI/inference forwarding, config preservation, and helper selection of default 64 and overrides 8/1. Diff whitespace checks passed. No GPU evaluation or Slurm job submitted.
+- Observation: B2 generates one image per call, so lowering a chunk limit above one will not reduce its current UNet batch size. This option alone is therefore not expected to resolve the logged GPU exhaustion. The local environment also reports an existing xFormers/PyTorch compatibility warning during CPU checks.
+
+## 2026-09-30 — Fix script-based B2 ImageReward evaluation
+
+- Diagnosed evaluate.log: ImageReward runtime and worker paths omitted the b2_evals directory, so the existing local runtime was incorrectly reported missing with a notebook-only setup instruction.
+- Resolved both paths relative to the evaluation module. Missing runtimes now invoke the existing locked, project-local uv setup automatically; existing runtimes and valid cached scores are reused.
+- Removed IPython output capture from the evaluation runner so stage output reaches the script log. Preserved existing rollout overrides and per-stage metric persistence.
+- Validation: all eight B2 evaluation tests passed, including regressions for runtime/worker paths, existing/missing runtime handling, and cached-score reuse. Evaluation CLI help and changed-code whitespace checks passed. Existing xFormers/PyTorch compatibility warning remains; no GPU evaluation, dependency installation, or Slurm job submitted.

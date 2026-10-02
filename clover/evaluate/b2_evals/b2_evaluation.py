@@ -1,4 +1,4 @@
-"""Paired B2 evaluation stages for a single-GPU notebook.
+"""Paired B2 evaluation stages for single-GPU scripts and notebooks.
 
 Every stage persists CPU artifacts; model lifetimes end before the next stage.
 CLIP and caption-BERTScore follow clover.utils.rewards_utils definitions.
@@ -16,6 +16,8 @@ from typing import Any
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
+IMAGEREWARD_BACKEND = Path(__file__).resolve().parent / "b2_imagereward_backend"
+IMAGEREWARD_WORKER = Path(__file__).resolve().parent / "b2_imagereward_worker.py"
 REFERENCE = "sd15"
 TEMPLATES = {1: "object_behavior", 2: "object_attribute", 3: "positional_relationship"}
 CLIP_MODEL = "ViT-H-14"
@@ -155,8 +157,15 @@ def _output(plan, baseline):
     return Path(plan["output_root"]) / baseline / "evals/b2" / plan["run_name"]
 
 
-def generate_b2_images(plan_path, *, device="cuda:0", quiet=True):
-    """Load one baseline at a time. Reuse verified completed images on rerun."""
+def generate_b2_images(plan_path, *, device="cuda:0", quiet=True, rollout_chunk_size=None):
+    """Generate images with an optional EMO v5 chunk limit; reuse completed images.
+
+    The runtime memory option does not change the immutable evaluation plan.
+    """
+    if rollout_chunk_size is not None and (
+        type(rollout_chunk_size) is not int or rollout_chunk_size < 1
+    ):
+        raise ValueError("rollout_chunk_size must be a positive integer")
     import torch
     from tqdm.auto import tqdm
     from clover.evaluate.inference import load_baseline_model
@@ -197,7 +206,8 @@ def generate_b2_images(plan_path, *, device="cuda:0", quiet=True):
             manifest["dtype"] = str(model.dtype)
             for completed, row in enumerate(tqdm(pending, desc=f"Generate {baseline}", disable=quiet), 1):
                 with torch.inference_mode():
-                    image = model.generate(row["prompt"], seed=row["image_seed"], **plan["inference"])[0]
+                    image = model.generate(row["prompt"], seed=row["image_seed"], **plan["inference"],
+                        rollout_chunk_size=rollout_chunk_size)[0]
                 path = folder / row["image"]
                 path.parent.mkdir(parents=True, exist_ok=True)
                 temporary = path.with_suffix(".tmp.png")
@@ -457,7 +467,7 @@ def setup_b2_imagereward():
     """Install the separate ImageReward runtime using uv, without changing CLIP deps."""
     import os
     import subprocess
-    backend = ROOT / "clover/evaluate/b2_imagereward_backend"
+    backend = IMAGEREWARD_BACKEND
     env = os.environ.copy()
     env.setdefault("UV_CACHE_DIR", str(ROOT / ".cache/uv-b2"))
     temporary = ROOT / ".cache/uv-b2-tmp"
@@ -476,12 +486,13 @@ def score_b2_imagereward(plan_path, *, device="cuda:0"):
     cached=_cached_metric(plan_path,plan,'imagereward',metadata)
     if cached is not None:
         return cached
-    backend = ROOT / "clover/evaluate/b2_imagereward_backend"
+    backend = IMAGEREWARD_BACKEND
     python = backend / ".venv/bin/python"
-    if not python.is_file():
-        raise FileNotFoundError("Run setup_b2_imagereward() once in the notebook")
     if str(device) not in ("cpu", "cuda", "cuda:0"):
         raise ValueError("Use cuda:0 for the single-GPU ImageReward worker")
+    if not python.is_file():
+        print("Setting up the project-local ImageReward runtime with uv", flush=True)
+        setup_b2_imagereward()
     folder = Path(plan_path).parent
     request,output = folder / "imagereward_request.json", folder / "imagereward_results.json"
     _save(request,{"download_root":str(ROOT/'.cache/ImageReward'),"records":rows})
@@ -492,7 +503,7 @@ def score_b2_imagereward(plan_path, *, device="cuda:0"):
     log = folder / "imagereward.log"
     print(f"Scoring ImageReward; progress log: {log}")
     with log.open('w') as stream:
-        subprocess.run([str(python),str(ROOT/'clover/evaluate/b2_imagereward_worker.py'),
+        subprocess.run([str(python),str(IMAGEREWARD_WORKER),
                         str(request),str(output),'--device',str(device)],
                        env=env,stdout=stream,stderr=subprocess.STDOUT,check=True)
     scored=json.loads(output.read_text())

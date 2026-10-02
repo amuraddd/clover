@@ -434,8 +434,12 @@ def collect_rollouts(
 def _generate_emo_v5_eval_images(
     pipe: Any, prompts: list[str], config: EMOV2V2Config,
     device: torch.device, dtype: torch.dtype, seed: int = 123,
+    chunk_size: int | None = None,
 ) -> list[Image.Image]:
     """Evaluate with EMO-v2 guidance applied only to predicted noise."""
+    chunk_size = config.rollout_chunk_size if chunk_size is None else chunk_size
+    if type(chunk_size) is not int or chunk_size < 1:
+        raise ValueError("rollout_chunk_size must be a positive integer")
     was_training = pipe.unet.training
     pipe.unet.eval()
     generator = torch.Generator(device=device).manual_seed(seed)
@@ -455,7 +459,7 @@ def _generate_emo_v5_eval_images(
         for timestep_tensor in pipe.scheduler.timesteps:
             model_output = _predict_emo_v5_chunked(
                 pipe, latents, timestep_tensor, prompt_embeds,
-                config.guidance_scale, config.rollout_chunk_size,
+                config.guidance_scale, chunk_size=chunk_size,
             )
             latents, _ = _emo_v5_step_with_log_prob(
                 pipe.scheduler, model_output, int(timestep_tensor.item()), latents,
@@ -1386,19 +1390,19 @@ def train(
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
     #     optimizer, T_max=config.train_epochs, eta_min=1e-4
     # )
-    scheduler = torch.optim.lr_scheduler.ConstantLR(
-        optimizer, factor=1.0, total_iters=config.train_epochs
-    )
-    # scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-    #     optimizer,
-    #     T_0=config.buffer_reset,
-    #     T_mult=1,
-    #     eta_min=3e-6, #3e-6 (used for seed 123), 1e-5 used for other seeds
+    # scheduler = torch.optim.lr_scheduler.ConstantLR(
+    #     optimizer, factor=1.0, total_iters=config.train_epochs
     # )
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer,
+        T_0=5, #config.buffer_reset
+        T_mult=1,
+        eta_min=1e-6, #3e-6 (used for seed 123), 1e-5 used for other seeds
+    )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(
-        pipe, optimizer, output_dir, device, generator, 
-        scheduler=None, #scheduler
+        pipe, optimizer, output_dir, device, generator,
+        scheduler=scheduler,
     )
     _load_variance_head(pipe, output_dir / "checkpoint" / "variance_head.pt")
     for epoch in trange(last_epoch + 1, config.train_epochs + 1):

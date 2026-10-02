@@ -1,0 +1,6 @@
+{
+  "sd15": "/aiau010_scratch/azm0269/clover/clover/data/sd15/b2_evaluation/b2_eval_v2/images.json",
+  "ddpo": "/aiau010_scratch/azm0269/clover/clover/data/ddpo/b2_evaluation/b2_eval_v2/images.json",
+  "b2diffurl": "/aiau010_scratch/azm0269/clover/clover/data/b2diffurl/b2_evaluation/b2_eval_v2/images.json",
+  "emo_v5": "/aiau010_scratch/azm0269/clover/clover/data/emo_v5/b2_evaluation/b2_eval_v2/images.json"
+}

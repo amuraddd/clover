@@ -1,0 +1,362 @@
+[
+  {
+    "baseline": "sd15",
+    "seed": 123,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 0.0,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "sd15",
+    "seed": 123,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 0.0,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "sd15",
+    "seed": 123,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 0.0,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "sd15",
+    "seed": 124,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 0.0,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "sd15",
+    "seed": 124,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 0.0,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "sd15",
+    "seed": 124,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 0.0,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "sd15",
+    "seed": 126,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 0.0,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "sd15",
+    "seed": 126,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 0.0,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "sd15",
+    "seed": 126,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 0.0,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "ddpo",
+    "seed": 123,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 49.79465488513875,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "ddpo",
+    "seed": 123,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 87.18916304337742,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "ddpo",
+    "seed": 123,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 95.51310066822442,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "ddpo",
+    "seed": 124,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 47.60967022397327,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "ddpo",
+    "seed": 124,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 84.69281847250363,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "ddpo",
+    "seed": 124,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 79.89198028133227,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "ddpo",
+    "seed": 126,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 50.591849285073856,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "ddpo",
+    "seed": 126,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 77.5886526661654,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "ddpo",
+    "seed": 126,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 91.41090431462392,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "b2diffurl",
+    "seed": 123,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 45.274882117239784,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "b2diffurl",
+    "seed": 123,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 39.90560220108252,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "b2diffurl",
+    "seed": 123,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 73.76882578764597,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "b2diffurl",
+    "seed": 124,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 42.76302707115034,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "b2diffurl",
+    "seed": 124,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 42.55544595644333,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "b2diffurl",
+    "seed": 124,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 67.48801773514322,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "b2diffurl",
+    "seed": 126,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 45.194329491856294,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "b2diffurl",
+    "seed": 126,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 36.360511485926104,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "b2diffurl",
+    "seed": 126,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 79.46411508819652,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "emo_v5",
+    "seed": 123,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 34.11937492718771,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "emo_v5",
+    "seed": 123,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 26.668895623471265,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "emo_v5",
+    "seed": 123,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 53.916794833272334,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "emo_v5",
+    "seed": 124,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 31.63019788344278,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "emo_v5",
+    "seed": 124,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 24.381926274191574,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "emo_v5",
+    "seed": 124,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 50.8269289056136,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "emo_v5",
+    "seed": 126,
+    "template": 1,
+    "template_name": "object_behavior",
+    "level": "template",
+    "fid": 34.318329451176005,
+    "reference_baseline": "sd15",
+    "image_count": 720
+  },
+  {
+    "baseline": "emo_v5",
+    "seed": 126,
+    "template": 2,
+    "template_name": "object_attribute",
+    "level": "template",
+    "fid": 25.82157871519464,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  },
+  {
+    "baseline": "emo_v5",
+    "seed": 126,
+    "template": 3,
+    "template_name": "positional_relationship",
+    "level": "template",
+    "fid": 52.79516450716956,
+    "reference_baseline": "sd15",
+    "image_count": 160
+  }
+]

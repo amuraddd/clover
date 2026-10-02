@@ -79,6 +79,12 @@ def build_parser() -> argparse.ArgumentParser:
 		default=DEFAULT_FRACTION,
 		help="Fraction of each B2 prompt template to evaluate.",
 	)
+	parser.add_argument(
+		"--rollout-chunk-size",
+		type=positive_int,
+		default=32,
+		help="EMO v5 evaluation rollout chunk size; omitted uses the saved config (default 32).",
+	)
 	return parser
 
 
@@ -95,6 +101,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 	print(f"Run name: {args.b2_run_name}", flush=True)
 	print(f"Images per prompt: {args.images_per_prompt}", flush=True)
 	print(f"Fraction: {args.fraction}", flush=True)
+	print(f"Rollout chunk size: {args.rollout_chunk_size or 'saved config'}", flush=True)
 
 	run_b2_evaluation(
 		baselines=args.baselines,
@@ -102,6 +109,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 		b2_run_name=args.b2_run_name,
 		images_per_prompt=args.images_per_prompt,
 		fraction=args.fraction,
+		rollout_chunk_size=args.rollout_chunk_size,
 	)
 
 	print("B2 evaluation completed", flush=True)

@@ -1,4 +1,4 @@
-"""ImageReward process entry point; invoked by the B2 notebook helper."""
+"""ImageReward process entry point; invoked by the B2 evaluation helper."""
 import argparse
 import json
 from pathlib import Path

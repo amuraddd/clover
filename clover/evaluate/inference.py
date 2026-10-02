@@ -41,8 +41,16 @@ class LoadedBaseline:
     variance_module: Any = None
 
     @torch.inference_mode()
-    def generate(self, prompts, *, seed=123, **overrides):
-        """Return RGB PIL images; override steps, guidance, dimensions or negative_prompt."""
+    def generate(self, prompts, *, seed=123, rollout_chunk_size=None, **overrides):
+        """Return RGB PIL images with inference overrides.
+
+        rollout_chunk_size overrides EMO v5 chunking without changing saved config.
+        """
+        # This memory limit applies only to EMO v5; other baselines ignore it.
+        if rollout_chunk_size is not None and (
+            type(rollout_chunk_size) is not int or rollout_chunk_size < 1
+        ):
+            raise ValueError("rollout_chunk_size must be a positive integer")
         self.pipe.set_progress_bar_config(disable=True)
         prompts = [prompts] if isinstance(prompts, str) else list(prompts)
         if not prompts or not all(isinstance(p, str) for p in prompts):
@@ -57,7 +65,12 @@ class LoadedBaseline:
             raise ValueError(f"height and width must be positive multiples of {factor}")
         if config.num_inference_steps < 1:
             raise ValueError("num_inference_steps must be positive")
-        if self.variance_module is not None:
+        if self.baseline == "emo_v5" and self.variance_module is not None:
+            images = self.variance_module._generate_emo_v5_eval_images(
+                self.pipe, prompts, config, self.device, self.dtype, seed=seed,
+                chunk_size=rollout_chunk_size,
+            )
+        elif self.variance_module is not None:
             images = self.variance_module._generate_emo_v2_eval_images(
                 self.pipe, prompts, config, self.device, self.dtype, seed=seed
             )

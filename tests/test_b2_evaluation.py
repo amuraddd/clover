@@ -17,6 +17,57 @@ from clover.evaluate.b2_evals import b2_evaluation as b2
 
 
 class B2EvaluationTests(unittest.TestCase):
+    def test_imagereward_paths_and_uv_setup(self):
+        folder = Path(b2.__file__).resolve().parent
+        self.assertEqual(b2.IMAGEREWARD_BACKEND, folder / 'b2_imagereward_backend')
+        self.assertEqual(b2.IMAGEREWARD_WORKER, folder / 'b2_imagereward_worker.py')
+        self.assertTrue(b2.IMAGEREWARD_WORKER.is_file())
+        self.assertTrue((b2.IMAGEREWARD_BACKEND / 'uv.lock').is_file())
+        with TemporaryDirectory() as tmp, patch.object(b2, 'ROOT', Path(tmp)), patch('subprocess.run') as run:
+            b2.setup_b2_imagereward()
+        self.assertEqual(run.call_args_list[0].args[0],
+                         ['uv', 'sync', '--locked', '--project', str(b2.IMAGEREWARD_BACKEND)])
+        self.assertEqual(run.call_args_list[1].args[0][0],
+                         str(b2.IMAGEREWARD_BACKEND / '.venv/bin/python'))
+
+    def test_imagereward_worker_with_existing_or_missing_runtime(self):
+        for installed in (True, False):
+            with self.subTest(installed=installed), TemporaryDirectory() as tmp:
+                folder = Path(tmp)
+                backend = folder / 'backend'
+                python = backend / '.venv/bin/python'
+                if installed:
+                    python.parent.mkdir(parents=True)
+                    python.touch()
+                rows = [{'baseline': 'sd15', 'id': 'example', 'prompt': 'a cat'}]
+                scored = [{**rows[0], 'imagereward': 1.2}]
+                def worker(command, **kwargs):
+                    self.assertEqual(command[:2], [str(python), str(b2.IMAGEREWARD_WORKER)])
+                    self.assertEqual(command[-2:], ['--device', 'cpu'])
+                    request = json.loads(Path(command[2]).read_text())
+                    self.assertEqual(request['records'], rows)
+                    Path(command[3]).write_text(json.dumps(scored))
+                with patch.object(b2, 'IMAGEREWARD_BACKEND', backend), \
+                     patch.object(b2, '_records', return_value=({}, rows)), \
+                     patch.object(b2, '_cached_metric', return_value=None), \
+                     patch.object(b2, '_save_metric') as save, \
+                     patch.object(b2, '_release'), \
+                     patch.object(b2, 'setup_b2_imagereward') as setup, \
+                     patch('subprocess.run', side_effect=worker):
+                    self.assertEqual(b2.score_b2_imagereward(folder / 'plan.json', device='cpu'), scored)
+                    self.assertEqual(setup.call_count, 0 if installed else 1)
+                    self.assertEqual(save.call_args.args[2], scored)
+
+    def test_imagereward_cached_scores_skip_setup_and_worker(self):
+        cached = [{'imagereward': 1.2}]
+        with patch.object(b2, '_records', return_value=({}, [])), \
+             patch.object(b2, '_cached_metric', return_value=cached), \
+             patch.object(b2, 'setup_b2_imagereward') as setup, \
+             patch('subprocess.run') as run:
+            self.assertEqual(b2.score_b2_imagereward('plan.json'), cached)
+        setup.assert_not_called()
+        run.assert_not_called()
+
     def test_prompt_sampling_counts_and_pairing(self):
         rows=b2.sample_b2_prompts()
         self.assertEqual(len(rows),1560)
