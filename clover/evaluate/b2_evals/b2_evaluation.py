@@ -18,6 +18,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 IMAGEREWARD_BACKEND = Path(__file__).resolve().parent / "b2_imagereward_backend"
 IMAGEREWARD_WORKER = Path(__file__).resolve().parent / "b2_imagereward_worker.py"
+DREAMSIM_BACKEND = Path(__file__).resolve().parent / "b2_dreamsim_backend"
+DREAMSIM_WORKER = Path(__file__).resolve().parent / "b2_dreamsim_worker.py"
 REFERENCE = "sd15"
 TEMPLATES = {1: "object_behavior", 2: "object_attribute", 3: "positional_relationship"}
 CLIP_MODEL = "ViT-H-14"
@@ -513,14 +515,108 @@ def score_b2_imagereward(plan_path, *, device="cuda:0"):
     return scored
 
 
+def setup_b2_dreamsim():
+    """Install the locked DreamSim runtime locally, independent of training deps."""
+    import os
+    import subprocess
+    env = os.environ.copy()
+    env.setdefault('UV_CACHE_DIR', str(ROOT / '.cache/uv-b2'))
+    temporary = ROOT / '.cache/uv-b2-tmp'
+    temporary.mkdir(parents=True, exist_ok=True)
+    env['TMPDIR'] = str(temporary)
+    subprocess.run(['uv', 'sync', '--locked', '--project', str(DREAMSIM_BACKEND)],
+                   env=env, check=True)
+    subprocess.run([str(DREAMSIM_BACKEND / '.venv/bin/python'), '-c',
+                    'from dreamsim import dreamsim; print("DreamSim import passed")'],
+                   env=env, check=True)
+
+
+def score_b2_dreamsim(plan_path, *, device='cuda:0', batch_size=8):
+    """Per-prompt DreamSim feature variance, computed sequentially on one GPU.
+
+    Each image row carries its prompt group's diversity and sample count, plus
+    its variance contribution. Cached scores are bound to the plan and images.
+    Requires at least two images per (baseline, seed, template, prompt).
+    """
+    import os
+    import subprocess
+    from clover.evaluate.b2_evals.b2_dreamsim_worker import group_records
+    if str(device) not in ('cpu', 'cuda', 'cuda:0'):
+        raise ValueError('Use cuda:0 for the single-GPU DreamSim worker')
+    if not isinstance(batch_size, int) or batch_size < 1:
+        raise ValueError('batch_size must be a positive integer')
+    plan, rows = _records(plan_path)
+    groups = group_records(rows)
+    metadata = {
+        'model': 'ensemble', 'package': 'dreamsim==0.2.1',
+        'normalize_embeds': True, 'use_patch_model': False,
+        'estimator': 'trace_sample_covariance', 'correction': 1,
+        'group_by': ['baseline', 'seed', 'template', 'prompt_index'],
+        'aggregation': 'equal_prompt_mean_then_seed_mean_and_sample_std',
+        'higher_is_better': True,
+        'runtime_lock_sha256': _hash(DREAMSIM_BACKEND / 'uv.lock'),
+    }
+    cached = _cached_metric(plan_path, plan, 'dreamsim', metadata)
+    if cached is not None:
+        return cached
+    python = DREAMSIM_BACKEND / '.venv/bin/python'
+    if not python.is_file():
+        print('Setting up the project-local DreamSim runtime with uv', flush=True)
+        setup_b2_dreamsim()
+    folder = Path(plan_path).parent
+    folder = folder.resolve()
+    request, output = folder / 'dreamsim_request.json', folder / 'dreamsim_results.json'
+    _save(request, {'download_root': str(ROOT / '.cache/DreamSim'),
+                    'batch_size': batch_size, 'records': rows})
+    env = os.environ.copy()
+    if str(device) != 'cpu':
+        env['CUDA_VISIBLE_DEVICES'] = env.get('CUDA_VISIBLE_DEVICES', '0').split(',')[0]
+    env.setdefault('TORCH_HOME', str(ROOT / '.cache/torch'))
+    env.setdefault('HF_HOME', str(ROOT / '.cache/huggingface'))
+    _release()
+    log = folder / 'dreamsim.log'
+    print(f'Scoring DreamSim diversity; progress log: {log}', flush=True)
+    with log.open('w') as stream:
+        subprocess.run([str(python), str(DREAMSIM_WORKER), str(request), str(output),
+                        '--device', str(device)], cwd=ROOT, env=env,
+                       stdout=stream, stderr=subprocess.STDOUT, check=True)
+    scored = json.loads(output.read_text())
+    if [(r['baseline'], r['id']) for r in scored] != [(r['baseline'], r['id']) for r in rows]:
+        raise ValueError('DreamSim output IDs do not match request')
+    # Preserve authoritative manifest fields and reject malformed worker output.
+    for indices in groups.values():
+        values = [scored[i]['dreamsim_diversity'] for i in indices]
+        contributions = [scored[i]['dreamsim_contribution'] for i in indices]
+        if (any(not math.isfinite(v) or v < 0 for v in values + contributions)
+                or any(v > 2 + 1e-6 for v in values)
+                or any(scored[i]['dreamsim_image_count'] != len(indices) for i in indices)
+                or any(not math.isclose(v, values[0], abs_tol=1e-7) for v in values)
+                or not math.isclose(sum(contributions) / len(indices), values[0], abs_tol=1e-7)):
+            raise ValueError('Invalid DreamSim group scores')
+    scored = [{**row, **{key: result[key] for key in (
+        'dreamsim_diversity', 'dreamsim_contribution', 'dreamsim_image_count')}}
+        for row, result in zip(rows, scored)]
+    _save_metric(plan_path, plan, scored, 'dreamsim', metadata)
+    return scored
+
+
 def summarize_b2_scores(plan_path):
     """Join every image score and report per-seed/template and across-seed metrics."""
     import pandas as pd
     plan,rows=_records(plan_path)
+    # Historical runs without DreamSim remain readable. Partial new scores fail.
+    dreamsim_files = [(_output(plan, b) / 'dreamsim.json').is_file() for b in plan['baselines']]
+    if any(dreamsim_files) and not all(dreamsim_files):
+        raise ValueError('Incomplete DreamSim scores: score every baseline before summarizing')
+    include_dreamsim = all(dreamsim_files)
+    metrics = [('clip',['clip']), ('bert',['caption','bert_precision','bert_recall','bert_f1']),
+               ('imagereward',['imagereward'])]
+    if include_dreamsim:
+        metrics.append(('dreamsim', ['dreamsim_diversity', 'dreamsim_contribution', 'dreamsim_image_count']))
     image_records=[]; fid_records=[]
     for baseline in plan['baselines']:
         merged={r['id']:dict(r) for r in rows if r['baseline']==baseline}
-        for metric,columns in [('clip',['clip']),('bert',['caption','bert_precision','bert_recall','bert_f1']),('imagereward',['imagereward'])]:
+        for metric,columns in metrics:
             payload=json.loads((_output(plan,baseline)/f'{metric}.json').read_text())
             if payload['plan_sha256']!=_hash(plan_path) or payload.get('images_sha256')!=_image_digest(plan,baseline) or {r['id'] for r in payload['records']}!=set(merged) or len(payload['records'])!=len(merged):
                 raise ValueError(f'Incomplete/stale {metric} for {baseline}')
@@ -540,9 +636,18 @@ def summarize_b2_scores(plan_path):
         image_count=('id','size'),clip=('clip','mean'),bert_f1=('bert_f1','mean'),imagereward=('imagereward','mean')).reset_index()
     fid_df=pd.DataFrame(fid_records)
     summary=summary.merge(fid_df[['baseline','seed','template','fid']],on=['baseline','seed','template'],validate='one_to_one')
+    metric_columns = ['fid','clip','bert_f1','imagereward']
+    if include_dreamsim:
+        # Equal prompt weighting, even if group sizes differ in future manifests.
+        prompt_scores = per_image.groupby(
+            ['baseline','seed','template','prompt_index'], sort=False)['dreamsim_diversity'].mean().reset_index()
+        diversity = prompt_scores.groupby(['baseline','seed','template'], sort=False).agg(
+            dreamsim_diversity=('dreamsim_diversity','mean')).reset_index()
+        summary = summary.merge(diversity, on=['baseline','seed','template'], validate='one_to_one')
+        metric_columns.append('dreamsim_diversity')
     if len(summary)!=len(plan['baselines'])*len(plan['seeds'])*3:
         raise ValueError('Missing template-level metric rows')
-    across_seeds=summary.groupby(['baseline','template','template_name'],sort=False)[['fid','clip','bert_f1','imagereward']].agg(['mean','std']).reset_index()
+    across_seeds=summary.groupby(['baseline','template','template_name'],sort=False)[metric_columns].agg(['mean','std']).reset_index()
     across_seeds.columns=['_'.join(filter(None,c)) if isinstance(c,tuple) else c for c in across_seeds.columns]
     for baseline in plan['baselines']:
         folder=_output(plan,baseline)

@@ -7,20 +7,18 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 from clover.evaluate.b2_evals import b2_evaluation as b2
+from clover.evaluate.b2_run_evaluation import run_b2_evaluation
 
 
 class B2NotebookFunctionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        notebook = json.loads((Path(__file__).resolve().parents[1] / 'clover/exp/total_evals.ipynb').read_text())
-        source = next(''.join(c['source']) for c in notebook['cells'] if 'def run_b2_evaluation(' in ''.join(c['source']))
-        namespace = {}
-        exec(compile(source, 'total_evals.ipynb', 'exec'), namespace)
-        cls.run_evaluation = staticmethod(namespace['run_b2_evaluation'])
+        # Notebooks now import the production runner instead of defining a copy.
+        cls.run_evaluation = staticmethod(run_b2_evaluation)
 
     def test_arguments_immediate_json_saves_and_no_return(self):
         self.assertEqual(list(inspect.signature(self.run_evaluation).parameters),
-                         ['baselines','seeds','b2_run_name','images_per_prompt','fraction'])
+                         ['baselines','seeds','b2_run_name','images_per_prompt','fraction','rollout_chunk_size'])
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             plan = root / 'plan.json'; plan.write_text('{}')
@@ -40,7 +38,8 @@ class B2NotebookFunctionTests(unittest.TestCase):
                 caption_b2_images=stage('b2_clip',[{'caption':'a dog'}]),
                 score_b2_bert=stage('b2_captions',[{'bert_f1':.6}]),
                 score_b2_imagereward=stage('b2_bert',[{'imagereward':1.2}]),
-                summarize_b2_scores=stage('b2_imagereward',(frame,frame,frame))):
+                score_b2_dreamsim=stage('b2_imagereward',[{'dreamsim_diversity':.4}]),
+                summarize_b2_scores=stage('b2_dreamsim',(frame,frame,frame))):
                 result = self.run_evaluation(['sd15','ddpo'],[123,124,126],'example',10,.8)
             self.assertIsNone(result)
             self.assertEqual(prepare.call_args.args[0],['sd15','ddpo'])
@@ -48,7 +47,7 @@ class B2NotebookFunctionTests(unittest.TestCase):
             self.assertEqual(prepare.call_args.kwargs['images_per_prompt'],10)
             self.assertEqual(prepare.call_args.kwargs['fraction'],.8)
             expected={'b2_plan','b2_image_manifests','b2_fid','b2_clip','b2_captions',
-                      'b2_bert','b2_imagereward','b2_per_image','b2_per_seed','b2_summary'}
+                      'b2_bert','b2_imagereward','b2_dreamsim','b2_per_image','b2_per_seed','b2_summary'}
             self.assertEqual({p.stem for p in folder.glob('*.json')},expected)
             self.assertEqual(json.loads((folder/'b2_fid.json').read_text()),[{'fid':0.}])
 

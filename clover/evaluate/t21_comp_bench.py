@@ -103,7 +103,7 @@ def generate_compbench_images(model, *, prompts_by_category=None, categories=tup
             settings[key] = getattr(model.config, key)
     manifest = {"schema_version": 1, "benchmark": "T2I-CompBench", "revision": REVISION,
                 "baseline": model.baseline, "run_name": run_name,
-                "checkpoint": str(Path(model.checkpoint).resolve()),
+                "checkpoint": str(Path(model.checkpoint).resolve()) if model.checkpoint is not None else None,
                 "prompt_source": "official_validation" if prompts_by_category is None else "provided_prompts",
                 "images_per_prompt": images_per_prompt, "base_seed": base_seed,
                 "inference": settings, "complete": False, "records": []}

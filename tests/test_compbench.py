@@ -53,6 +53,16 @@ class CompBenchTests(unittest.TestCase):
         self.assertEqual([r['score'] for r in result['per_image']], [0, 0.25, 0.5, 0.75])
         self.assertTrue((self.root / 'outputs/emo_v4/evals/t2i_compbench/default/metrics.json').is_file())
 
+    def test_sd15_without_checkpoint(self):
+        self.model.baseline = 'sd15'
+        self.model.checkpoint = None
+        path = self.generate()
+        self.assertIsNone(json.loads(path.read_text())['checkpoint'])
+        self.write_scores(path, [{'question_id': i, 'answer': .5} for i in range(4)])
+        result = collect_compbench_metrics(path, output_root=self.root / 'outputs')
+        self.assertIsNone(result['checkpoint'])
+        self.assertTrue((self.root / 'outputs/sd15/evals/t2i_compbench/default/metrics.json').is_file())
+
     def test_refuse_mixed_runs_and_unsafe_prompts(self):
         self.generate()
         with self.assertRaises(FileExistsError):

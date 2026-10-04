@@ -1,13 +1,13 @@
 {
   "baseline": "total",
-  "execution_time": 108852.97197628021,
+  "execution_time": 70816.58994054794,
   "runs": [
     {
       "baseline": "emo_v5",
-      "execution_time": 108852.9605345726,
+      "execution_time": 70816.58965110779,
       "gpu_ids": [
-        "0",
-        "1"
+        "1",
+        "2"
       ],
       "output_dir": "outputs/emo_v5/seed_456",
       "returncode": 0,

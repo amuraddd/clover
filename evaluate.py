@@ -1,11 +1,20 @@
-"""Command-line entry point for Clover B2 evaluation runs."""
+"""Command-line entry point for sequential B2 and T2I-CompBench evaluation."""
 
 import argparse
+import gc
+import json
 from collections.abc import Sequence
 
 from dotenv import load_dotenv
+import torch
 
 from clover.evaluate.b2_run_evaluation import run_b2_evaluation
+from clover.evaluate.inference import load_baseline_model
+from clover.evaluate.t21_comp_bench import (
+	generate_compbench_images,
+	run_compbench_metrics,
+	setup_compbench,
+)
 
 BASELINES = ["ddpo", "b2diffurl", "emo_v5", "sd15"] 
 DEFAULT_SEEDS = [123, 124, 126]
@@ -31,7 +40,7 @@ def fraction_value(value: str) -> float:
 
 
 def run_name(value: str) -> str:
-	"""Accept only single-directory B2 run names."""
+	"""Accept only single-directory evaluation run names."""
 	stripped = value.strip()
 	if not stripped or stripped in {".", ".."} or "/" in stripped:
 		raise argparse.ArgumentTypeError(
@@ -41,9 +50,9 @@ def run_name(value: str) -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-	"""Create the CLI parser for B2 evaluation runs."""
+	"""Create the CLI parser for B2 and T2I-CompBench evaluation runs."""
 	parser = argparse.ArgumentParser(
-		description="Launch the Clover B2 evaluation workflow from the command line.",
+		description="Run Clover B2 evaluation followed by T2I-CompBench for the same baselines and seeds.",
 		formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 	)
 	parser.add_argument(
@@ -58,7 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
 		nargs="+",
 		type=int,
 		default=list(DEFAULT_SEEDS),
-		help="Seed identifiers to include in the paired B2 evaluation.",
+		help="Generation seeds for both benchmarks (checkpoint seed remains 123).",
 	)
 	parser.add_argument(
 		"--b2-run-name",
@@ -85,11 +94,66 @@ def build_parser() -> argparse.ArgumentParser:
 		default=32,
 		help="EMO v5 evaluation rollout chunk size; omitted uses the saved config (default 32).",
 	)
+	parser.add_argument(
+		"--compbench-run-name",
+		type=run_name,
+		help="CompBench run prefix; defaults to the B2 run name. Each seed gets a _seed_<seed> suffix.",
+	)
+	parser.add_argument(
+		"--compbench-images-per-prompt",
+		type=positive_int,
+		default=10,
+		help="Images per CompBench prompt, following the notebook's ten-replicate protocol.",
+	)
+	parser.add_argument(
+		"--compbench-install-runtime",
+		action="store_true",
+		help="Install the project-local CompBench metric runtime and UniDet weights during setup.",
+	)
 	return parser
 
 
+def run_compbench_evaluation(baselines, seeds, compbench_run_name, images_per_prompt=10,
+                             *, rollout_chunk_size=None, install_runtime=False) -> None:
+	"""Follow the notebook protocol on each baseline and generation seed.
+
+	Like B2, use checkpoint seed 123. Score color, shape, texture, and spatial
+	validation prompts in full; the B2 fraction does not apply here. Images and
+	manifests live in clover/data/<baseline>/t2i_compbench/<run>_seed_<seed>/;
+	metric JSON lives in outputs/<baseline>/evals/t2i_compbench/<run>_seed_<seed>/.
+	Existing CompBench runs are refused by the generation helper.
+	"""
+	setup_compbench(install_runtime=install_runtime)
+	for baseline in baselines:
+		manifests = []
+		model = load_baseline_model(baseline, seed=123, device="cuda:0")
+		try:
+			for seed in seeds:
+				print(f"Generating T2I-CompBench: {baseline}, seed {seed}", flush=True)
+				manifests.append(generate_compbench_images(
+					model,
+					run_name=f"{compbench_run_name}_seed_{seed}",
+					images_per_prompt=images_per_prompt,
+					base_seed=seed,
+					inference_kwargs={
+						"num_inference_steps": 50,
+						"guidance_scale": 5.0,
+						"rollout_chunk_size": rollout_chunk_size,
+					},
+				))
+		finally:
+			# Release the pipeline (including EMO's variance head) before scorers run.
+			del model
+			gc.collect()
+			torch.cuda.empty_cache()
+		for manifest in manifests:
+			print(f"Scoring T2I-CompBench: {manifest}", flush=True)
+			results = run_compbench_metrics(manifest)
+			print(json.dumps(results["summary"], indent=2), flush=True)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
-	"""Parse CLI arguments and launch the B2 evaluation run."""
+	"""Run B2, then T2I-CompBench using the same baselines and generation seeds."""
 	load_dotenv(dotenv_path=".env")
 	args = build_parser().parse_args(argv)
 
@@ -113,6 +177,16 @@ def main(argv: Sequence[str] | None = None) -> int:
 	)
 
 	print("B2 evaluation completed", flush=True)
+	print("Launching T2I-CompBench evaluation", flush=True)
+	run_compbench_evaluation(
+		baselines=args.baselines,
+		seeds=args.seeds,
+		compbench_run_name=args.compbench_run_name or args.b2_run_name,
+		images_per_prompt=args.compbench_images_per_prompt,
+		rollout_chunk_size=args.rollout_chunk_size,
+		install_runtime=args.compbench_install_runtime,
+	)
+	print("T2I-CompBench evaluation completed", flush=True)
 	return 0
 
 

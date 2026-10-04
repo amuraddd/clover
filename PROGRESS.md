@@ -1,3 +1,16 @@
+## 2026-10-04 — Added DreamSim diversity to B2 evaluation
+
+- Added `b2_dreamsim_worker.py` and a separate, locked project-local uv runtime with DreamSim 0.2.1. Installed the runtime and verified its public API imports without loading model weights.
+- Reviewed the supplied DreamSim repository and ICLR 2025 paper (section 4.2). Implemented trace of sample covariance of normalized ensemble embeddings, independently per baseline/evaluation-seed/template/prompt. This equals mean distinct-pair cosine distance. The paper leaves variance correction and dimension reduction unspecified; our correction=1 and sum reduction are documented explicitly. B2 retains its configured sample count rather than forcing the paper's batch of 64.
+- Added `score_b2_dreamsim`, manifest/checksum/runtime-aware caching, single-GPU worker execution, strict result validation, and stage export `clover/evaluate/metrics/<run>/b2_dreamsim.json`. Baseline records persist under `outputs/<baseline>/evals/b2/<run>/dreamsim.json`, with equal-prompt averages and across-seed statistics in the existing summaries. Historical runs without DreamSim remain readable.
+- Wired the stage after ImageReward in the shared B2 runner. Updated the outdated notebook test to use that runner and documented metric semantics and output locations in `clover/evaluate/b2_evals/DREAMSIM.md`.
+- Validation: 22 focused CPU tests passed (DreamSim math/grouping/batching, worker validation, cache handling, summary aggregation, B2 runner and evaluation CLI); `git diff --check` passed. The main environment emitted its existing xFormers binary-compatibility warning. No GPU experiment or pretrained-weight inference was launched; model loading remains to be exercised in a Slurm evaluation.
+
+## 2026-10-04 — Checked T2I evaluation JSON persistence
+
+- Confirmed T2I-CompBench saves per-image scores, category summaries, and run metadata to `outputs/<baseline>/evals/t2i_compbench/<run>_seed_<seed>/metrics.json` when invoked through `evaluate.py`.
+- Unlike B2's stage-by-stage JSON exports, the consolidated T2I metrics file is written after all selected scorers complete; upstream category result JSON files are stored alongside generated data. Inspected code only; no experiments launched.
+
 ## 2026-09-03 — Fixed EMO reward-scale scheduling
 
 - Corrected the EMO v2/v3 reward-scale schedule so epochs 1–10 retain the configured positive initial scale and the scale doubles after each completed ten-epoch interval.
@@ -1197,3 +1210,11 @@ else:
 - Resolved both paths relative to the evaluation module. Missing runtimes now invoke the existing locked, project-local uv setup automatically; existing runtimes and valid cached scores are reused.
 - Removed IPython output capture from the evaluation runner so stage output reaches the script log. Preserved existing rollout overrides and per-stage metric persistence.
 - Validation: all eight B2 evaluation tests passed, including regressions for runtime/worker paths, existing/missing runtime handling, and cached-score reuse. Evaluation CLI help and changed-code whitespace checks passed. Existing xFormers/PyTorch compatibility warning remains; no GPU evaluation, dependency installation, or Slurm job submitted.
+
+## 2026-10-04 — Run T2I-CompBench after CLI B2 evaluation
+
+- Integrated the total_evals.ipynb CompBench workflow into evaluate.py after B2, using the same requested baselines and generation seeds and checkpoint seed 123 to match B2. Uses all color, shape, texture, and spatial validation prompts, 50 inference steps, guidance 7.5, and ten images per prompt by default; forwards the EMO rollout chunk override.
+- Added --compbench-run-name (defaults to the B2 name), --compbench-images-per-prompt, and optional --compbench-install-runtime for the existing project-local uv setup. Each seed receives a distinct <run>_seed_<seed> directory. Images/manifests remain under clover/data/<baseline>/t2i_compbench; structured metrics remain under outputs/<baseline>/evals/t2i_compbench. Existing runs are refused by the existing generator.
+- Generation and scoring are sequential; release each baseline model before invoking official metric subprocesses. Fixed vanilla SD 1.5 manifest serialization to represent its absent checkpoint as JSON null.
+- Validation: 15 evaluation/checkpoint/CLI tests and 8 CompBench tests passed using uv run --no-sync, including stage order, shared seed/baseline forwarding, seed-specific output names, cleanup before scoring/on failure, and SD 1.5 metric persistence. git diff --check passed. Existing xFormers/PyTorch compatibility warning remains. No GPU evaluations, dependency installations, or Slurm jobs submitted.
+- The instructed clover/utils/reward.py is absent. Preserved existing B2 ImageReward scoring and the notebook's official CompBench metrics without inventing a replacement reward. Unrelated working-tree changes were preserved.

@@ -15,7 +15,10 @@ def run_b2_evaluation(baselines, seeds, b2_run_name, images_per_prompt, fraction
     Uses checkpoint seed 123 and cuda:0. Returns nothing; stage progress is written to stdout.
     Earlier JSON results remain available if a later evaluation fails.
     rollout_chunk_size optionally overrides EMO v5 evaluation chunking only.
+    DreamSim diversity requires images_per_prompt >= 2.
     """
+    if images_per_prompt < 2:
+        raise ValueError('B2 DreamSim diversity requires images_per_prompt >= 2')
     def save_json(name, value):
         path = metrics_dir / f"{name}.json"
         temporary = path.with_suffix(".json.tmp")
@@ -69,6 +72,10 @@ def run_b2_evaluation(baselines, seeds, b2_run_name, images_per_prompt, fraction
     imagereward = b2.score_b2_imagereward(plan_path, device="cuda:0")
     save_json("b2_imagereward", imagereward)
     del imagereward
+
+    dreamsim = b2.score_b2_dreamsim(plan_path, device="cuda:0")
+    save_json("b2_dreamsim", dreamsim)
+    del dreamsim
 
     per_image, per_seed, summary = b2.summarize_b2_scores(plan_path)
     for name, frame in (("b2_per_image", per_image), ("b2_per_seed", per_seed),

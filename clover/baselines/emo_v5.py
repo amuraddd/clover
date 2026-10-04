@@ -1395,9 +1395,9 @@ def train(
     # )
     scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
         optimizer,
-        T_0=5, #config.buffer_reset
+        T_0=config.buffer_reset,
         T_mult=1,
-        eta_min=1e-6, #3e-6 (used for seed 123), 1e-5 used for other seeds
+        eta_min=3e-6, #3e-6 (used for seed 123), 1e-5 used for other seeds
     )
     vae_scale_factor = 2 ** (len(pipe.vae.config.block_out_channels) - 1)
     last_epoch, history = load_training_checkpoint(

@@ -150,6 +150,18 @@ class B2EvaluationTests(unittest.TestCase):
             self.assertTrue(np.allclose(per_seed['bert_f1'],.55))
             self.assertTrue((per_seed[per_seed.baseline=='sd15'].fid==0).all())
             self.assertTrue((b2._output(plan,'sd15')/'per_image_scores.json').is_file())
+            # Existing summaries remain readable; new scores appear throughout.
+            self.assertNotIn('dreamsim_diversity', per_seed)
+            dreamsim_rows = [{**r, 'dreamsim_diversity': .4, 'dreamsim_contribution': .4,
+                             'dreamsim_image_count': 2} for r in reversed(rows)]
+            b2._save_metric(path, plan, dreamsim_rows, 'dreamsim', {'correction': 1})
+            per_image, per_seed, summary = b2.summarize_b2_scores(path)
+            self.assertTrue(np.allclose(per_image['dreamsim_diversity'], .4))
+            self.assertTrue(np.allclose(per_seed['dreamsim_diversity'], .4))
+            self.assertTrue(np.allclose(summary['dreamsim_diversity_mean'], .4))
+            saved = json.loads((b2._output(plan, 'sd15') / 'summary.json').read_text())
+            self.assertIsNone(saved['across_seeds'][0]['dreamsim_diversity_std'])
+            self.assertAlmostEqual(saved['per_seed_template'][0]['dreamsim_diversity'], .4)
 
     @patch('clover.evaluate.inference.load_lora_pipeline')
     @patch('clover.evaluate.inference.load_reference_pipeline')
