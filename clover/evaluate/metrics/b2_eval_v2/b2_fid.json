@@ -95,7 +95,7 @@
     "template": 1,
     "template_name": "object_behavior",
     "level": "template",
-    "fid": 49.79465488513875,
+    "fid": 50.02113489600091,
     "reference_baseline": "sd15",
     "image_count": 720
   },
@@ -105,7 +105,7 @@
     "template": 2,
     "template_name": "object_attribute",
     "level": "template",
-    "fid": 87.18916304337742,
+    "fid": 86.4560897142629,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -115,7 +115,7 @@
     "template": 3,
     "template_name": "positional_relationship",
     "level": "template",
-    "fid": 95.51310066822442,
+    "fid": 95.64480413851524,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -125,7 +125,7 @@
     "template": 1,
     "template_name": "object_behavior",
     "level": "template",
-    "fid": 47.60967022397327,
+    "fid": 47.61084347265173,
     "reference_baseline": "sd15",
     "image_count": 720
   },
@@ -135,7 +135,7 @@
     "template": 2,
     "template_name": "object_attribute",
     "level": "template",
-    "fid": 84.69281847250363,
+    "fid": 84.20117321096812,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -145,7 +145,7 @@
     "template": 3,
     "template_name": "positional_relationship",
     "level": "template",
-    "fid": 79.89198028133227,
+    "fid": 79.898729486751,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -155,7 +155,7 @@
     "template": 1,
     "template_name": "object_behavior",
     "level": "template",
-    "fid": 50.591849285073856,
+    "fid": 50.26663202011674,
     "reference_baseline": "sd15",
     "image_count": 720
   },
@@ -165,7 +165,7 @@
     "template": 2,
     "template_name": "object_attribute",
     "level": "template",
-    "fid": 77.5886526661654,
+    "fid": 77.32153143410194,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -175,7 +175,7 @@
     "template": 3,
     "template_name": "positional_relationship",
     "level": "template",
-    "fid": 91.41090431462392,
+    "fid": 92.14240617805577,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -185,7 +185,7 @@
     "template": 1,
     "template_name": "object_behavior",
     "level": "template",
-    "fid": 45.274882117239784,
+    "fid": 44.84646752215022,
     "reference_baseline": "sd15",
     "image_count": 720
   },
@@ -195,7 +195,7 @@
     "template": 2,
     "template_name": "object_attribute",
     "level": "template",
-    "fid": 39.90560220108252,
+    "fid": 39.81824986147813,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -205,7 +205,7 @@
     "template": 3,
     "template_name": "positional_relationship",
     "level": "template",
-    "fid": 73.76882578764597,
+    "fid": 72.86988017985179,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -215,7 +215,7 @@
     "template": 1,
     "template_name": "object_behavior",
     "level": "template",
-    "fid": 42.76302707115034,
+    "fid": 42.39620475596692,
     "reference_baseline": "sd15",
     "image_count": 720
   },
@@ -225,7 +225,7 @@
     "template": 2,
     "template_name": "object_attribute",
     "level": "template",
-    "fid": 42.55544595644333,
+    "fid": 42.529676784415756,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -235,7 +235,7 @@
     "template": 3,
     "template_name": "positional_relationship",
     "level": "template",
-    "fid": 67.48801773514322,
+    "fid": 66.36185439955803,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -245,7 +245,7 @@
     "template": 1,
     "template_name": "object_behavior",
     "level": "template",
-    "fid": 45.194329491856294,
+    "fid": 44.92124406817019,
     "reference_baseline": "sd15",
     "image_count": 720
   },
@@ -255,7 +255,7 @@
     "template": 2,
     "template_name": "object_attribute",
     "level": "template",
-    "fid": 36.360511485926104,
+    "fid": 36.82046125080639,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -265,7 +265,7 @@
     "template": 3,
     "template_name": "positional_relationship",
     "level": "template",
-    "fid": 79.46411508819652,
+    "fid": 79.87260430453843,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -275,7 +275,7 @@
     "template": 1,
     "template_name": "object_behavior",
     "level": "template",
-    "fid": 34.11937492718771,
+    "fid": 34.87491510661068,
     "reference_baseline": "sd15",
     "image_count": 720
   },
@@ -285,7 +285,7 @@
     "template": 2,
     "template_name": "object_attribute",
     "level": "template",
-    "fid": 26.668895623471265,
+    "fid": 28.749216679063625,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -295,7 +295,7 @@
     "template": 3,
     "template_name": "positional_relationship",
     "level": "template",
-    "fid": 53.916794833272334,
+    "fid": 57.69984871803801,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -305,7 +305,7 @@
     "template": 1,
     "template_name": "object_behavior",
     "level": "template",
-    "fid": 31.63019788344278,
+    "fid": 32.570494666788,
     "reference_baseline": "sd15",
     "image_count": 720
   },
@@ -315,7 +315,7 @@
     "template": 2,
     "template_name": "object_attribute",
     "level": "template",
-    "fid": 24.381926274191574,
+    "fid": 30.20807888708197,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -325,7 +325,7 @@
     "template": 3,
     "template_name": "positional_relationship",
     "level": "template",
-    "fid": 50.8269289056136,
+    "fid": 45.99602598641721,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -335,7 +335,7 @@
     "template": 1,
     "template_name": "object_behavior",
     "level": "template",
-    "fid": 34.318329451176005,
+    "fid": 34.868863235010274,
     "reference_baseline": "sd15",
     "image_count": 720
   },
@@ -345,7 +345,7 @@
     "template": 2,
     "template_name": "object_attribute",
     "level": "template",
-    "fid": 25.82157871519464,
+    "fid": 26.341976863760735,
     "reference_baseline": "sd15",
     "image_count": 160
   },
@@ -355,7 +355,7 @@
     "template": 3,
     "template_name": "positional_relationship",
     "level": "template",
-    "fid": 52.79516450716956,
+    "fid": 54.74705119244236,
     "reference_baseline": "sd15",
     "image_count": 160
   }

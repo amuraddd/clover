@@ -167,14 +167,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 	print(f"Fraction: {args.fraction}", flush=True)
 	print(f"Rollout chunk size: {args.rollout_chunk_size or 'saved config'}", flush=True)
 
-	run_b2_evaluation(
-		baselines=args.baselines,
-		seeds=args.seeds,
-		b2_run_name=args.b2_run_name,
-		images_per_prompt=args.images_per_prompt,
-		fraction=args.fraction,
-		rollout_chunk_size=args.rollout_chunk_size,
-	)
+	# run_b2_evaluation(
+	# 	baselines=args.baselines,
+	# 	seeds=args.seeds,
+	# 	b2_run_name=args.b2_run_name,
+	# 	images_per_prompt=args.images_per_prompt,
+	# 	fraction=args.fraction,
+	# 	rollout_chunk_size=args.rollout_chunk_size,
+	# )
 
 	print("B2 evaluation completed", flush=True)
 	print("Launching T2I-CompBench evaluation", flush=True)

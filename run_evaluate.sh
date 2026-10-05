@@ -22,6 +22,7 @@ source /aiau010_scratch/azm0269/clover/.venv/bin/activate
 export workdir=/aiau010_scratch/azm0269/clover
 cd $workdir
 source .env
+export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 export HF_HOME="/aiau010_scratch/azm0269/hub"
 export TMPDIR="/aiau010_scratch/azm0269/tmp"
 # TOKENIZERS_PARALLELISM=true

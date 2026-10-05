@@ -1218,3 +1218,25 @@ else:
 - Generation and scoring are sequential; release each baseline model before invoking official metric subprocesses. Fixed vanilla SD 1.5 manifest serialization to represent its absent checkpoint as JSON null.
 - Validation: 15 evaluation/checkpoint/CLI tests and 8 CompBench tests passed using uv run --no-sync, including stage order, shared seed/baseline forwarding, seed-specific output names, cleanup before scoring/on failure, and SD 1.5 metric persistence. git diff --check passed. Existing xFormers/PyTorch compatibility warning remains. No GPU evaluations, dependency installations, or Slurm jobs submitted.
 - The instructed clover/utils/reward.py is absent. Preserved existing B2 ImageReward scoring and the notebook's official CompBench metrics without inventing a replacement reward. Unrelated working-tree changes were preserved.
+
+## 2026-10-05 — Fix DreamSim scores in the final evaluation notebook
+
+- Corrected the notebook score-field mapping from nonexistent dreamsim to dreamsim_diversity, retaining dreamsim as the display column. Average DreamSim equally over prompts within each template/seed, then over seeds, matching saved metric metadata; validate prompt indices. Updated documentation and cleared stale error output.
+- Validation: executed the summary function and existing four-baseline v2 example with uv run --no-sync; all 60 scores (four baselines, three templates, five metrics) matched independent JSON aggregation. Notebook whitespace check passed. No GPU evaluation or Slurm jobs submitted; existing metric files and unrelated edits preserved.
+
+## 2026-10-05 — Diagnose T2I-CompBench SSL setup failure
+
+- Traced evaluate.log to prepare_source(): urllib failed certificate verification while requesting the pinned upstream GitHub API tree, before CompBench scoring. B2 had completed successfully.
+- Checked the project Python default SSL context: cafile and capath resolve to None and zero CA certificates are loaded; compiled OpenSSL defaults point under /linux_apps/openssl-v3/etc. This supports a missing default trust-store configuration as the cause; the original Slurm environment was not reproduced.
+- No evaluation code changes, downloads, GPU work, or Slurm jobs submitted.
+
+## 2026-10-05 — Verify system CA bundle for CompBench
+
+- Confirmed /etc/ssl/certs/ca-certificates.crt is readable and loads 146 CA certificates in project Python.
+- Retried the exact CompBench GitHub tree request with SSL_CERT_FILE pointing to that bundle: HTTP 200 with certificate verification enabled. Recommended exporting this setting after source .env in the evaluation launcher.
+- No launcher changes or evaluation jobs submitted.
+
+## 2026-10-05 — Configure evaluation launcher CA certificates
+
+- Added SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt after source .env in run_evaluate.sh (the existing evaluation launcher) so Python HTTPS requests use the verified system CA bundle.
+- Validation: bash syntax check passed. No evaluation or Slurm jobs submitted.
