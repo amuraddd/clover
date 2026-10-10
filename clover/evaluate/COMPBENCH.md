@@ -10,7 +10,7 @@ Run the notebook's T2I-CompBench cells in order:
 1. Execute the import cell for `clover.evaluate.t21_comp_bench`.
 2. Call `setup_compbench()` to fetch/verify the official source and prompts.
 3. On first use, run `setup_compbench(install_runtime=True)` to install the local
-   metric runtime and UniDet weights. This requires a CUDA 11.7-compatible build
+   metric runtime and UniDet weights. This requires a CUDA 12.4 build
    toolchain for Detectron2. BLIP weights download on first scoring.
 4. Load a checkpoint with the existing `load_baseline_model(...)` import, or use
    an already-loaded `model`.
@@ -38,3 +38,13 @@ project-local uv runtime `clover/evaluate/compbench_backend/.venv`, separate fro
 the model-generation environment. Each scorer sees one GPU and runs sequentially.
 Runtime installation, native compilation, and full GPU scoring have not been
 validated; CPU tests exercise the imported module and result bookkeeping.
+
+The metric backend pins PyTorch `2.4.1+cu124` and torchvision `0.19.1+cu124`
+from the official PyTorch CUDA 12.4 index to match the evaluation node's toolkit.
+Setup checks `CUDA_HOME/bin/nvcc --version` against `torch.version.cuda` before
+building Detectron2 and rebuilds its native extension without using cached wheels.
+When upgrading an existing runtime, pass `--compbench-install-runtime` to
+`evaluate.py` (or call `setup_compbench(install_runtime=True)` from the notebook).
+This updates the project-local metric dependencies; it does not replace the
+system CUDA toolkit or the model-generation environment. The CUDA 12.4 native
+build and scorer execution still require validation on the compute node.

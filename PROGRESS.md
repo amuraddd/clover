@@ -1240,3 +1240,78 @@ else:
 
 - Added SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt after source .env in run_evaluate.sh (the existing evaluation launcher) so Python HTTPS requests use the verified system CA bundle.
 - Validation: bash syntax check passed. No evaluation or Slurm jobs submitted.
+
+## 2026-10-06 — Add B2 FID and DreamSim to T2I-CompBench
+
+- Added a paired CompBench manifest adapter and distribution-metric entry point. Reuses B2's local torchvision ImageNet Inception FID against sd15 and normalized-embedding DreamSim diversity (trace of sample covariance), including the existing locked uv runtime, feature caches, score validation, and image hashes. No image copies or new dependencies.
+- Integrated scoring into evaluate.py after all baseline images and official scores are available, separately for each evaluation seed. DreamSim groups replicates by base seed/category/prompt and averages prompts equally; replicate generation seeds remain recorded separately. Requires sd15 and at least two images per prompt; rejects unpaired or modified inputs.
+- Saves fid.json, dreamsim.json, and distribution_summary.json under outputs/<baseline>/evals/t2i_compbench/<run>_seed_<seed>/. Adapter plans and image snapshots stay alongside source images under clover/data/<baseline>/t2i_compbench/<run>_seed_<seed>/distribution_metrics/. FID metadata explicitly retains the B2 extractor definition, which differs from standard TensorFlow FID.
+- Validation: 23 focused CPU tests passed with uv run --no-sync, covering B2 regressions, category FID grouping/cache reuse, DreamSim grouping, pairing/hash validation, summary persistence, and CLI wiring. Seven existing CompBench tests also passed in the initial broader run. Two pre-existing broader-suite mismatches remain: B2 is commented out in evaluate.py despite the stage-order test, and the user's expanded category dispatch conflicts with the old unsupported-category test. Preserved both existing behaviors; updated the touched orchestration test to the existing guidance_scale=5.0 setting.
+- No GPU experiments, Slurm jobs, package installations, or metric downloads were run. Existing xFormers compatibility warning remains. Whitespace checking flags only three pre-existing trailing spaces in the user's category mapping. The project reward.py remains absent; existing reward behavior is unchanged.
+
+## 2026-10-06 — Complete both CompBench metric stages per baseline
+
+- Moved official and distribution scoring into the same per-seed loop inside each baseline iteration. SD 1.5 runs first to supply FID references; the remaining baselines preserve their requested order. Both metric stages finish for all seeds before the next baseline model loads, with generation models released before scoring.
+- Added immutable plans for each baseline combination and stable per-baseline CompBench cache identities, allowing the standalone SD 1.5 reference to participate in subsequent pairs without plan collisions or invalidating its cached Inception features. Ordinary B2 cache identities remain unchanged.
+- Validation: all 23 focused CPU tests passed with uv run --no-sync. The orchestration regression asserts the exact load/official/distribution order and memory release; the FID regression confirms standalone SD 1.5 features are reused when scoring a pair. No GPU experiment, Slurm submission, or dependency installation. Existing broader-suite mismatches and category-map trailing whitespace remain unchanged.
+
+## 2026-10-06 — Resume T2I-CompBench images and official metrics
+
+- evaluate.py now checks each baseline/run/seed manifest before loading a generation model. Complete image sets with matching prompts, image count, seed, revision, and requested inference settings are reused. Models load only for baselines with unfinished seeds; both metric stages still complete inside the baseline loop.
+- Added opt-in generator resumption, enabled by evaluate.py: interrupted runs preserve valid PNGs and generate only missing or corrupt unfinished images, rebuilding the complete manifest. New manifests record the full prompt set. Conflicting run settings and damaged completed runs fail rather than silently mixing results; complete cached manifests are not rewritten.
+- Added official-metric resumption, enabled by evaluate.py. Existing category JSON scores are validated and reused, and only missing categories invoke scorers. Distribution metrics retain existing cache behavior. No new CLI flag is needed: rerun the same evaluation command/run name.
+- Validation: 31 focused CPU tests passed with uv run --no-sync (24 orchestration/distribution/B2 regressions plus seven targeted image/official-metric tests). Covered skipping complete baseline/seed runs without model loading, mixed complete/missing seeds, interrupted generation retaining file timestamps, incompatible settings/missing images, fully cached official scoring without a runtime, and scoring only a missing category. Existing broader-suite mismatches and three category-map trailing spaces are unchanged. No GPU job, Slurm submission, model download, or dependency installation.
+
+## 2026-10-08 — Diagnose missing CompBench scoring runtime
+
+- Traced evaluate.log to the runtime preflight in run_compbench_metrics: clover/evaluate/compbench_backend/.venv/bin/python is absent. Source preparation succeeds, but setup_compbench defaults to install_runtime=False, so it does not install metric dependencies unless --compbench-install-runtime is supplied.
+- Proposed enabling the existing CLI installation flag with a CUDA 11.7-compatible toolkit available for the Detectron2 build. The setup uses the dedicated locked uv project and downloads UniDet weights. Preserve the same run name and generation settings to reuse validated complete images.
+- Recommended checking runtime readiness before image generation and replacing the notebook-specific error with CLI guidance. Also observed that evaluate.py prints B2 completion while its B2 call is commented out.
+- Validation: inspected the traceback, CLI/setup/resume paths, and confirmed the interpreter is absent. No evaluation code changes, dependency installations, GPU work, or Slurm jobs submitted.
+
+## 2026-10-08 — Recheck evaluate.log runtime failure and proposed fix
+
+- Confirmed the current traceback fails at official CompBench scoring because clover/evaluate/compbench_backend/.venv/bin/python is absent; the CLI setup flag defaults to disabled.
+- Proposed adding --compbench-install-runtime to the evaluation invocation, with the CUDA 11.7-compatible toolkit required by the existing Detectron2 setup. Keep the same run name and generation settings to reuse validated images. Route any eventual experiment through run_experiments.sh per project instructions; its current command invokes main rather than evaluate and would need adjustment.
+- Recommended runtime preflight before generation and a CLI-specific error. Confirmed the B2 completion message is misleading because its evaluation call is commented out.
+- Read-only diagnosis of code and runtime paths; no implementation changes, installations, tests, GPU work, or Slurm jobs. This entry records the completed diagnosis only.
+
+## 2026-10-08 — Automatically prepare CompBench for script evaluation
+
+- Compared total_evals.ipynb setup cells with evaluate.py. The notebook calls setup_compbench() and documents a one-time setup_compbench(install_runtime=True) call (currently commented out).
+- evaluate.py now invokes that same installation path automatically when the dedicated interpreter or UniDet weights are missing, before checking/generating images. Existing interpreter and weights reuse source-only setup; --compbench-install-runtime explicitly reruns installation. Setup exceptions stop evaluation before model loading or scoring.
+- Documented automatic setup and its existing CUDA 11.7-compatible toolkit requirement in run_evaluate.sh, the evaluation launcher confirmed by the user. It already forwards CLI arguments and retains its one-GPU allocation. Existing image and score resumption is preserved.
+- Validation: six CPU CLI tests passed, including new missing-runtime/missing-weights/reuse/forced-setup cases and setup failure ordering. The seventh test has the previously documented failure because B2 is commented out in evaluate.py; that behavior was preserved. Launcher bash syntax and scoped git diff --check passed. Existing xFormers compatibility warning remains.
+- No dependency installation, model download, GPU evaluation, or Slurm job was run. Full installation still needs validation in the cluster environment with the required toolkit available.
+
+## 2026-10-09 — Diagnose latest evaluation job failure
+
+- Slurm job 30728 (eval, aiau011) failed with exit code 1 after 15 seconds; its Python step also exited 1. All three evaluation logs are zero bytes.
+- Scratch filesystem reports 100% usage and zero available bytes, with ample free inodes; git status also reported a write/close error. Disk exhaustion is the leading explanation, but empty logs prevent identifying the exact failing operation. The CompBench runtime interpreter remains absent.
+- No code changes, cleanup, installation, or jobs submitted. Free scratch space before retrying; retain logs per job for future diagnosis.
+
+## 2026-10-09 — Limit T2I-CompBench prompts per category
+
+- Added evaluate.py's optional --compbench-prompts-per-category positive-integer argument. Selects the first N official validation prompts in each configured category (or all available if fewer); omission preserves full evaluation.
+- Shares the selected prompts across baselines/seeds and passes them to both cache lookup and image generation, keeping resume validation and downstream manifest-based metrics consistent. Use a new CompBench run name when changing an existing run's prompt selection.
+- Validation: uv run --no-sync python -m unittest discover -s tests -p test_evaluate_cli.py ran nine CPU tests: eight passed, including CLI forwarding, invalid limits, default behavior, shorter categories, and cache/generation consistency. The previously documented B2 stage-order test still fails because B2 invocation is commented out; preserved that existing behavior. Scoped whitespace check passed. Existing xFormers compatibility warning remains. No GPU experiments, Slurm jobs, downloads, or installations.
+
+## 2026-10-09 — Diagnose CompBench Detectron2 build failure
+
+- evaluate.log identifies a CUDA toolkit mismatch during automatic CompBench runtime setup: Detectron2's extension build detects CUDA 12.4, while the dedicated backend's PyTorch was compiled with CUDA 11.7. The build failure propagates through uv pip install, setup_compbench, and Slurm exit code 1, before image generation or scoring.
+- Confirmed the backend pins torch==2.0.1; setup forces CUDA compilation but its preflight only asserts that CUDA_HOME exists. run_evaluate.sh documents the 11.7 requirement without selecting that toolkit. The corrective step is to select a CUDA 11.7 toolkit for the build (CUDA_HOME and PATH), then rerun runtime setup; the prompt-count option is unrelated.
+- Inspected log, setup code, backend dependency configuration, and launcher. No code changes, installations, or jobs submitted.
+
+## 2026-10-09 — Adapt CompBench dependencies to the available CUDA 12.4 toolkit
+
+- Replaced the CompBench backend's PyTorch 2.0.1 / torchvision 0.15.2 pins with the official CUDA 12.4 wheels torch==2.4.1+cu124 and torchvision==0.19.1+cu124. Added an explicit PyTorch cu124 index and regenerated the dedicated uv lockfile. System CUDA and the main training environment are unchanged.
+- Added a pre-build check comparing the backend's torch.version.cuda with CUDA_HOME/bin/nvcc, including actionable missing-toolkit/compiler and mismatch errors. Runtime setup forces a fresh Detectron2 native build to avoid cached extensions compiled against earlier Torch/CUDA versions. Updated setup documentation and launcher comments.
+- Validation: uv lock resolved 98 packages; offline locked validation succeeded. All five CPU setup tests passed, covering matching/mismatched CUDA versions, missing toolkit/compiler, stopping before compilation/download on mismatch, and fresh-build options. Launcher syntax and scoped whitespace checks passed; three pre-existing trailing spaces remain in the category map.
+- Runtime packages were not installed and no GPU evaluation or Slurm job was submitted. The current shell lacks nvcc, so the CUDA 12.4 Detectron2 build and legacy scorer compatibility still need compute-node validation. Dependency selection follows https://pytorch.org/get-started/previous-versions/ (PyTorch 2.4.1 CUDA 12.4); rebuilding follows https://detectron2.readthedocs.io/en/latest/tutorials/install.html.
+
+## 2026-10-09 — Diagnose DDPO T2I-CompBench scoring failure
+
+- evaluate.log reports failure of the seed-123 color scorer. Its nested metric.log identifies CUDA OOM in BLIP visual attention: a 1.16 GiB allocation failed with only 670 MiB free on a 139.80 GiB GPU. PID 789113 occupied 134.65 GiB; the scorer used 3.76 GiB. Available logs do not identify the large process or establish whether it belonged to this evaluation or another job.
+- The NFS temporary-directory cleanup error is separate from the fatal CUDA traceback. Generation cleanup already deletes the model, collects garbage, and empties the CUDA cache before scoring; BLIP test batch size is 32. Prioritize identifying GPU occupancy/allocation at scoring time; reducing scorer batch size is a secondary mitigation.
+- Verified all three DDPO manifests (seeds 123, 124, 126) are complete, each with 3,000 image records and no missing image files. Existing resume logic can reuse those images with identical settings.
+- Diagnosis only: no evaluation code changes, dependency installation, GPU work, or Slurm submissions.

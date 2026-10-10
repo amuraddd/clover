@@ -11,14 +11,21 @@ import torch
 from clover.evaluate.b2_run_evaluation import run_b2_evaluation
 from clover.evaluate.inference import load_baseline_model
 from clover.evaluate.t21_comp_bench import (
+	BACKEND as COMPBENCH_BACKEND,
+	DATA_ROOT as COMPBENCH_DATA_ROOT,
+	METRICS as COMPBENCH_METRICS,
+	load_compbench_prompts,
 	generate_compbench_images,
+	find_compbench_images,
 	run_compbench_metrics,
+	run_compbench_distribution_metrics,
 	setup_compbench,
 )
 
 BASELINES = ["ddpo", "b2diffurl", "emo_v5", "sd15"] 
 DEFAULT_SEEDS = [123, 124, 126]
 DEFAULT_IMAGES_PER_PROMPT = 20
+T2I_COMP_BENCH_PROMPTS_PER_CATEGORY = 50
 DEFAULT_FRACTION = 0.8
 RUN_NAME = "b2_eval_v2"
 
@@ -106,32 +113,83 @@ def build_parser() -> argparse.ArgumentParser:
 		help="Images per CompBench prompt, following the notebook's ten-replicate protocol.",
 	)
 	parser.add_argument(
+		"--compbench-prompts-per-category",
+		type=positive_int,
+		default=T2I_COMP_BENCH_PROMPTS_PER_CATEGORY,
+		help="Evaluate only the first N validation prompts per CompBench category; omitted uses all prompts.",
+	)
+	parser.add_argument(
 		"--compbench-install-runtime",
 		action="store_true",
-		help="Install the project-local CompBench metric runtime and UniDet weights during setup.",
+		default=True,
+		help="Rerun CompBench runtime installation even when its interpreter and UniDet weights exist; missing files trigger installation automatically.",
 	)
 	return parser
 
 
 def run_compbench_evaluation(baselines, seeds, compbench_run_name, images_per_prompt=10,
-                             *, rollout_chunk_size=None, install_runtime=False) -> None:
+                             *, rollout_chunk_size=None, install_runtime=False,
+                             prompts_per_category=None) -> None:
 	"""Follow the notebook protocol on each baseline and generation seed.
 
-	Like B2, use checkpoint seed 123. Score color, shape, texture, and spatial
-	validation prompts in full; the B2 fraction does not apply here. Images and
+	Like B2, use checkpoint seed 123. Score all configured categories
+	in full, or their first prompts_per_category validation prompts when set;
+	the B2 fraction does not apply here. Images and
 	manifests live in clover/data/<baseline>/t2i_compbench/<run>_seed_<seed>/;
 	metric JSON lives in outputs/<baseline>/evals/t2i_compbench/<run>_seed_<seed>/.
-	Existing CompBench runs are refused by the generation helper.
+	Run sd15 first to provide the FID reference. Complete official metrics and
+	B2-backed distribution metrics for each baseline before loading the next.
+	At least two replicates and an sd15 reference are required. Completed image
+	sets are reused; interrupted generation resumes with only missing images.
+	Use the notebook setup to install missing runtime/weights before generation;
+	install_runtime=True explicitly reruns installation for an existing runtime.
 	"""
+	if prompts_per_category is not None and (
+		not isinstance(prompts_per_category, int) or prompts_per_category < 1
+	):
+		raise ValueError("prompts_per_category must be a positive integer")
+	if images_per_prompt < 2:
+		raise ValueError("CompBench DreamSim requires at least two images per prompt")
+	if "sd15" not in baselines or len(set(baselines)) != len(baselines):
+		raise ValueError("Include sd15 exactly once and use distinct baseline names")
+	if not seeds or len(set(seeds)) != len(seeds):
+		raise ValueError("Use distinct, nonempty evaluation seeds")
+	reference_manifests = {}
+	runtime_python = COMPBENCH_BACKEND / ".venv/bin/python"
+	unidet_weights = (COMPBENCH_DATA_ROOT / "upstream/UniDet_eval/experts/expert_weights"
+	                  / "Unified_learned_OCIM_RS200_6x+2x.pth")
+	install_runtime = install_runtime or not runtime_python.is_file() or not unidet_weights.is_file()
+	print("Preparing T2I-CompBench source and prompts"
+	      + ("; installing metric runtime and UniDet weights" if install_runtime
+	         else "; reusing metric runtime and UniDet weights"), flush=True)
 	setup_compbench(install_runtime=install_runtime)
-	for baseline in baselines:
+	prompts = None
+	if prompts_per_category is not None:
+		prompts = {
+			category: items[:prompts_per_category]
+			for category, items in load_compbench_prompts(categories=tuple(COMPBENCH_METRICS)).items()
+		}
+	for baseline in ["sd15", *(b for b in baselines if b != "sd15")]:
 		manifests = []
-		model = load_baseline_model(baseline, seed=123, device="cuda:0")
+		model = None
 		try:
 			for seed in seeds:
+				existing = find_compbench_images(
+					baseline, run_name=f"{compbench_run_name}_seed_{seed}",
+					base_seed=seed, images_per_prompt=images_per_prompt,
+					prompts_by_category=prompts,
+					inference_kwargs={"num_inference_steps": 50, "guidance_scale": 5.0},
+				)
+				if existing is not None:
+					print(f"Reusing T2I-CompBench images: {baseline}, seed {seed}", flush=True)
+					manifests.append(existing)
+					continue
+				if model is None:
+					model = load_baseline_model(baseline, seed=123, device="cuda:0")
 				print(f"Generating T2I-CompBench: {baseline}, seed {seed}", flush=True)
 				manifests.append(generate_compbench_images(
-					model,
+					model, resume=True,
+					prompts_by_category=prompts,
 					run_name=f"{compbench_run_name}_seed_{seed}",
 					images_per_prompt=images_per_prompt,
 					base_seed=seed,
@@ -143,13 +201,22 @@ def run_compbench_evaluation(baselines, seeds, compbench_run_name, images_per_pr
 				))
 		finally:
 			# Release the pipeline (including EMO's variance head) before scorers run.
-			del model
-			gc.collect()
-			torch.cuda.empty_cache()
-		for manifest in manifests:
+			if model is not None:
+				del model
+				gc.collect()
+				torch.cuda.empty_cache()
+		for seed, manifest in zip(seeds, manifests):
 			print(f"Scoring T2I-CompBench: {manifest}", flush=True)
-			results = run_compbench_metrics(manifest)
+			results = run_compbench_metrics(manifest, resume=True)
 			print(json.dumps(results["summary"], indent=2), flush=True)
+
+			if baseline == "sd15":
+				reference_manifests[seed] = manifest
+				paired = [manifest]
+			else:
+				paired = [reference_manifests[seed], manifest]
+			results = run_compbench_distribution_metrics(paired)
+			print(json.dumps(results, indent=2), flush=True)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -185,6 +252,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 		images_per_prompt=args.compbench_images_per_prompt,
 		rollout_chunk_size=args.rollout_chunk_size,
 		install_runtime=args.compbench_install_runtime,
+		prompts_per_category=args.compbench_prompts_per_category,
 	)
 	print("T2I-CompBench evaluation completed", flush=True)
 	return 0

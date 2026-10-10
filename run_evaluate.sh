@@ -7,8 +7,8 @@
 #SBATCH -D /aiau010_scratch/azm0269/clover
 #SBATCH --output=evaluate_output.txt
 #SBATCH --error=evaluate_error.txt
-#SBATCH --time=1-24:00:00
-#SBATCH --nodelist=aiau010
+#SBATCH --time=3-24:00:00
+#SBATCH --nodelist=aiau001
 #SBATCH --gres=gpu:1
 #SBATCH --partition=general
 
@@ -31,6 +31,9 @@ export TMPDIR="/aiau010_scratch/azm0269/tmp"
 # Reduce allocator fragmentation during long rollout/update cycles.
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
+# Missing CompBench runtime/weights are installed automatically before generation.
+# Setup requires a CUDA 12.4 toolkit for the Detectron2 build.
+# Pass --compbench-install-runtime to rerun setup for an existing installation.
 # Usage: sbatch run_evaluate.sh --baselines sd15 emo_v5 --b2-run-name b2_eval
 srun --ntasks=1 .venv/bin/python -m evaluate "$@" > evaluate.log 2>&1
 evaluation_status=$?

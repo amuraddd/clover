@@ -152,10 +152,14 @@ def _plan(path):
 
 
 def _data(plan, baseline):
+    if "data_dirs" in plan:
+        return Path(plan["data_dirs"][baseline])
     return Path(plan["data_root"]) / baseline / "b2_evaluation" / plan["run_name"]
 
 
 def _output(plan, baseline):
+    if "output_dirs" in plan:
+        return Path(plan["output_dirs"][baseline])
     return Path(plan["output_root"]) / baseline / "evals/b2" / plan["run_name"]
 
 
@@ -227,6 +231,23 @@ def generate_b2_images(plan_path, *, device="cuda:0", quiet=True, rollout_chunk_
     return {b: str(_data(plan, b) / "images.json") for b in plan["baselines"]}
 
 
+def _metric_plan_hash(plan_path, plan, baseline):
+    """Bind incremental CompBench caches to each baseline's immutable inputs.
+
+    Ordinary B2 plans retain their original whole-plan identity. CompBench can
+    score sd15 alone and then pairs without invalidating the reference cache.
+    FID separately records the reference image digest.
+    """
+    if not plan.get("independent_metric_caches"):
+        return _hash(plan_path)
+    own = {key: value for key, value in plan.items()
+           if key not in ("baselines", "sources", "data_dirs", "output_dirs")}
+    own["baseline"] = baseline
+    for key in ("sources", "data_dirs", "output_dirs"):
+        own[key] = plan[key][baseline]
+    return hashlib.sha256(json.dumps(own, sort_keys=True).encode()).hexdigest()
+
+
 def _records(plan_path):
     """Refuse incomplete or modified image sets before computing any metric."""
     plan = _plan(plan_path)
@@ -234,7 +255,7 @@ def _records(plan_path):
     for baseline in plan["baselines"]:
         folder = _data(plan, baseline)
         manifest = json.loads((folder / "images.json").read_text())
-        if not manifest["complete"] or manifest["plan_sha256"] != _hash(plan_path):
+        if not manifest["complete"] or manifest["plan_sha256"] != _metric_plan_hash(plan_path, plan, baseline):
             raise ValueError(f"Incomplete/mismatched images for {baseline}")
         if set(manifest["images"]) != {r["id"] for r in plan["records"]}:
             raise ValueError(f"Image IDs do not match the plan for {baseline}")
@@ -265,7 +286,7 @@ def _save_metric(plan_path, plan, rows, metric, metadata):
     for baseline in plan["baselines"]:
         own = [r for r in rows if r["baseline"] == baseline]
         _save(_output(plan, baseline) / f"{metric}.json", {
-            "plan_sha256": _hash(plan_path), "images_sha256": _image_digest(plan, baseline),
+            "plan_sha256": _metric_plan_hash(plan_path, plan, baseline), "images_sha256": _image_digest(plan, baseline),
             "metric": metric, "metadata": metadata, "records": own})
 
 
@@ -277,7 +298,7 @@ def _cached_metric(plan_path, plan, metric, metadata):
         if not path.is_file():
             return None
         saved = json.loads(path.read_text())
-        if (saved["plan_sha256"] != _hash(plan_path) or saved.get("images_sha256") != _image_digest(plan, baseline) or saved["metadata"] != metadata or
+        if (saved["plan_sha256"] != _metric_plan_hash(plan_path, plan, baseline) or saved.get("images_sha256") != _image_digest(plan, baseline) or saved["metadata"] != metadata or
             len(saved["records"]) != len(expected) or {r['id'] for r in saved['records']} != expected):
             raise ValueError(f"Stale metric cache: {path}; use a new run_name")
         records.extend(saved["records"])
@@ -323,7 +344,7 @@ def score_b2_fid(plan_path, *, device="cuda:0", batch_size=16, per_prompt=False,
             own = [r for r in rows if r["baseline"] == baseline]
             folder = _output(plan, baseline)
             cache, info = folder / "fid_features.npy", folder / "fid_features.json"
-            metadata = {"plan_sha256": _hash(plan_path), "images_sha256": _image_digest(plan, baseline), "ids": [r['id'] for r in own],
+            metadata = {"plan_sha256": _metric_plan_hash(plan_path, plan, baseline), "images_sha256": _image_digest(plan, baseline), "ids": [r['id'] for r in own],
                         **extractor}
             if cache.is_file() and info.is_file() and json.loads(info.read_text()) == metadata:
                 features[baseline] = np.load(cache, allow_pickle=False)
@@ -346,15 +367,16 @@ def score_b2_fid(plan_path, *, device="cuda:0", batch_size=16, per_prompt=False,
         del network
         _release()
     reference = features[REFERENCE]
+    templates = plan.get("templates", TEMPLATES)
     results = []
     for baseline in plan["baselines"]:
         for seed in plan["seeds"]:
-            for template in TEMPLATES:
+            for template in templates:
                 indices = [i for i,r in enumerate(plan['records']) if r['seed']==seed and r['template']==template]
                 fid = 0. if baseline == REFERENCE else frechet_inception_distance(
                     reference[indices], features[baseline][indices], precomputed_features=True)
                 results.append({"baseline": baseline, "seed": seed, "template": template,
-                    "template_name": TEMPLATES[template], "level": "template", "fid": fid,
+                    "template_name": templates[template], "level": "template", "fid": fid,
                     "reference_baseline": REFERENCE, "image_count": len(indices)})
                 if per_prompt:
                     for prompt_index in sorted({plan['records'][i]['prompt_index'] for i in indices}):
@@ -362,10 +384,10 @@ def score_b2_fid(plan_path, *, device="cuda:0", batch_size=16, per_prompt=False,
                         fid = 0. if baseline == REFERENCE else frechet_inception_distance(
                             reference[group], features[baseline][group], precomputed_features=True)
                         results.append({"baseline": baseline, "seed": seed, "template": template,
-                            "template_name": TEMPLATES[template], "level": "prompt", "prompt_index": prompt_index,
+                            "template_name": templates[template], "level": "prompt", "prompt_index": prompt_index,
                             "fid": fid, "reference_baseline": REFERENCE, "image_count": len(group)})
     for baseline in plan['baselines']:
-        _save(_output(plan, baseline)/'fid.json', {"plan_sha256": _hash(plan_path),
+        _save(_output(plan, baseline)/'fid.json', {"plan_sha256": _metric_plan_hash(plan_path, plan, baseline),
             'images_sha256': _image_digest(plan, baseline), 'reference_images_sha256': _image_digest(plan, REFERENCE),
             "metadata": {"reference": REFERENCE, **extractor,
                          "fid_function": "clover.utils.diversity_score.frechet_inception_distance",
@@ -618,7 +640,7 @@ def summarize_b2_scores(plan_path):
         merged={r['id']:dict(r) for r in rows if r['baseline']==baseline}
         for metric,columns in metrics:
             payload=json.loads((_output(plan,baseline)/f'{metric}.json').read_text())
-            if payload['plan_sha256']!=_hash(plan_path) or payload.get('images_sha256')!=_image_digest(plan,baseline) or {r['id'] for r in payload['records']}!=set(merged) or len(payload['records'])!=len(merged):
+            if payload['plan_sha256']!=_metric_plan_hash(plan_path, plan, baseline) or payload.get('images_sha256')!=_image_digest(plan,baseline) or {r['id'] for r in payload['records']}!=set(merged) or len(payload['records'])!=len(merged):
                 raise ValueError(f'Incomplete/stale {metric} for {baseline}')
             for row in payload['records']:
                 for key in columns:
@@ -627,7 +649,7 @@ def summarize_b2_scores(plan_path):
                         raise ValueError(f'Nonfinite {metric} for {baseline}')
                     merged[row['id']][key]=value
         fid=json.loads((_output(plan,baseline)/'fid.json').read_text())
-        if fid['plan_sha256']!=_hash(plan_path) or fid.get('images_sha256')!=_image_digest(plan,baseline) or fid.get('reference_images_sha256')!=_image_digest(plan,REFERENCE):
+        if fid['plan_sha256']!=_metric_plan_hash(plan_path, plan, baseline) or fid.get('images_sha256')!=_image_digest(plan,baseline) or fid.get('reference_images_sha256')!=_image_digest(plan,REFERENCE):
             raise ValueError('FID plan mismatch')
         fid_records.extend(r for r in fid['records'] if r['level']=='template')
         image_records.extend(merged.values())

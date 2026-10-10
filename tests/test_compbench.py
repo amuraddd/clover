@@ -104,6 +104,80 @@ class CompBenchTests(unittest.TestCase):
                 python_command=['python'], output_root=self.root)
         self.assertEqual(result['summary']['color']['mean'], .5)
 
+    def test_find_completed_images_checks_settings_and_files(self):
+        path = self.generate()
+        prompts = {'color': ['a red dog and a blue cat', 'a green bench and a red bowl']}
+        def find(**kwargs):
+            return compbench.find_compbench_images('emo_v4', run_name='default',
+                base_seed=123, images_per_prompt=2, data_root=self.root,
+                prompts_by_category=prompts, **kwargs)
+        self.assertEqual(find(inference_kwargs={'guidance_scale': 7.5}), path)
+        with self.assertRaisesRegex(ValueError, 'guidance_scale'):
+            find(inference_kwargs={'guidance_scale': 5.})
+        manifest = json.loads(path.read_text())
+        (path.parent / manifest['records'][0]['image']).unlink()
+        with self.assertRaises(FileNotFoundError):
+            find()
+
+    def test_interrupted_generation_preserves_images_and_resumes_missing(self):
+        original = self.model.generate
+        attempts = []
+        def interrupt(*args, **kwargs):
+            attempts.append(kwargs)
+            if len(attempts) == 4:
+                raise RuntimeError('interrupted')
+            return original(*args, **kwargs)
+        self.model.generate = interrupt
+        with self.assertRaisesRegex(RuntimeError, 'interrupted'):
+            self.generate()
+        run = self.root / 'emo_v4/t2i_compbench/default'
+        before = {p: p.stat().st_mtime_ns for p in run.glob('color/samples/*.png')}
+        self.assertEqual(len(before), 3)
+        self.assertIsNone(compbench.find_compbench_images('emo_v4', run_name='default',
+            base_seed=123, images_per_prompt=2, data_root=self.root))
+        self.model.generate = original
+        self.calls.clear()
+        path = self.generate(resume=True)
+        self.assertEqual(len(self.calls), 1)
+        self.assertEqual(before, {p: p.stat().st_mtime_ns for p in before})
+        self.assertTrue(json.loads(path.read_text())['complete'])
+        self.assertEqual(len(json.loads(path.read_text())['records']), 4)
+        self.calls.clear()
+        self.generate(resume=True)
+        self.assertEqual(self.calls, [])
+
+    def test_resume_official_scores_without_runtime_and_reject_invalid_cache(self):
+        path = self.generate()
+        self.write_scores(path, [{'question_id': i, 'answer': .5} for i in range(4)])
+        with patch.object(compbench.subprocess, 'run') as run:
+            result = run_compbench_metrics(path, resume=True,
+                upstream_dir=self.root / 'absent', output_root=self.root / 'outputs')
+            run.assert_not_called()
+        self.assertEqual(result['summary']['color']['mean'], .5)
+        self.write_scores(path, [{'question_id': 0, 'answer': .5}])
+        with self.assertRaisesRegex(ValueError, 'Score IDs'):
+            run_compbench_metrics(path, resume=True, upstream_dir=self.root / 'absent')
+
+    def test_resume_only_missing_official_category(self):
+        path = generate_compbench_images(self.model, data_root=self.root,
+            prompts_by_category={'color': ['a red dog'], 'shape': ['a round bowl']},
+            images_per_prompt=2)
+        rows = [{'question_id': i, 'answer': .5} for i in range(2)]
+        self.write_scores(path, rows)
+        upstream = self.root / 'upstream'
+        upstream.mkdir()
+        (upstream / 'clover_source.json').write_text(json.dumps({'revision': REVISION}))
+        def score(command, **kwargs):
+            self.assertEqual(command[-1], str(path.parent / 'shape'))
+            result = path.parent / 'shape/annotation_blip/vqa_result.json'
+            result.parent.mkdir(parents=True)
+            result.write_text(json.dumps(rows))
+        with patch.object(compbench.subprocess, 'run', side_effect=score) as run:
+            result = run_compbench_metrics(path, resume=True, upstream_dir=upstream,
+                python_command=['python'], output_root=self.root / 'outputs')
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(set(result['summary']), {'color', 'shape'})
+
     def test_unidet_and_unsupported_category_dispatch(self):
         _metric_spec = compbench._metric_spec
         cwd, args, output = _metric_spec('spatial', self.root, self.root / 'spatial')
