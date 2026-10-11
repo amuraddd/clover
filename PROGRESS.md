@@ -1315,3 +1315,26 @@ else:
 - The NFS temporary-directory cleanup error is separate from the fatal CUDA traceback. Generation cleanup already deletes the model, collects garbage, and empties the CUDA cache before scoring; BLIP test batch size is 32. Prioritize identifying GPU occupancy/allocation at scoring time; reducing scorer batch size is a secondary mitigation.
 - Verified all three DDPO manifests (seeds 123, 124, 126) are complete, each with 3,000 image records and no missing image files. Existing resume logic can reuse those images with identical settings.
 - Diagnosis only: no evaluation code changes, dependency installation, GPU work, or Slurm submissions.
+
+## 2026-10-10 — Add CompBench mean comparison table to final metrics notebook
+
+- Added t2i_compbench_evaluation_scores and an example to clover/exp/evaluation_metrics_final.ipynb. Reads saved category summaries for a selected version/custom run, averages seeds equally, and returns baseline rows with (category, metric) pandas columns. Supports baseline discovery, explicit baseline/seed selection, and optional FID/DreamSim distribution summaries.
+- Rejects missing results, mismatched baseline/seed metadata or seed/category/metric sets, and empty/non-finite scores. Existing notebook cells are preserved.
+- Validation: notebook schema passed nbformat validation; uv run --no-sync checked all means against the three saved sd15 seeds (six official columns, 18 with distribution metrics) and confirmed missing-baseline errors. Only sd15 currently has saved CompBench summaries. No experiments, GPU work, dependency installations, or Slurm submissions.
+
+## 2026-10-10 — Include FID and DreamSim in the current CompBench table
+
+- Enabled include_distribution=True in the notebook's active CompBench table example, so it displays FID and DreamSim diversity alongside official category scores.
+- Validation: executed the function and example with uv run --no-sync; confirmed the resulting table contains both metrics across all six categories (18 columns total).
+
+## 2026-10-10 — Split CompBench composition and diversity tables
+
+- Updated t2i_compbench_evaluation_scores to return (composition_scores, diversity_scores): BLIP-VQA/UniDet in the first DataFrame and DreamSim diversity/FID in the second. Both retain baseline rows, category/metric columns, and equal weighting across seeds. Distribution summaries are now always loaded.
+- Updated notebook documentation and example to unpack and display both tables, grouping diversity columns by category.
+- Validation: uv run --no-sync validated the notebook schema, executed the example, checked the metric separation, and verified every returned mean against saved summaries (six composition columns and 12 diversity columns).
+
+## 2026-10-10 — Diagnose evaluation job 30790 launch failure
+
+- evaluate.log reports that Slurm step 30790.0 was aborted before launch completed, with task 0 launch failure: Unspecified error. Accounting confirms job/batch FAILED (1:0), two seconds elapsed on aiau001, and a zero-duration Python step marked FAILED (0:0); the step exit code does not indicate successful evaluation.
+- Companion stderr is empty and stdout contains only TORCH_HOME. The submission script pins aiau001. Available evidence identifies a Slurm launch failure, but does not establish its underlying cause; node-side slurmd/slurmstepd logs for job 30790 are needed.
+- Diagnosis only: no code changes, dependency installations, GPU work, or job submissions.
