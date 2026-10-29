@@ -1338,3 +1338,136 @@ else:
 - evaluate.log reports that Slurm step 30790.0 was aborted before launch completed, with task 0 launch failure: Unspecified error. Accounting confirms job/batch FAILED (1:0), two seconds elapsed on aiau001, and a zero-duration Python step marked FAILED (0:0); the step exit code does not indicate successful evaluation.
 - Companion stderr is empty and stdout contains only TORCH_HOME. The submission script pins aiau001. Available evidence identifies a Slurm launch failure, but does not establish its underlying cause; node-side slurmd/slurmstepd logs for job 30790 are needed.
 - Diagnosis only: no code changes, dependency installations, GPU work, or job submissions.
+
+## 2026-10-13 — Switch the parameter sweep to EMO v5
+
+- Updated emo_v4_experiments.py in place to import and run emo_v5, label sweep records as emo_v5, and save sweep summaries, per-configuration outputs, and trajectory data under v5 paths.
+- Replaced the unsupported KL coefficient sweep with cross_entropy_coefficient using the existing values (0.01, 0.05, 0.1). Preserved reward scales, the locally edited diversity thresholds, and launcher defaults, including v5 gamma, entropy scale, and replay reset settings.
+- Validation: uv run --no-sync checked all 36 generated configurations for supported v5 flags, unique output paths, coefficient overrides, and inherited v5 defaults. Syntax validation passed; no training or Slurm jobs launched. The environment reported an existing xFormers/PyTorch/Python extension compatibility warning.
+
+## 2026-10-13 — Clean up completed sweep trajectories
+
+- Added cleanup to emo_v4_experiments.py after a successful EMO v5 subprocess and saved sweep summary. Deletes only that configuration/seed's trajectories.pt; missing files are tolerated and failed runs retain their replay data.
+- Validation: uv run --no-sync ran a mocked success/failure check confirming the precise deletion path and no deletion on failure. Syntax and scoped diff whitespace checks passed. No existing trajectory files deleted or experiments launched.
+
+## 2026-10-13 — Clean up sweep evaluation images and explicitly disable training-image exports
+
+- Successful sweep runs now delete PNGs from their own evals/images and training_evals/images directories alongside the trajectory file. Failed runs retain images; metrics, manifests, and checkpoints are preserved. Manifest image paths describe removed artifacts after cleanup.
+- EMO v5 now explicitly passes images=None to the training metrics writer; standalone training-image exports were already omitted. Images embedded in replay remain necessary for diversity filtering and are removed with the replay file.
+- Validation: uv run --no-sync checked cleanup with temporary image/metadata fixtures for successful and failed subprocesses and verified the explicit disabled export argument. Syntax and scoped whitespace checks passed. No existing run artifacts deleted or experiments launched.
+
+## 2026-10-13 — Include fixed launcher defaults in the EMO v5 sweep
+
+- Added FIXED_BASELINE_ARGS to emo_v5_experiments.py, importing all 20 applicable non-swept settings from main.DEFAULT_BASELINE_ARGS and explicitly forwarding them to each worker, including max_grad_norm. The reward-scale, cross-entropy, and diversity grids remain unchanged; GPU IDs still follow the scheduler allocation and legacy-only settings are excluded.
+- Sweep records now include fixed settings as well as swept values. gamma=None omits the CLI flag so EMO v5 can derive its value from the inference-step count. Existing names, output paths, and successful-run cleanup are preserved.
+- Validation: uv run --no-sync checked all 72 configurations for the current seed list, complete fixed-default coverage, unchanged grid size, supported/unique flags, unique output paths, scheduler GPU IDs, and automatic gamma. Scoped whitespace check passed. Existing xFormers extension compatibility warning remains; no experiments launched.
+
+## 2026-10-16 — Fix EMO v5 sweep gradient-clipping CLI argument
+
+- Restored `--max-grad-norm` as a float argument in the shared `clover/baselines/common.py` parser used by `emo_v5_experiments.py` workers. The parsed value now reaches the existing configuration field and gradient-clipping code.
+- Validation: `uv run --no-sync python` exercised the actual parser and EMO v5 config definitions extracted with AST to avoid model-import side effects. Default 0.1 and explicit override 0.25 passed; all 72 commands in `experiment_emo_v5_sweep.log` parsed successfully. No GPU work or Slurm experiments launched.
+
+## 2026-10-16 — Run the EMO v5 sweep on three independent GPUs
+
+- Preserved the 3 x 3 x 3 grid and both seeds (123, 456): 54 total runs. Per the user's explicit three-GPU authorization, the sweep now uses up to three scheduler-visible GPUs, with exactly one active experiment per GPU and immediate reuse of each completed slot.
+- Each subprocess receives a single CUDA_VISIBLE_DEVICES identifier and --gpu-ids 0. Only the coordinator writes the shared execution summary; per-run output paths and successful-run artifact cleanup remain isolated. Failed experiments release their GPU and the remaining queue continues.
+- Updated run_experiments.sh to request three GPUs and launch emo_v5_experiments, for submission via sbatch run_experiments.sh. The general main.py launcher retains its existing GPU limit.
+- Validation: two CPU-only unittest checks passed via uv run --no-sync, covering 54 unique runs, three concurrent workers, no GPU overlap, GPU identifier handling, serialized summary writes, and continued scheduling after failed runs. Shell syntax and scoped whitespace checks passed. No Slurm jobs submitted or GPUs used.
+
+## 2026-10-16 — Correct the EMO v5 sweep launcher
+
+- Corrected the preceding launcher guidance: submit the sweep with `sbatch run_emo_v5.sh`. This script already requests three GPUs and launches emo_v5_experiments.
+- Restored run_experiments.sh to its prior two-GPU main launcher and updated the sweep allocation error message to reference run_emo_v5.sh.
+- Validation: shell syntax checks passed for both launchers; confirmed run_experiments.sh has no remaining diff. No jobs submitted.
+
+## 2026-10-22 — Exclude completed EMO v5 sweep combinations
+
+- Audited output histories and the sweep execution summary: 12 successful seed-123 runs completed all 25 epochs (reward 5 with every coefficient/threshold, and reward 10 with coefficient 0.01 and every threshold).
+- Added a seed-specific completed-combination exclusion in emo_v5_experiments.py. All three parameter axes remain necessary for seed 456; removing values globally would discard pending runs. The remaining queue contains 42 runs: 15 for seed 123 and 27 for seed 456.
+- Retained the three partial seed-123 runs at reward 10/coefficient 0.05, whose histories contain 19, 21, and 9 epochs for thresholds 0.25, 0.5, and 0.75 respectively. The exclusion is a snapshot of verified completion on this date.
+- Validation: both CPU-only sweep unittest checks passed via uv run --no-sync, including remaining-run counts, exclusion of completed combinations, and retention of partial runs. No experiments or Slurm jobs launched; existing output artifacts preserved.
+
+## 2026-10-24 — Document the EMO v5 objective and experimental setup
+
+- Created `clover/baselines/docs/emo_v5_readme.md` in the mathematical style of the v2 README, scoped to the objective, variance head, and experimental setup.
+- Documented the detached clipped likelihood weights, fresh-only same-prompt advantages, analytic entropy, frozen-reference cross entropy, and learned-range variance parameterization. Explicitly noted that the current objective uses unit entropy weight and does not apply `entropy_scale`.
+- Distinguished baseline defaults from current launcher settings and described replay selection, evaluation, and the parameter grid. Cross-checked against the implementation and shared helpers; no training code changes or experiments launched.
+
+## 2026-10-24 — Add a concise variance-head explanation
+
+- Added a short paragraph to the EMO v5 README describing the variance head's convolution, precision, initialization, and bounded variance prediction, and explaining why trainable variance is needed for a nonzero analytic entropy gradient. Reviewed against the existing implementation details; documentation only, with no experiments launched.
+
+## 2026-10-24 — Document experiment settings and prompt coverage
+
+- Added `clover/baselines/docs/experiments.md` with prompt templates, split construction, training/evaluation counts and percentages, standard EMO v5 settings, replay, and evaluation metrics.
+- Distinguished the 150/65 training/held-out split (69.77%/30.23%) from the fixed 10-prompt periodic evaluation subset (15.38% of held-out prompts). Listed the exact subset and distinguished periodic evaluation from the standalone benchmark runner.
+- Validation: used `uv run --no-sync` to verify unique prompt counts, disjoint splits, and the seeded subset (7 activity, 1 attribute, 2 relation prompts), with prompt saving disabled. No models loaded or experiments launched.
+
+## 2026-10-24 — Document B2 and T2I-CompBench evaluation
+
+- Expanded `experiments.md` with an Evaluation section covering B2 prompt sampling, CompBench categories and examples, metric definitions, aggregation, generation settings, and output locations.
+- Distinguished checkpoint and generation seeds, periodic and standalone evaluation, SD 1.5 reference FID, and DreamSim feature-variance diversity. Documented the commented-out B2 invocation and the local UniDet dispatch for non-spatial/complex categories.
+- Validation: inspected local scorer implementations and verified cached CompBench prompt SHA256 values and counts (300 per category; 50 selected). No models loaded, benchmarks run, or training code changed.
+
+
+## 2026-10-24 — Separate B2 mean and standard deviation columns
+
+- Updated `b2_evaluation_scores` in `clover/exp/evaluation_metrics_final.ipynb` to return `(template_name, score, statistic)` columns with separate `mean` and `std` values. Restored within-seed means before computing statistics across seeds, retaining equal prompt weighting for DreamSim.
+- Standard deviation uses sample `ddof=1` and is NaN for a single seed. Verified aggregation and column values with a CPU-only synthetic check using `uv run --no-sync`; no experiments launched.
+
+
+## 2026-10-24 — Separate CompBench mean and standard deviation columns
+
+- Updated `t2i_compbench_evaluation_scores` and its notebook documentation to provide `(category, metric, statistic)` columns with separate mean and sample standard deviation across seeds in both composition and diversity tables. Preserved equal seed weighting and existing result validation.
+- Verified both tables, column structure, numerical aggregation, and single-seed NaN standard deviations with CPU-only synthetic fixtures using `uv run --no-sync`. No experiments launched.
+
+## 2026-10-26 — Add periodic EMO v5 FID and DreamSim diversity
+
+- Expanded periodic evaluation to ten generated samples per prompt, retaining CLIP and BERT rewards. Added pooled 2048-dimensional FID against a separate, unmodified SD 1.5 reference pipeline with DDIM sampling, cached by generation settings.
+- Reused the locked project-local uv DreamSim worker to compute normalized ensemble feature sample variance within each prompt and an equally weighted prompt mean. The worker exposes only the selected training GPU; reference generation uses model CPU offload.
+- Saved generated/reference images and worker artifacts under `clover/data/emo_v5/evals/`, with scores, per-prompt diversity, counts, estimator details, and reference provenance in the existing `<output_dir>/evals/eval_metrics.json`. Documented the small-sample FID limitation and sampler differences.
+- Validation: `uv run --no-sync python -m unittest tests.test_emo_v5_evaluation tests.test_b2_dreamsim` passed all 12 CPU tests, covering ten-sample wiring, preserved rewards, reference cache reuse/invalidation, pooled FID inputs/non-finite rejection, DreamSim grouping, and GPU mapping. Existing xFormers binary-version mismatch warning appeared during imports; no GPU inference or Slurm experiments launched. Real pretrained-model execution remains unverified.
+
+## 2026-10-26 — Evaluate EMO v5 with three generation seeds
+
+- Added sequential generation seeds 123, 456, and 789, retaining ten images per prompt per seed (300 generated images for the standard ten-prompt evaluation). Each seed independently computes CLIP/BERT rewards, pooled FID, and within-prompt DreamSim diversity.
+- Persisted one evaluation JSON record per epoch/seed, including `eval_seed` and actual per-prompt seeds. Image and worker paths now include `seed_<eval_seed>`; reference generation, reference cache keys, and DreamSim records receive the selected seed. Each completed seed is saved immediately.
+- Documented downstream aggregation of seed-level scores with sample standard deviation and distinction from within-seed image variability.
+- Validation: all 12 CPU tests passed via `uv run --no-sync python -m unittest tests.test_emo_v5_evaluation tests.test_b2_dreamsim`, including six prompt-generation calls across three seeds, disjoint artifact paths, per-seed metric records, seed-specific reference cache reuse, and propagation to FID references/DreamSim. Existing xFormers binary compatibility warning persists; no GPU experiments launched.
+
+## 2026-10-26 — Isolate EMO v5 v2 parameter sweeps
+
+- Changed `emo_v5_experimentsv2.py` from a Cartesian grid to three independent one-parameter-at-a-time groups: reward scales (5, 10, 20), cross-entropy coefficients (0.01, 0.05, 0.1), and diversity thresholds (0, 0.25, 0.5, 0.75). All non-varied settings inherit the EMO v5-compatible constants in `main.py`, including reward scale 4.0, cross-entropy coefficient 0.10, and diversity threshold 0.5.
+- Retained every requested point, including default-valued points in separate groups: ten runs per training seed, twenty total for seeds 123 and 456. Removed historical Cartesian-grid exclusions. Added sweep parameter/value metadata, separate group-specific output/replay paths, and a v2 execution summary directory.
+- Limited this launcher's concurrency to two allocated GPUs and aligned its allocation guidance with `sbatch run_experiments.sh`. No launcher scripts changed or jobs submitted.
+- Validation: `uv run --no-sync python -m unittest tests.test_emo_v5_sweep_v2` passed both CPU-only tests, verifying parameter coverage, CLI values against main.py, unique artifacts, exclusion removal, and GPU limits. `git diff --check` passed.
+
+## 2026-10-28 — Fix EMO v5 certificate configuration
+
+- Investigated `experiment_emo_v5_sweepv2.log`: downloading pretrained FID Inception weights failed with `CERTIFICATE_VERIFY_FAILED` (unable to get local issuer certificate).
+- Copied the `SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt` export from `run_evaluate.sh` into `run_emo_v5.sh` after loading `.env`, so the experiment process inherits the system CA bundle.
+- Validation: `bash -n run_emo_v5.sh` passed; confirmed the CA bundle is readable and the export matches the evaluation launcher. No experiments submitted; the download was not retried.
+
+## 2026-10-28 — Diagnose EMO v5 FID evaluation failure
+
+- Checked the updated sweep log: four runs exited with `TypeError: sqrtm() got an unexpected keyword argument 'disp'` during periodic FID evaluation. No SSL certificate exception appeared in the inspected log.
+- Confirmed installed `pytorch-fid==0.3.0` passes `disp=False`, but installed SciPy 1.18.0 exposes `sqrtm(A)` without that parameter. The project currently permits this combination through `scipy>=1.15.3`.
+- Diagnosis only: no dependencies or training code changed, and no experiments launched. A compatible SciPy constraint or an updated FID implementation is needed.
+
+## 2026-10-28 — Restore FID dependency compatibility
+
+- Constrained SciPy to `>=1.15.3,<1.18` in `pyproject.toml`, documenting the `pytorch-fid==0.3.0` requirement for `sqrtm(..., disp=False)`. Updated `uv.lock` and the project environment with `uv add`; the resolver selected SciPy 1.15.3 and NumPy 2.2.6.
+- Added a real FID regression test covering identical, shifted, and singular Gaussian statistics without downloading weights or using GPUs. This catches the SciPy API incompatibility missed by mocked evaluation tests.
+- Validation: all 12 existing evaluation/DreamSim tests and the new real FID test passed; `uv pip check` reported all 201 installed packages compatible; `uv lock --check` passed.
+- Existing runtime limitation: xFormers 0.0.35 reports extensions built for PyTorch 2.10.0+cu128 / Python 3.10.19, versus installed PyTorch 2.12.1 / Python 3.12.8. Its declared torch>=2.10 requirement passes dependency checking, but binary extensions remain incompatible. GPU stack was not changed. No experiments submitted.
+## 2026-10-28 — Review EMO v5 sweep failures
+
+- Reviewed `experiment_emo_v5_sweep.log` using explicit per-run exit statuses: 42 finished runs, with 39 failures (exit code 1) and 3 successes.
+- Failed combinations: seed 123 with reward scale 10 / cross-entropy 0.1, and reward scale 20 / cross-entropy 0.01, 0.05, or 0.1; seed 456 with every reward scale 5, 10, or 20 / cross-entropy 0.01, 0.05, or 0.1. Each listed pair failed at diversity thresholds 0.25, 0.5, and 0.75.
+- Failure tracebacks report SSL certificate verification errors downloading pretrained Inception weights during FID evaluation. No experiments launched or training code changed.
+
+
+## 2026-10-28 — Delete failed EMO v5 sweep outputs
+
+- Deleted all 39 failed seed output folders identified by nonzero exit statuses in `experiment_emo_v5_sweep.log`, as requested. Removed 12 empty combination folders.
+- Verified all targeted folders are absent and all 15 other seed folders in the affected combinations remain. No experiments launched.

@@ -178,7 +178,7 @@ def parse_config(
     parser.add_argument("--guidance-scale", type=float)
     parser.add_argument("--adam-epsilon", type=float)
     parser.add_argument("--eta", type=float)
-    # parser.add_argument("--max-grad-norm", type=float)
+    parser.add_argument("--max-grad-norm", type=float)
     # parser.add_argument("--target-kl", type=float)
     parser.add_argument("--minibatch-size", type=int)
     parser.add_argument("--reward-type", type=str)

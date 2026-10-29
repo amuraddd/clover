@@ -76,8 +76,8 @@ class EMOV2V2Config:
     reward_type: str = "clip"
     height: int = 512
     width: int = 512
-    num_inference_steps: int = 30
-    guidance_scale: float = 7.5
+    num_inference_steps: int = 50
+    guidance_scale: float = 5.0
     eta: float = 1.0
     min_log_prob_std: float = 1e-4
     likelihood_scale: float = 1.0
@@ -475,48 +475,69 @@ def _evaluate_emo_v5(
     pipe: Any, config: EMOV2V2Config, device: torch.device,
     dtype: torch.dtype, epoch: int | None = None,
 ) -> None:
-    """Generate and persist standard evaluation artifacts with EMO-v2 sampling."""
-    prompts = standard_eval_prompts(config)
-    images = _generate_emo_v5_eval_images(pipe, prompts, config, device, dtype)
-    eval_dir = Path(config.output_dir) / "evals"
-    image_dir = eval_dir / "images"
-    image_dir.mkdir(parents=True, exist_ok=True)
-    image_prefix = f"epoch_{epoch:04d}_eval" if epoch is not None else "eval"
-    manifest = save_image_grid_outputs(
-        images, prompts, image_dir, image_prefix, epoch=epoch
+    """Evaluate rewards, pooled SD 1.5 FID and within-prompt DreamSim diversity."""
+    from clover.evaluate.emo_v5_metrics import (
+        EVAL_SEEDS, SAMPLES_PER_PROMPT, evaluation_data_dir, evaluate_fid_and_diversity,
     )
-    from clover.utils.rewards_utils import bert_reward, clip_reward
 
-    clip_scores = clip_reward(images, prompts, device=device).tolist()
-    bert_scores = bert_reward(images, prompts, device=device).tolist()
+    unique_prompts = standard_eval_prompts(config)
+    prompts = [prompt for prompt in unique_prompts for _ in range(SAMPLES_PER_PROMPT)]
+    for eval_seed in EVAL_SEEDS:
+        images = []
+        for index, prompt in enumerate(unique_prompts):
+            images.extend(_generate_emo_v5_eval_images(
+                pipe, [prompt] * SAMPLES_PER_PROMPT, config, device, dtype,
+                seed=eval_seed + index,
+            ))
+        eval_dir = Path(config.output_dir) / "evals"
+        data_dir = evaluation_data_dir(config) / (f"epoch_{epoch:04d}" if epoch is not None else "final")
+        data_dir = data_dir / f"seed_{eval_seed}"
+        image_dir = data_dir / "images"
+        image_dir.mkdir(parents=True, exist_ok=True)
+        image_prefix = f"epoch_{epoch:04d}_eval" if epoch is not None else "eval"
+        manifest = save_image_grid_outputs(
+            images, prompts, image_dir, image_prefix, epoch=epoch
+        )
+        from clover.utils.rewards_utils import bert_reward, clip_reward
 
-    def summary(scores: list[float]) -> dict[str, float | int]:
-        values = np.asarray(scores, dtype=np.float64)
-        count = int(values.size)
-        mean = float(values.mean()) if count else float("nan")
-        std = float(values.std(ddof=1)) if count > 1 else 0.0
-        margin = 1.96 * std / math.sqrt(count) if count else float("nan")
-        return {
-            "mean": mean, "std": std, "count": count,
-            "ci95_low": mean - margin, "ci95_high": mean + margin,
+        clip_scores = clip_reward(images, prompts, device=device).tolist()
+        bert_scores = bert_reward(images, prompts, device=device).tolist()
+
+        def summary(scores: list[float]) -> dict[str, float | int]:
+            values = np.asarray(scores, dtype=np.float64)
+            count = int(values.size)
+            mean = float(values.mean()) if count else float("nan")
+            std = float(values.std(ddof=1)) if count > 1 else 0.0
+            margin = 1.96 * std / math.sqrt(count) if count else float("nan")
+            return {
+                "mean": mean, "std": std, "count": count,
+                "ci95_low": mean - margin, "ci95_high": mean + margin,
+            }
+
+        metrics = {
+            "epoch": epoch, "prompts": prompts,
+            "samples_per_prompt": SAMPLES_PER_PROMPT, "eval_seed": eval_seed,
+            "unique_prompts": unique_prompts,
+            "prompt_seeds": [eval_seed + i for i in range(len(unique_prompts))],
+            "image_paths": [entry["image"] for entry in manifest],
+            "clip_reward": clip_scores, "bert_reward": bert_scores,
+            "clip_reward_summary": summary(clip_scores),
+            "bert_reward_summary": summary(bert_scores),
         }
-
-    metrics = {
-        "epoch": epoch, "prompts": prompts,
-        "image_paths": [entry["image"] for entry in manifest],
-        "clip_reward": clip_scores, "bert_reward": bert_scores,
-        "clip_reward_summary": summary(clip_scores),
-        "bert_reward_summary": summary(bert_scores),
-    }
-    metrics_path = eval_dir / "eval_metrics.json"
-    history = []
-    if metrics_path.exists():
-        with metrics_path.open("r", encoding="utf-8") as file:
-            loaded = json.load(file)
-            if isinstance(loaded, list):
-                history = loaded
-    history.append(metrics)
-    save_json(metrics_path, history)
+        metrics.update(evaluate_fid_and_diversity(
+            config, unique_prompts, metrics["image_paths"], device, dtype, data_dir, eval_seed=eval_seed,
+        ))
+        print({"epoch": epoch, "eval_seed": eval_seed, "fid": metrics["fid"],
+               "dreamsim_diversity": metrics["dreamsim_diversity"]})
+        metrics_path = eval_dir / "eval_metrics.json"
+        history = []
+        if metrics_path.exists():
+            with metrics_path.open("r", encoding="utf-8") as file:
+                loaded = json.load(file)
+                if isinstance(loaded, list):
+                    history = loaded
+        history.append(metrics)
+        save_json(metrics_path, history)
 
 
 def emo_v5_combined_rollouts(
@@ -1469,6 +1490,7 @@ def train(
             baseline_name,
             epoch,
             metrics,
+            images=None,  # Disable standalone training-image exports; replay still needs images.
             prompts=reference_rollout.get("prompts"),
             output_dir=output_dir,
         )

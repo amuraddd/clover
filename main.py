@@ -44,7 +44,7 @@ BASELINES = [
 
 DEFAULT_GPU_IDS = ("0","1") #"1"
 MAX_ALLOCATED_GPUS = 2
-EXPERIMENT_SEEDS = [456] #123, 456, 789
+EXPERIMENT_SEEDS = [123, 456] #123, 456, 789
 
 
 def allocated_gpu_ids() -> tuple[str, ...]:
@@ -63,7 +63,7 @@ def allocated_gpu_ids() -> tuple[str, ...]:
     return gpu_ids[:MAX_ALLOCATED_GPUS]
 
 DEFAULT_BASELINE_ARGS = {
-    "train_epochs": 50,
+    "train_epochs": 25,
     "rollouts_per_epoch": 256,
     "learning_rate": 1e-4,
     "gpu_ids": [0],

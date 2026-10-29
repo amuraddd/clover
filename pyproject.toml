@@ -20,7 +20,8 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "pytorch-fid==0.3.0",
     "scikit-image>=0.25.2",
-    "scipy>=1.15.3",
+    # pytorch-fid 0.3.0 requires sqrtm(..., disp=False).
+    "scipy>=1.15.3,<1.18",
     "tensorboard>=2.20.0",
     "torchvision>=0.27.1",
     "transformers>=5.12.1",
